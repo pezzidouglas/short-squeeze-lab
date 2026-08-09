@@ -1,77 +1,135 @@
-
 ================================================================================
-                    🎯 SHORT SQUEEZE LAB — PROJECT OVERVIEW
+                    SHORT SQUEEZE LAB — PROJECT OVERVIEW  (v2)
 ================================================================================
 
-DIRECTORY STRUCTURE:
---------------------
+WHAT IT IS
+----------
+A short squeeze scanner that treats "which number is right?" as a first-class
+question. Five providers are queried in parallel, merged field by field with an
+explicit priority order, and every disagreement is kept and reported rather than
+silently resolved. The score says how much of itself the data actually supports.
+
+
+DIRECTORY STRUCTURE
+-------------------
 short-squeeze-lab/
-├── app.py                 # Flask API server (backend)
-├── main.py                # CLI runner (scan / backtest / serve / export)
-├── data_fetcher.py        # Yahoo Finance data ingestion
-├── squeeze_engine.py      # Composite squeeze scoring algorithm
-├── backtester.py          # Strategy backtesting engine
-├── requirements.txt       # Python dependencies
-├── deploy.sh              # GitHub + Tiiny deploy script
-├── README.md              # Project documentation
-├── .gitignore             # Git ignore rules
-├── data/                  # Output data storage
-│   ├── .gitkeep
-│   ├── latest_scan.csv
-│   └── latest_scan.json
-└── static/                # Dashboard files (deployed to Tiiny)
-    ├── index.html         # Standalone dashboard (self-contained)
-    └── dashboard.html     # Same as index.html
+├── main.py                     CLI entry point
+├── app.py                      WSGI entry point (gunicorn app:app)
+├── pyproject.toml              packaging + pytest config
+├── requirements.txt
+├── deploy.sh                   build the static page, push, deploy
+│
+├── squeezelab/
+│   ├── config.py               field vocabulary, source priority, weight presets, settings
+│   ├── sources/
+│   │   ├── base.py             DataSource contract, retrying HTTP, disk cache, health
+│   │   ├── yahoo.py            Yahoo Finance (yfinance, or quoteSummary fallback)
+│   │   ├── stooq.py            free EOD bars — independent price cross-check
+│   │   ├── finviz.py           ownership screener export (needs FINVIZ_AUTH_TOKEN)
+│   │   ├── finra.py            RegSHO daily off-exchange short volume + consolidated SI
+│   │   ├── sec_edgar.py        filed share count from company-concept XBRL
+│   │   └── snapshot.py         bundled offline sample
+│   ├── consolidate.py          field merge, provenance, agreement, confidence
+│   ├── engine.py               five-component scoring, presets, ranking
+│   ├── history.py              per-day signal reconstruction
+│   ├── backtest.py             portfolio simulation, metrics, strategy comparison
+│   ├── compare.py              ticker / source / preset comparison
+│   ├── service.py              source fan-out and scan pipeline
+│   ├── api.py                  Flask API
+│   ├── cli.py                  command line
+│   └── data/snapshot.json      offline sample dataset (generated)
+│
+├── static/index.html           self-contained dashboard (no CDN)
+├── scripts/
+│   ├── build_snapshot.py       regenerate the offline sample
+│   └── build_static.py         embed a real scan into the static page
+├── tests/                      pytest suite, no network
+└── data/                       scan output + source cache (gitignored)
 
-HOW TO USE:
------------
-1. LOCAL SCAN:
-   $ python main.py scan
-   → Fetches live data, ranks by squeeze score, saves to data/
+Compatibility shims kept from 1.x: data_fetcher.py, squeeze_engine.py,
+backtester.py — each re-exports from squeezelab.
 
-2. BACKTEST:
-   $ python main.py backtest
-   → Simulates strategy on historical data
 
-3. DASHBOARD:
-   $ python main.py serve
-   → Starts Flask server at http://localhost:5000
+COMMANDS
+--------
+  python main.py scan [--preset P] [--tickers A,B] [--top N] [--save]
+  python main.py sources [--ticker T]
+  python main.py compare GME SPRY PCT
+  python main.py presets
+  python main.py backtest [--universe N] [--period 1y] [--entry-score 70]
+  python main.py strategies
+  python main.py serve [--port 5000]
+  python main.py export [--format csv|json]
 
-4. DEPLOY:
-   $ ./deploy.sh
-   → Pushes to GitHub + deploys to Tiiny
 
-SQUEEZE SCORE FORMULA:
-----------------------
-  Score = (SI_Density × 0.40) + (Borrow_Pressure × 0.25)
-        + (Liquidity_Trap × 0.20) + (Momentum_Fuel × 0.15)
+SCORE
+-----
+  si         short interest as a share of float
+  borrow     days to cover + float scarcity
+  liquidity  short position in days of real traded volume
+  momentum   52-week compression + rising short position + day change
+  flow       FINRA off-exchange short volume + its 5d-vs-20d trend
 
-  • SI_Density:     short_pct_float normalized 0-100
-  • Borrow_Pressure: days_to_cover + float scarcity
-  • Liquidity_Trap:  short_shares / avg_daily_volume
-  • Momentum_Fuel:   price_compression + SI_increase
+  Presets (si/borrow/liquidity/momentum/flow):
+    classic      .40 .25 .20 .15 .00     the 1.x model, preserved
+    balanced     .30 .20 .18 .12 .20     default
+    tight_float  .30 .30 .28 .07 .05
+    momentum     .22 .13 .15 .35 .15
+    flow         .20 .15 .15 .10 .40
 
-STRATEGY RULES:
+  A component with no inputs is DROPPED and the remaining weights are
+  renormalised — it is never scored zero. `evidence_weight` reports how much of
+  the model ran; `components_missing` lists what was left out.
+
+
+DATA CONFIDENCE
 ---------------
-  Entry:  squeeze_score ≥ 70  AND  volume > 1.5× 20-day avg
-  Hold:   max 5 trading days
-  TP:     +20%
-  SL:     -10%
+  40% coverage + 25% corroboration + 25% agreement + 10% freshness, 0-100.
+  A single uncorroborated source scores 0.6 on agreement, not 1.0.
+  `confidence_adjusted_score` = squeeze_score × (0.65 + 0.35 × confidence/100).
 
-DATA SOURCES:
--------------
-  • Yahoo Finance (free) — price, volume, short interest, fundamentals
-  • SEC EDGAR (free) — official filings, float data
-  • Upgrade path: Ortex API ($49/mo) for real-time SI estimates
 
-WATCHLIST (40+ tickers):
-------------------------
-  High-SI: SPRY, PCT, INDI, SLS, RUM, LUCK, PSNY
-  Meme:    GME, AMC, BBBYQ, MULN
-  Biotech: NVAX, GOEV
-  EV:      LCID, RIVN, NIO, XPEV, LI
-  Tech:    TSLA, AAPL, MSFT, NVDA, AMD, INTC, PLTR, SOFI
-  Space:   ASTS, RKLB, IONQ
-  AI:      SOUN, BBAI, SMCI, MSTR
+SOURCES
+-------
+  finra     daily   off-exchange short volume (free) + consolidated SI (needs creds)
+  yahoo     live    float, fundamentals, exchange short interest
+  stooq     daily   independent EOD bars; cross-check + backtest data
+  sec       qtrly   filed share count (set SEC_CONTACT_EMAIL)
+  finviz    daily   float short + days to cover (needs FINVIZ_AUTH_TOKEN)
+  snapshot  static  bundled offline sample, never overrides a live value
 
+  A failing source degrades the scan instead of killing it: it records
+  error/empty/partial in its health block and the others carry the run.
+
+
+BACKTEST
+--------
+  Entry:   score >= threshold AND volume > N x 20-day average, evaluated on
+           bar t and FILLED AT BAR t+1's OPEN (no same-bar lookahead)
+  Exits:   intrabar take-profit / stop-loss (stop assumed first when a bar
+           touches both), optional trailing stop, time exit in TRADING days
+  Costs:   commission + slippage in bps, both sides
+  Output:  dated equity curve, max drawdown, CAGR, Sharpe, Sortino, exposure,
+           profit factor, expectancy, per-ticker breakdown, and an equal-weight
+           buy-and-hold benchmark over the same window
+
+  LIMITATION: free short-interest history does not exist. Short interest is held
+  at its latest value across the window, so only the price/volume/flow
+  components vary. Every signal frame carries `si_basis` saying so.
+
+
+ENVIRONMENT
+-----------
+  SQUEEZE_SOURCES=yahoo,stooq,finviz,finra,sec   SQUEEZE_PRESET=balanced
+  SQUEEZE_OFFLINE=0   SQUEEZE_SNAPSHOT_FALLBACK=1
+  SQUEEZE_CACHE_TTL=1800   SQUEEZE_SCAN_TTL=600   SQUEEZE_DATA_DIR=data
+  FINVIZ_AUTH_TOKEN=…   FINRA_API_CLIENT_ID/_SECRET=…   SEC_CONTACT_EMAIL=…
+
+
+TESTS
+-----
+  pip install pytest && python -m pytest        (offline, fixture-driven)
+
+================================================================================
+Not financial advice. Free short interest is stale by construction.
 ================================================================================

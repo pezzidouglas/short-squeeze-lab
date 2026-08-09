@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "short-squeeze-lab"
+version = "2.0.0"
+description = "Multi-source short squeeze detection, scoring, comparison and backtesting"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.31.0",
+    "flask>=2.3.0",
+]
+
+[project.optional-dependencies]
+yahoo = ["yfinance>=0.2.28"]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+squeeze-lab = "squeezelab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["squeezelab*"]
+
+[tool.setuptools.package-data]
+squeezelab = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
