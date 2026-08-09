@@ -1,9 +1,13 @@
-yfinance>=0.2.28
+# Core — everything except the live sources works with just these.
 pandas>=2.0.0
 numpy>=1.24.0
 requests>=2.31.0
 flask>=2.3.0
-plotly>=5.15.0
-python-dateutil>=2.8.0
-lxml>=4.9.0
-beautifulsoup4>=4.12.0
+
+# Optional. yfinance handles Yahoo's cookie/crumb handshake; without it the
+# Yahoo source falls back to the public quoteSummary endpoint, which Yahoo
+# rejects more often. Every other source works without it.
+yfinance>=0.2.28
+
+# Dev/test only:
+#   pip install pytest
