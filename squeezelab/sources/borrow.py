@@ -13,17 +13,24 @@ way: this is one broker's inventory, the rates are indications rather than
 struck loans, and expensive-to-borrow names underperform on average. A high fee
 raises variance, not expected return. Use it as pressure, never as a trigger.
 
-Opt-in, deliberately. Set `SQUEEZE_BORROW_ENABLED=1`, or point
-`IBKR_SHORTABLE_URL` at a known-good mirror. The default endpoint below was
-written from documentation and never exercised against the live host, so
-defaulting the source on would paint every scan red for every user if the URL is
-wrong; "skipped" costs one environment variable instead. Same reasoning as
+Opt-in, deliberately — and as of the first live run, **the default URLs do not
+work**. CI reached `ftp3.interactivebrokers.com:443` and got a TCP connect
+timeout, not a 404 or a redirect: nothing is listening for HTTPS on that host.
+The parser below is exercised entirely against fixtures and is believed
+correct; the transport is not. Until someone supplies a URL that actually
+serves the file, this source is a well-tested reader with nothing to read.
+
+That is exactly why it defaults off. Set `SQUEEZE_BORROW_ENABLED=1` to try the
+defaults anyway, or — better — point `IBKR_SHORTABLE_URL` at a mirror known to
+serve `usa.txt` over HTTP(S). Defaulting it on would paint every scan red for
+every user; "skipped" costs one environment variable instead. Same reasoning as
 `SecEdgarSource.available()` — a missing setting, not a broken provider.
 
 The historical anonymous-FTP location, `ftp://ftp3.interactivebrokers.com/usa.txt`,
-is the manual fallback for a human. It is deliberately absent from DEFAULT_URLS:
-`requests` cannot speak FTP, so it would only burn a retry cycle on the way to a
-`SourceError`.
+is the manual fallback for a human, and is the likely reason the HTTPS attempt
+times out: the service is real, but it speaks FTP. It is deliberately absent
+from DEFAULT_URLS — `requests` cannot speak FTP, so it would only burn a retry
+cycle on the way to a `SourceError`.
 """
 
 from __future__ import annotations
@@ -38,6 +45,10 @@ from typing import Any, Sequence
 from .base import DataSource, SourceError, SourceMeta, SourceRecords
 
 COUNTRY_FILE = "usa.txt"
+# Seconds allowed per candidate URL. Bounds the whole source at roughly
+# len(DEFAULT_URLS) * this, so an unreachable endpoint costs a few seconds of
+# scan latency rather than over a minute.
+PROBE_TIMEOUT = 6.0
 # At most two: every miss costs `http_retries + 1` requests and two sleeps
 # inside `base.get()`, so a long candidate list buys nothing but latency.
 DEFAULT_URLS: tuple[str, ...] = (
@@ -121,7 +132,14 @@ class BorrowSource(DataSource):
         refusals: list[str] = []
         for url in self.urls():
             try:
-                response = self.get(url)
+                # Single attempt, short budget. These are *candidates*, not a
+                # known-good endpoint: the whole point of the list is that the
+                # first one may not answer, and CI proved it does not — the
+                # default 3-attempts-at-12s per candidate spent 75 seconds
+                # discovering that ftp3.interactivebrokers.com does not serve
+                # HTTPS. The file is ~4MB, so the read budget stays generous;
+                # it is the reachability probe that has to be cheap.
+                response = self.get(url, timeout=PROBE_TIMEOUT, retries=0)
             except SourceError as exc:
                 refusals.append(str(exc))
                 continue

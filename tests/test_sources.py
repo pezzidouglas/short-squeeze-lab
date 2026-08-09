@@ -197,6 +197,67 @@ def test_partial_source_is_marked_partial_and_cleaned(settings):
     assert records["GME"] == {"current_price": 10.0}
 
 
+class _Counting(DataSource):
+    """Counts attempts and raises whatever it was told to."""
+
+    meta = SourceMeta(key="count", name="Count", url="", cadence="daily", provides=())
+
+    def __init__(self, settings, error):
+        super().__init__(settings)
+        self._error = error
+        self.attempts = 0
+
+    @property
+    def session(self):
+        source = self
+
+        class _Session:
+            def get(self, *args, **kwargs):
+                source.attempts += 1
+                raise source._error
+
+        return _Session()
+
+
+def test_a_connect_timeout_is_not_retried(settings, monkeypatch):
+    """Nothing accepted the connection. Asking the same unreachable host again
+    seconds later pays the full timeout for the same answer — one dead endpoint
+    cost 75 seconds of scan latency in CI before this."""
+    import requests
+
+    monkeypatch.setattr(settings, "offline", False, raising=False)
+    monkeypatch.setattr(settings, "http_retries", 2, raising=False)
+    source = _Counting(settings, requests.exceptions.ConnectTimeout("no route"))
+    with pytest.raises(SourceError):
+        source.get("https://nowhere.example/x")
+    assert source.attempts == 1
+
+
+def test_a_read_timeout_is_still_retried(settings, monkeypatch):
+    """Something is there and struggling — that a retry can genuinely fix."""
+    import requests
+
+    monkeypatch.setattr(settings, "offline", False, raising=False)
+    monkeypatch.setattr(settings, "http_retries", 2, raising=False)
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+    source = _Counting(settings, requests.exceptions.ReadTimeout("slow"))
+    with pytest.raises(SourceError):
+        source.get("https://slow.example/x")
+    assert source.attempts == 3
+
+
+def test_per_call_retry_override_wins(settings, monkeypatch):
+    """A source walking candidate mirrors bounds each one itself."""
+    import requests
+
+    monkeypatch.setattr(settings, "offline", False, raising=False)
+    monkeypatch.setattr(settings, "http_retries", 5, raising=False)
+    source = _Counting(settings, requests.exceptions.ReadTimeout("slow"))
+    with pytest.raises(SourceError):
+        source.get("https://slow.example/x", retries=0)
+    assert source.attempts == 1
+
+
 def test_disk_cache_roundtrip_and_ttl(tmp_path):
     cache = DiskCache(str(tmp_path), ttl_seconds=60)
     cache.set("ns", "key", {"a": 1})

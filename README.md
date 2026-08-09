@@ -40,7 +40,7 @@ keeps the losers.
 
 <sub>* SEC asks automated clients to identify themselves — set `SEC_CONTACT_EMAIL`.</sub><br>
 <sub>† Needs `yfinance`; a cold scan costs up to four requests per ticker, so `SQUEEZE_OPTIONS_MAX_TICKERS` caps it (default 40).</sub><br>
-<sub>‡ Off by default. Set `SQUEEZE_BORROW_ENABLED=1`. The endpoint is public but unsupported and had never been exercised against the live host when it was written, so defaulting it on would paint every scan red if the URL is wrong.</sub>
+<sub>‡ Off by default, and <b>the default URLs do not currently work</b> — CI got a TCP connect timeout from <code>ftp3.interactivebrokers.com:443</code>, so nothing is listening for HTTPS there (the service is real but speaks FTP, which <code>requests</code> cannot). The parser is fixture-tested and believed correct; the transport is not. Point <code>IBKR_SHORTABLE_URL</code> at a mirror that serves <code>usa.txt</code> over HTTP(S), or set <code>SQUEEZE_BORROW_ENABLED=1</code> to try the defaults anyway.</sub>
 
 FINRA's consolidated short interest file is used too when
 `FINRA_API_CLIENT_ID` / `FINRA_API_CLIENT_SECRET` are set. Without them the
