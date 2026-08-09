@@ -4,8 +4,8 @@ name: publish dashboard
 # GitHub Pages. No zip, no upload, no expiry — and it refreshes itself, which
 # a hand-uploaded file never does.
 #
-# One-time setup: repository Settings → Pages → Source: "GitHub Actions".
-# Until that is set, this workflow's deploy step fails and nothing else breaks.
+# No manual setup: configure-pages runs with enablement, so the workflow turns
+# Pages on itself using its own pages:write token.
 
 on:
   push:
@@ -70,6 +70,10 @@ jobs:
           cp static/index.html _site/index.html
 
       - uses: actions/configure-pages@v5
+        with:
+          # Turns Pages on via the API using the workflow's own pages:write
+          # token, so publishing needs no manual setup in repository settings.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
