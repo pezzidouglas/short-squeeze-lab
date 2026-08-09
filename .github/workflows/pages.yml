@@ -4,8 +4,14 @@ name: publish dashboard
 # GitHub Pages. No zip, no upload, no expiry — and it refreshes itself, which
 # a hand-uploaded file never does.
 #
-# No manual setup: configure-pages runs with enablement, so the workflow turns
-# Pages on itself using its own pages:write token.
+# One-time setup, unavoidable: repository Settings → Pages → Source:
+# "GitHub Actions".  https://github.com/pezzidouglas/short-squeeze-lab/settings/pages
+#
+# configure-pages is asked to enable Pages itself, but GITHUB_TOKEN cannot
+# create a Pages site — that API rejects the workflow token with "Resource not
+# accessible by integration". The enablement flag is kept because it is a
+# no-op once the site exists and does work for a token that has the right, but
+# it cannot replace the manual step.
 
 on:
   push:
@@ -79,3 +85,88 @@ jobs:
           path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Mirrors the published page to tiiny.site.
+  #
+  # tiiny's API docs are unreachable from the environment this was written in,
+  # so the exact contract is unknown. Rather than guess once and call it done,
+  # this probes a few plausible shapes against tiiny's own hosts and prints what
+  # each returned, so the log identifies the one the account actually accepts.
+  # It never fails the build and never blocks the Pages deploy.
+  #
+  # The key is only ever sent to tiiny hosts, and only as a header or form
+  # field — never echoed.
+  deploy-tiiny:
+    needs: publish
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
+    env:
+      TIINY_API_KEY: ${{ secrets.TIINY_API_KEY }}
+      TIINY_SUBDOMAIN: amber-florance-77
+      SQUEEZE_SOURCES: yahoo,finra
+      SQUEEZE_CACHE_TTL: "0"
+      SQUEEZE_SNAPSHOT_FALLBACK: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Build the page with live data
+        run: python scripts/build_static.py --universe 15
+
+      - name: Probe the tiiny deploy API
+        run: |
+          set -uo pipefail
+          if [ -z "${TIINY_API_KEY:-}" ]; then
+            echo "TIINY_API_KEY is not set on this repository — nothing to try."
+            exit 0
+          fi
+          echo "Key present (${#TIINY_API_KEY} chars). Probing tiiny endpoints…"
+          cp static/index.html index.html
+
+          attempt() {   # attempt <label> <curl args...>
+            label="$1"; shift
+            code=$(curl -sS -o /tmp/resp.txt -w '%{http_code}' --max-time 45 "$@" || echo 000)
+            echo "--- ${label}: HTTP ${code}"
+            head -c 300 /tmp/resp.txt | tr -d '\r'
+            echo
+            case "$code" in 200|201) return 0 ;; *) return 1 ;; esac
+          }
+
+          if attempt "api.tiiny.host/deploy (bearer)" \
+               -X POST "https://api.tiiny.host/deploy" \
+               -H "Authorization: Bearer ${TIINY_API_KEY}" \
+               -F "file=@index.html" -F "subdomain=${TIINY_SUBDOMAIN}"; then
+            echo "DEPLOYED"; exit 0
+          fi
+
+          if attempt "api.tiiny.host/deploy (api_key form field)" \
+               -X POST "https://api.tiiny.host/deploy" \
+               -F "api_key=${TIINY_API_KEY}" \
+               -F "file=@index.html" -F "subdomain=${TIINY_SUBDOMAIN}"; then
+            echo "DEPLOYED"; exit 0
+          fi
+
+          if attempt "tiiny.host/api/deploy (bearer)" \
+               -X POST "https://tiiny.host/api/deploy" \
+               -H "Authorization: Bearer ${TIINY_API_KEY}" \
+               -F "file=@index.html" -F "subdomain=${TIINY_SUBDOMAIN}"; then
+            echo "DEPLOYED"; exit 0
+          fi
+
+          if attempt "api.tiiny.host/v1/sites (bearer)" \
+               -X POST "https://api.tiiny.host/v1/sites" \
+               -H "Authorization: Bearer ${TIINY_API_KEY}" \
+               -F "file=@index.html" -F "subdomain=${TIINY_SUBDOMAIN}"; then
+            echo "DEPLOYED"; exit 0
+          fi
+
+          echo
+          echo "No probed shape was accepted. The statuses above are the evidence"
+          echo "needed to write the real call once tiiny's documented endpoint and"
+          echo "field names are known. Pages is unaffected and already published."

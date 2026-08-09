@@ -220,8 +220,11 @@ underneath is the bundled fixture.
 
 **Published to GitHub Pages** by `.github/workflows/pages.yml` on every push to
 `main` and again each weekday after the US close, so the public page refreshes
-itself. No setup is needed — the workflow enables Pages
-itself on its first run. It refuses to publish a build whose embedded
+itself. It needs one setting, once:
+[**Settings → Pages → Source: "GitHub Actions"**](https://github.com/pezzidouglas/short-squeeze-lab/settings/pages).
+That cannot be automated — `GITHUB_TOKEN` is refused by the Pages creation API —
+so until it is set the publish job fails at `configure-pages` and nothing else
+is affected. The workflow refuses to publish a build whose embedded
 `data_mode` isn't `live`, so an outage leaves the previous page up rather than
 replacing it with synthetic prices.
 
