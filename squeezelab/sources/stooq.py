@@ -109,13 +109,25 @@ class StooqSource(DataSource):
 
 
 def describe_refusal(text: str | None) -> str:
-    """Turn a non-CSV Stooq response into a health message worth reading."""
-    body = " ".join((text or "").split())[:120]
+    """Turn a non-CSV Stooq response into a health message worth reading.
+
+    Observed in CI: Stooq answers 200 with an anti-bot HTML interstitial for
+    requests from datacenter ranges, and with a plain-text notice when a
+    shared IP passes its daily quota. Neither is a parser bug, and neither is
+    legible if the raw body is pasted into a health line.
+    """
+    body = " ".join((text or "").split())
     if not body:
         return "empty response"
-    if "exceeded" in body.lower() and "limit" in body.lower():
-        return f"rate limited by Stooq: {body}"
-    return f"unexpected response: {body}"
+    lowered = body.lower()
+    if "exceeded" in lowered and "limit" in lowered:
+        return f"rate limited by Stooq: {body[:100]}"
+    if lowered.startswith("<!doctype") or lowered.startswith("<html") or "<noscript" in lowered:
+        return (
+            "Stooq served an anti-bot page instead of CSV — usual from cloud/datacenter "
+            "IPs, and usually fine from a normal connection"
+        )
+    return f"unexpected response: {body[:120]}"
 
 
 def summarise_bars(bars: pd.DataFrame) -> dict[str, Any]:

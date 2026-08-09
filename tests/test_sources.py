@@ -255,7 +255,10 @@ def test_sec_declares_a_contact_in_its_user_agent(settings, monkeypatch):
     "body, expected",
     [
         ("Exceeded the daily hits limit", "rate limited"),
-        ("<html>nope</html>", "unexpected response"),
+        # The shape CI actually saw: an anti-bot interstitial, not a quota notice.
+        ('<!DOCTYPE html><html><head><meta name="robots" content="noindex"></head>', "anti-bot page"),
+        ("<html><body><noscript>enable js</noscript></body></html>", "anti-bot page"),
+        ("something else entirely", "unexpected response"),
         ("", "empty response"),
         (None, "empty response"),
     ],
