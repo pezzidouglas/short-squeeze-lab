@@ -192,6 +192,9 @@ the names this tool surfaces, is exactly where the real cost lives.
 
 `python main.py serve` → <http://localhost:5000>
 
+A dense terminal layout: dark by default, monospace numerics, ~25 rows visible
+without scrolling. Light is one click away and remembered.
+
 - Ranked table with sortable columns, search, and filters on risk, sector, score
   and confidence
 - Click a row: component breakdown, key numbers, an off-exchange short-volume
