@@ -218,6 +218,23 @@ python scripts/build_static.py      # embed a real scan + backtest into the page
 A page built that way says **Sample snapshot** in its header when the data
 underneath is the bundled fixture.
 
+**Published to GitHub Pages** by `.github/workflows/pages.yml` on every push to
+`main` and again each weekday after the US close, so the public page refreshes
+itself. No setup is needed — the workflow enables Pages
+itself on its first run. It refuses to publish a build whose embedded
+`data_mode` isn't `live`, so an outage leaves the previous page up rather than
+replacing it with synthetic prices.
+
+For a manual host instead (tiiny.site and similar), don't upload the
+`static/index.html` committed here — it embeds the offline sample and labels
+itself `STATIC`. The `build-static` CI job rebuilds it against live sources and
+uploads it as the `dashboard-live` artifact, refusing to produce anything whose
+embedded `data_mode` isn't `live`. Download that and upload it instead.
+
+The deployed copy is a snapshot frozen at build time, not a live page: the
+preset selector and the backtest parameter controls need the API, so they are
+inert there. Run `python main.py serve` for the fully interactive version.
+
 ---
 
 ## CLI
