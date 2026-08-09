@@ -4,8 +4,14 @@ name: publish dashboard
 # GitHub Pages. No zip, no upload, no expiry — and it refreshes itself, which
 # a hand-uploaded file never does.
 #
-# No manual setup: configure-pages runs with enablement, so the workflow turns
-# Pages on itself using its own pages:write token.
+# One-time setup, unavoidable: repository Settings → Pages → Source:
+# "GitHub Actions".  https://github.com/pezzidouglas/short-squeeze-lab/settings/pages
+#
+# configure-pages is asked to enable Pages itself, but GITHUB_TOKEN cannot
+# create a Pages site — that API rejects the workflow token with "Resource not
+# accessible by integration". The enablement flag is kept because it is a
+# no-op once the site exists and does work for a token that has the right, but
+# it cannot replace the manual step.
 
 on:
   push:
