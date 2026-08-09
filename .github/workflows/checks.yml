@@ -1,0 +1,60 @@
+name: checks
+
+# Two jobs:
+#   tests      — the offline suite, on every push and PR
+#   live-check — hits the real data providers and prints what each one said.
+#                Diagnostic only: it never fails the build, because a provider
+#                being down or rate-limiting a cloud IP is not a code defect.
+#
+# The live check exists because the sandbox this project was built in blocks
+# every market-data host, so the source parsers had only ever seen fixtures.
+# GitHub's runners have open egress, which makes them the cheapest place to
+# find out whether the parsers survive contact with real responses.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest -q
+
+  live-check:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 12
+    env:
+      SQUEEZE_SOURCES: yahoo,stooq,finra,sec
+      SQUEEZE_CACHE_TTL: "0"
+      # No snapshot fallback here — the whole point is to see the live sources
+      # succeed or fail on their own.
+      SQUEEZE_SNAPSHOT_FALLBACK: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Source health
+        run: python main.py sources --tickers GME,AMC,SPRY,PCT,BYND
+
+      - name: Live scan
+        run: python main.py scan --tickers GME,AMC,SPRY,PCT,BYND,TSLA,NVAX,CVNA --top 10
+
+      - name: Source-by-source breakdown for one ticker
+        run: python main.py sources --tickers GME,AMC,SPRY,PCT,BYND --ticker GME
+
+      - name: Backtest on live prices
+        run: python main.py backtest --tickers GME,AMC,SPRY,PCT --period 1y
