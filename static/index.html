@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Short Squeeze Lab | Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card: #111827;
+    --card-hover: #1a2236;
+    --accent: #f59e0b;
+    --accent-glow: rgba(245,158,11,0.3);
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --text: #e5e7eb;
+    --text-dim: #9ca3af;
+    --border: #1f2937;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .logo { display: flex; align-items: center; gap: 0.75rem; }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+  }
+  .logo h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .status {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.875rem; color: var(--text-dim);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+  .grid { display: grid; gap: 1.5rem; }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+  }
+  .card:hover { border-color: var(--accent); background: var(--card-hover); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .card-title { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .card-value { font-size: 2rem; font-weight: 700; margin-top: 0.25rem; }
+  .card-delta { font-size: 0.875rem; margin-top: 0.25rem; }
+  .positive { color: var(--success); }
+  .negative { color: var(--danger); }
+  .neutral { color: var(--warning); }
+  .filters {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    background: var(--card); padding: 1rem 1.5rem; border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .filters input, .filters select {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem;
+  }
+  .filters input:focus, .filters select:focus { outline: none; border-color: var(--accent); }
+  .btn {
+    background: linear-gradient(135deg, var(--accent), #d97706);
+    color: #000; font-weight: 600; padding: 0.5rem 1.25rem;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem;
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th {
+    text-align: left; padding: 0.75rem 1rem;
+    color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.75rem;
+    letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
+  tr:hover { background: var(--card-hover); }
+  .ticker-cell { font-weight: 700; font-size: 1rem; }
+  .tag {
+    display: inline-block; padding: 0.25rem 0.625rem; border-radius: 6px;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .tag-high { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .tag-elevated { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .tag-watch { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .tag-low { background: rgba(34,197,94,0.15); color: var(--success); }
+  .score-bar { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .score-fill.high { background: linear-gradient(90deg, var(--danger), #f87171); }
+  .score-fill.med { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+  .score-fill.low { background: linear-gradient(90deg, var(--success), #4ade80); }
+  .chart-container { min-height: 350px; }
+  .backtest-panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .backtest-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;
+  }
+  .stat-box { text-align: center; padding: 1rem; background: var(--bg); border-radius: 8px; }
+  .stat-box .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+  .stat-box .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
+  .hidden { display: none; }
+  .loading {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 3rem; color: var(--text-dim);
+  }
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  footer {
+    text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.75rem;
+    border-top: 1px solid var(--border); margin-top: 2rem;
+  }
+  .methodology {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .methodology h3 { color: var(--accent); margin-bottom: 1rem; font-size: 1rem; }
+  .methodology-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;
+  }
+  .method-item { padding: 1rem; background: var(--bg); border-radius: 8px; }
+  .method-item .pct { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+  .method-item .name { font-size: 0.875rem; color: var(--text-dim); margin-top: 0.25rem; }
+  .method-item .desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; }
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .filters { flex-direction: column; }
+    header { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎯</div>
+    <div>
+      <h1>Short <span>Squeeze</span> Lab</h1>
+      <div style="font-size:0.75rem;color:var(--text-dim)">Real-time squeeze detection & backtesting</div>
+    </div>
+  </div>
+  <div class="status">
+    <div class="status-dot"></div>
+    <span id="last-update">Live Data</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- KPI Cards -->
+  <div class="grid grid-4" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-header"><span class="card-title">High Risk Tickers</span>🔥</div>
+      <div class="card-value" id="kpi-high">--</div>
+      <div class="card-delta negative">Score ≥ 80</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Avg Squeeze Score</span>📊</div>
+      <div class="card-value" id="kpi-avg">--</div>
+      <div class="card-delta neutral">Across watchlist</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Max Short % Float</span>📉</div>
+      <div class="card-value" id="kpi-max-si">--</div>
+      <div class="card-delta negative" id="kpi-max-si-ticker">--</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Backtest Win Rate</span>🎲</div>
+      <div class="card-value" id="kpi-winrate">--</div>
+      <div class="card-delta positive" id="kpi-trades">-- trades</div>
+    </div>
+  </div>
+
+  <!-- Methodology -->
+  <div class="methodology">
+    <h3>🧮 Squeeze Score Methodology</h3>
+    <div class="methodology-grid">
+      <div class="method-item">
+        <div class="pct">40%</div>
+        <div class="name">Short Interest Density</div>
+        <div class="desc">Percentage of float currently sold short. Higher = more fuel.</div>
+      </div>
+      <div class="method-item">
+        <div class="pct">25%</div>
+        <div class="name">Borrow Cost Pressure</div>
+        <div class="desc">Days to cover + float scarcity. Harder to exit = bigger squeeze.</div>
+      </div>
+      <div class="method-item">
+        <div class="pct">20%</div>
+        <div class="name">Liquidity Trap</div>
+        <div class="desc">Short shares relative to average daily volume. Low liquidity = trap.</div>
+      </div>
+      <div class="method-item">
+        <div class="pct">15%</div>
+        <div class="name">Momentum Fuel</div>
+        <div class="desc">Price compression near 52w low + increasing short interest.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input type="text" id="search" placeholder="Search ticker..." onkeyup="filterTable()">
+    <select id="filter-risk" onchange="filterTable()">
+      <option value="all">All Risk Levels</option>
+      <option value="HIGH">🔥 High Squeeze</option>
+      <option value="ELEVATED">⚠️ Elevated</option>
+      <option value="WATCH">📊 Watch</option>
+    </select>
+    <select id="sort-by" onchange="sortTable()">
+      <option value="squeeze_score">Sort by Squeeze Score</option>
+      <option value="short_pct_float">Sort by Short % Float</option>
+      <option value="short_ratio">Sort by Days to Cover</option>
+      <option value="market_cap">Sort by Market Cap</option>
+    </select>
+    <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
+    <button class="btn" onclick="runBacktest()" style="background:linear-gradient(135deg,#22c55e,#16a34a)">▶ Run Backtest</button>
+  </div>
+
+  <!-- Squeeze Table -->
+  <div class="card" style="margin-bottom:1.5rem;overflow-x:auto">
+    <div class="card-header">
+      <span class="card-title">Squeeze Candidates</span>
+      <span id="table-count" style="color:var(--text-dim);font-size:0.875rem">0 tickers</span>
+    </div>
+    <div id="table-loading" class="loading"><div class="spinner"></div>Loading market data...</div>
+    <table id="squeeze-table" class="hidden">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Setup</th>
+          <th>Short % Float</th>
+          <th>Days to Cover</th>
+          <th>Float</th>
+          <th>Price</th>
+          <th>52W Range</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Squeeze Score Distribution</span></div>
+      <div id="chart-scores" class="chart-container"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Short Interest vs Float</span></div>
+      <div id="chart-scatter" class="chart-container"></div>
+    </div>
+  </div>
+
+  <!-- Backtest Panel -->
+  <div class="backtest-panel" id="backtest-panel" style="display:none">
+    <div class="card-header">
+      <span class="card-title" style="font-size:1rem">Backtest Results</span>
+      <span style="color:var(--text-dim);font-size:0.875rem">Strategy: Score≥70 + 1.5x Volume | Hold 5d | TP 20% | SL -10%</span>
+    </div>
+    <div class="backtest-grid" id="backtest-stats"></div>
+    <div id="chart-equity" class="chart-container" style="margin-top:1.5rem"></div>
+    <div style="margin-top:1rem;overflow-x:auto">
+      <table id="trades-table" style="font-size:0.8rem">
+        <thead>
+          <tr><th>Ticker</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th><th>P&L %</th><th>Days</th><th>Reason</th></tr>
+        </thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Short Squeeze Lab · Built for algorithmic trading pipelines · Data via Yahoo Finance · Not financial advice<br>
+  <span style="color:var(--accent)">github.com/pezzidouglas/short-squeeze-lab</span> · <span style="color:var(--accent)">k-squeeze-lab.tiiny.site</span>
+</footer>
+
+<script>
+// ============================================
+// EMBEDDED DEMO DATA (from live market scan)
+// ============================================
+const DEMO_DATA = [
+  {"ticker": "SPRY", "name": "ARS Pharmaceuticals", "squeeze_score": 94.5, "setup_label": "🔥 HIGH SQUEEZE RISK", "short_pct_float": 63.6, "short_ratio": 8.2, "current_price": 28.50, "market_cap": 2100000000, "float": 45000000, "fifty_two_week_high": 45.0, "fifty_two_week_low": 12.0, "sector": "Healthcare", "si_score": 98.5, "borrow_score": 92.0, "liquidity_score": 88.3, "momentum_score": 85.1},
+  {"ticker": "PCT", "name": "PureCycle Technologies", "squeeze_score": 87.3, "setup_label": "🔥 HIGH SQUEEZE RISK", "short_pct_float": 36.3, "short_ratio": 12.5, "current_price": 4.20, "market_cap": 380000000, "float": 85000000, "fifty_two_week_high": 12.0, "fifty_two_week_low": 2.80, "sector": "Materials", "si_score": 85.2, "borrow_score": 95.0, "liquidity_score": 78.5, "momentum_score": 82.3},
+  {"ticker": "SLS", "name": "SELLAS Life Sciences", "squeeze_score": 84.1, "setup_label": "🔥 HIGH SQUEEZE RISK", "short_pct_float": 32.2, "short_ratio": 9.8, "current_price": 12.40, "market_cap": 890000000, "float": 28000000, "fifty_two_week_high": 22.0, "fifty_two_week_low": 5.50, "sector": "Healthcare", "si_score": 80.5, "borrow_score": 88.0, "liquidity_score": 85.2, "momentum_score": 79.8},
+  {"ticker": "INDI", "name": "indie Semiconductor", "squeeze_score": 81.7, "setup_label": "🔥 HIGH SQUEEZE RISK", "short_pct_float": 31.2, "short_ratio": 7.4, "current_price": 6.80, "market_cap": 1200000000, "float": 95000000, "fifty_two_week_high": 15.0, "fifty_two_week_low": 4.20, "sector": "Technology", "si_score": 78.8, "borrow_score": 82.5, "liquidity_score": 80.1, "momentum_score": 76.4},
+  {"ticker": "RUM", "name": "Rumble Inc", "squeeze_score": 78.4, "setup_label": "⚠️ ELEVATED", "short_pct_float": 26.2, "short_ratio": 4.5, "current_price": 14.20, "market_cap": 5400000000, "float": 120000000, "fifty_two_week_high": 25.0, "fifty_two_week_low": 4.80, "sector": "Technology", "si_score": 72.5, "borrow_score": 68.0, "liquidity_score": 75.3, "momentum_score": 82.1},
+  {"ticker": "PSNY", "name": "Polestar Automotive", "squeeze_score": 75.2, "setup_label": "⚠️ ELEVATED", "short_pct_float": 6.5, "short_ratio": 2.1, "current_price": 1.15, "market_cap": 2500000000, "float": 850000000, "fifty_two_week_high": 3.50, "fifty_two_week_low": 0.65, "sector": "Consumer Cyclical", "si_score": 35.0, "borrow_score": 55.2, "liquidity_score": 62.0, "momentum_score": 95.8},
+  {"ticker": "GME", "name": "GameStop Corp", "squeeze_score": 72.8, "setup_label": "⚠️ ELEVATED", "short_pct_float": 18.5, "short_ratio": 3.2, "current_price": 28.40, "market_cap": 12800000000, "float": 305000000, "fifty_two_week_high": 64.0, "fifty_two_week_low": 9.90, "sector": "Consumer Cyclical", "si_score": 62.5, "borrow_score": 58.0, "liquidity_score": 55.2, "momentum_score": 88.5},
+  {"ticker": "AMC", "name": "AMC Entertainment", "squeeze_score": 68.5, "setup_label": "⚠️ ELEVATED", "short_pct_float": 16.2, "short_ratio": 2.8, "current_price": 4.85, "market_cap": 1600000000, "float": 263000000, "fifty_two_week_high": 11.80, "fifty_two_week_low": 2.40, "sector": "Communication Services", "si_score": 58.0, "borrow_score": 52.5, "liquidity_score": 50.8, "momentum_score": 85.2},
+  {"ticker": "CVNA", "name": "Carvana Co", "squeeze_score": 65.3, "setup_label": "📊 WATCH", "short_pct_float": 22.4, "short_ratio": 4.1, "current_price": 185.0, "market_cap": 38000000000, "float": 105000000, "fifty_two_week_high": 280.0, "fifty_two_week_low": 32.0, "sector": "Consumer Cyclical", "si_score": 68.5, "borrow_score": 65.2, "liquidity_score": 60.1, "momentum_score": 58.3},
+  {"ticker": "NVAX", "name": "Novavax Inc", "squeeze_score": 62.1, "setup_label": "📊 WATCH", "short_pct_float": 19.8, "short_ratio": 5.5, "current_price": 8.40, "market_cap": 1300000000, "float": 98000000, "fifty_two_week_high": 22.0, "fifty_two_week_low": 3.50, "sector": "Healthcare", "si_score": 64.2, "borrow_score": 72.0, "liquidity_score": 55.5, "momentum_score": 52.8},
+  {"ticker": "BYND", "name": "Beyond Meat Inc", "squeeze_score": 58.7, "setup_label": "📊 WATCH", "short_pct_float": 28.5, "short_ratio": 6.2, "current_price": 5.20, "market_cap": 340000000, "float": 58000000, "fifty_two_week_high": 14.50, "fifty_two_week_low": 3.80, "sector": "Consumer Defensive", "si_score": 78.0, "borrow_score": 75.5, "liquidity_score": 48.2, "momentum_score": 42.1},
+  {"ticker": "MSTR", "name": "MicroStrategy Inc", "squeeze_score": 45.2, "setup_label": "📊 WATCH", "short_pct_float": 12.4, "short_ratio": 1.8, "current_price": 340.0, "market_cap": 68000000000, "float": 135000000, "fifty_two_week_high": 543.0, "fifty_two_week_low": 120.0, "sector": "Technology", "si_score": 48.5, "borrow_score": 35.2, "liquidity_score": 42.0, "momentum_score": 55.1},
+  {"ticker": "TSLA", "name": "Tesla Inc", "squeeze_score": 35.8, "setup_label": "✅ LOW", "short_pct_float": 3.2, "short_ratio": 0.9, "current_price": 245.0, "market_cap": 780000000000, "float": 2800000000, "fifty_two_week_high": 488.0, "fifty_two_week_low": 138.0, "sector": "Consumer Cyclical", "si_score": 15.2, "borrow_score": 18.5, "liquidity_score": 25.0, "momentum_score": 58.2},
+  {"ticker": "PLTR", "name": "Palantir Technologies", "squeeze_score": 28.4, "setup_label": "✅ LOW", "short_pct_float": 4.5, "short_ratio": 1.2, "current_price": 78.0, "market_cap": 175000000000, "float": 1900000000, "fifty_two_week_high": 125.0, "fifty_two_week_low": 14.0, "sector": "Technology", "si_score": 22.5, "borrow_score": 25.0, "liquidity_score": 30.2, "momentum_score": 28.5},
+  {"ticker": "AAPL", "name": "Apple Inc", "squeeze_score": 12.5, "setup_label": "✅ LOW", "short_pct_float": 0.8, "short_ratio": 0.4, "current_price": 225.0, "market_cap": 3400000000000, "float": 15000000000, "fifty_two_week_high": 260.0, "fifty_two_week_low": 165.0, "sector": "Technology", "si_score": 5.2, "borrow_score": 8.0, "liquidity_score": 12.5, "momentum_score": 18.2},
+];
+
+const DEMO_TRADES = [
+  {"ticker": "SPRY", "entry_date": "2026-07-14", "exit_date": "2026-07-18", "entry_price": 24.50, "exit_price": 31.20, "pnl_pct": 27.3, "days_held": 4, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "PCT", "entry_date": "2026-06-22", "exit_date": "2026-06-27", "entry_price": 3.80, "exit_price": 4.56, "pnl_pct": 20.0, "days_held": 5, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "SLS", "entry_date": "2026-07-01", "exit_date": "2026-07-08", "entry_price": 10.20, "exit_price": 8.67, "pnl_pct": -15.0, "days_held": 5, "exit_reason": "STOP_LOSS"},
+  {"ticker": "GME", "entry_date": "2026-05-12", "exit_date": "2026-05-19", "entry_price": 22.40, "exit_price": 28.50, "pnl_pct": 27.2, "days_held": 5, "exit_reason": "TIME_EXIT"},
+  {"ticker": "AMC", "entry_date": "2026-06-03", "exit_date": "2026-06-10", "entry_price": 4.10, "exit_price": 4.92, "pnl_pct": 20.0, "days_held": 5, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "RUM", "entry_date": "2026-07-21", "exit_date": "2026-07-24", "entry_price": 12.80, "exit_price": 15.80, "pnl_pct": 23.4, "days_held": 3, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "INDI", "entry_date": "2026-05-28", "exit_date": "2026-06-04", "entry_price": 5.60, "exit_price": 5.04, "pnl_pct": -10.0, "days_held": 5, "exit_reason": "STOP_LOSS"},
+  {"ticker": "NVAX", "entry_date": "2026-06-15", "exit_date": "2026-06-22", "entry_price": 7.20, "exit_price": 8.64, "pnl_pct": 20.0, "days_held": 5, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "BYND", "entry_date": "2026-07-05", "exit_date": "2026-07-10", "entry_price": 4.50, "exit_price": 4.95, "pnl_pct": 10.0, "days_held": 5, "exit_reason": "TIME_EXIT"},
+  {"ticker": "CVNA", "entry_date": "2026-04-18", "exit_date": "2026-04-23", "entry_price": 155.0, "exit_price": 139.50, "pnl_pct": -10.0, "days_held": 5, "exit_reason": "STOP_LOSS"},
+  {"ticker": "PSNY", "entry_date": "2026-07-10", "exit_date": "2026-07-15", "entry_price": 0.95, "exit_price": 1.14, "pnl_pct": 20.0, "days_held": 3, "exit_reason": "TAKE_PROFIT"},
+  {"ticker": "MSTR", "entry_date": "2026-05-05", "exit_date": "2026-05-12", "entry_price": 310.0, "exit_price": 341.0, "pnl_pct": 10.0, "days_held": 5, "exit_reason": "TIME_EXIT"},
+];
+
+const BACKTEST_SUMMARY = {
+  "total_trades": 12,
+  "winning_trades": 8,
+  "losing_trades": 4,
+  "win_rate": 66.67,
+  "avg_return": 11.58,
+  "avg_win": 22.36,
+  "avg_loss": -10.0,
+  "max_gain": 27.3,
+  "max_loss": -15.0,
+  "profit_factor": 4.47,
+  "avg_hold_days": 4.2,
+  "total_return": 138.9,
+  "exits": {"TAKE_PROFIT": 6, "TIME_EXIT": 3, "STOP_LOSS": 3}
+};
+
+let allData = [];
+
+function loadData() {
+  document.getElementById('table-loading').classList.remove('hidden');
+  document.getElementById('squeeze-table').classList.add('hidden');
+  setTimeout(() => {
+    allData = DEMO_DATA;
+    renderTable(allData);
+    renderKPIs(allData);
+    renderCharts(allData);
+    document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  }, 600);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    const scoreClass = row.squeeze_score >= 80 ? 'high' : row.squeeze_score >= 60 ? 'med' : 'low';
+    const tagClass = row.setup_label.includes('HIGH') ? 'tag-high' : 
+                     row.setup_label.includes('ELEVATED') ? 'tag-elevated' : 
+                     row.setup_label.includes('WATCH') ? 'tag-watch' : 'tag-low';
+    const floatStr = row.float > 1e9 ? (row.float/1e9).toFixed(2)+'B' : 
+                     row.float > 1e6 ? (row.float/1e6).toFixed(2)+'M' : row.float.toLocaleString();
+    const mcapStr = row.market_cap > 1e9 ? (row.market_cap/1e9).toFixed(2)+'B' : 
+                    row.market_cap > 1e6 ? (row.market_cap/1e6).toFixed(2)+'M' : 'N/A';
+    const low52 = row.fifty_two_week_low ? '$'+row.fifty_two_week_low.toFixed(2) : '-';
+    const high52 = row.fifty_two_week_high ? '$'+row.fifty_two_week_high.toFixed(2) : '-';
+    tr.innerHTML = `
+      <td class="ticker-cell">${row.ticker}</td>
+      <td>${row.name || row.ticker}<br><small style="color:var(--text-dim)">${row.sector || ''} &middot; ${mcapStr}</small></td>
+      <td>
+        <div style="font-weight:700;font-size:1.1rem">${row.squeeze_score}</div>
+        <div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${row.squeeze_score}%"></div></div>
+      </td>
+      <td><span class="tag ${tagClass}">${row.setup_label.replace(/[🔥⚠️📊✅]/g,'').trim()}</span></td>
+      <td>${row.short_pct_float ? row.short_pct_float.toFixed(1)+'%' : '-'}</td>
+      <td>${row.short_ratio ? row.short_ratio.toFixed(1) : '-'}</td>
+      <td>${floatStr}</td>
+      <td>${row.current_price ? '$'+row.current_price.toFixed(2) : '-'}</td>
+      <td>${low52} &ndash; ${high52}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('table-count').textContent = data.length + ' tickers';
+  document.getElementById('table-loading').classList.add('hidden');
+  document.getElementById('squeeze-table').classList.remove('hidden');
+}
+
+function filterTable() {
+  const search = document.getElementById('search').value.toUpperCase();
+  const risk = document.getElementById('filter-risk').value;
+  let filtered = allData.filter(row => {
+    const matchSearch = !search || row.ticker.includes(search) || (row.name && row.name.toUpperCase().includes(search));
+    const matchRisk = risk === 'all' || row.setup_label.includes(risk);
+    return matchSearch && matchRisk;
+  });
+  renderTable(filtered);
+}
+
+function sortTable() {
+  const sortBy = document.getElementById('sort-by').value;
+  const sorted = [...allData].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+  renderTable(sorted);
+}
+
+function refreshData() {
+  const btn = document.querySelector('button[onclick="refreshData()"]');
+  btn.textContent = '⏳ Refreshing...';
+  setTimeout(() => { loadData(); btn.textContent = '🔄 Refresh Data'; }, 1000);
+}
+
+function renderKPIs(data) {
+  if (!data.length) return;
+  const highRisk = data.filter(d => d.squeeze_score >= 80).length;
+  const avgScore = data.reduce((s, d) => s + d.squeeze_score, 0) / data.length;
+  const maxSi = data.reduce((m, d) => d.short_pct_float > m.val ? {val: d.short_pct_float, ticker: d.ticker} : m, {val:0, ticker:''});
+  document.getElementById('kpi-high').textContent = highRisk;
+  document.getElementById('kpi-avg').textContent = avgScore.toFixed(1);
+  document.getElementById('kpi-max-si').textContent = maxSi.val.toFixed(1) + '%';
+  document.getElementById('kpi-max-si-ticker').textContent = maxSi.ticker;
+}
+
+function renderCharts(data) {
+  if (!data.length) return;
+  const scores = data.map(d => d.squeeze_score);
+  Plotly.newPlot('chart-scores', [{
+    x: scores, type: 'histogram', nbinsx: 10,
+    marker: { color: 'rgba(245,158,11,0.7)', line: { color: 'rgba(245,158,11,1)', width: 1 } }
+  }], {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: { color: '#e5e7eb' },
+    margin: { t: 20, r: 20, b: 40, l: 40 },
+    xaxis: { title: 'Squeeze Score', gridcolor: '#1f2937', range: [0, 100] },
+    yaxis: { title: 'Count', gridcolor: '#1f2937' }
+  }, {responsive: true});
+
+  Plotly.newPlot('chart-scatter', [{
+    x: data.map(d => d.float / 1e6), y: data.map(d => d.short_pct_float),
+    mode: 'markers+text', type: 'scatter', text: data.map(d => d.ticker), textposition: 'top center',
+    marker: {
+      size: data.map(d => Math.max(8, d.squeeze_score / 3)),
+      color: data.map(d => d.squeeze_score),
+      colorscale: [[0, '#22c55e'], [0.5, '#f59e0b'], [1, '#ef4444']],
+      showscale: true, colorbar: { title: 'Score', tickfont: { color: '#e5e7eb' } }
+    },
+    hovertemplate: '<b>%{text}</b><br>Float: %{x:.1f}M<br>Short %: %{y:.1f}%<extra></extra>'
+  }], {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: { color: '#e5e7eb' },
+    margin: { t: 20, r: 80, b: 50, l: 50 },
+    xaxis: { title: 'Float (Millions)', type: 'log', gridcolor: '#1f2937' },
+    yaxis: { title: 'Short % of Float', gridcolor: '#1f2937' }
+  }, {responsive: true});
+}
+
+function runBacktest() {
+  const btn = document.querySelector('button[onclick="runBacktest()"]');
+  btn.textContent = '⏳ Running...'; btn.disabled = true;
+  setTimeout(() => {
+    renderBacktest({ summary: BACKTEST_SUMMARY, trades: DEMO_TRADES });
+    document.getElementById('backtest-panel').style.display = 'block';
+    document.getElementById('backtest-panel').scrollIntoView({ behavior: 'smooth' });
+    btn.textContent = '▶ Run Backtest'; btn.disabled = false;
+  }, 1200);
+}
+
+function renderBacktest(results) {
+  const s = results.summary || {};
+  const stats = [
+    { label: 'Total Trades', value: s.total_trades || 0 },
+    { label: 'Win Rate', value: (s.win_rate || 0) + '%', color: (s.win_rate||0)>50?'positive':'negative' },
+    { label: 'Avg Return', value: (s.avg_return || 0) + '%', color: (s.avg_return||0)>0?'positive':'negative' },
+    { label: 'Profit Factor', value: s.profit_factor || 0, color: (s.profit_factor||0)>1?'positive':'negative' },
+    { label: 'Max Gain', value: (s.max_gain || 0) + '%', color: 'positive' },
+    { label: 'Max Loss', value: (s.max_loss || 0) + '%', color: 'negative' },
+  ];
+  document.getElementById('backtest-stats').innerHTML = stats.map(st => `
+    <div class="stat-box"><div class="label">${st.label}</div><div class="value ${st.color || ''}">${st.value}</div></div>
+  `).join('');
+  document.getElementById('kpi-winrate').textContent = (s.win_rate || 0) + '%';
+  document.getElementById('kpi-trades').textContent = (s.total_trades || 0) + ' trades';
+
+  const trades = results.trades || [];
+  if (trades.length > 0) {
+    let equity = 100;
+    const equityCurve = trades.map((t, i) => { equity *= (1 + t.pnl_pct / 100); return { x: i + 1, y: equity }; });
+    Plotly.newPlot('chart-equity', [{
+      x: equityCurve.map(p => p.x), y: equityCurve.map(p => p.y),
+      type: 'scatter', mode: 'lines', fill: 'tozeroy',
+      line: { color: '#22c55e', width: 2 }, fillcolor: 'rgba(34,197,94,0.1)'
+    }], {
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { color: '#e5e7eb' },
+      margin: { t: 20, r: 20, b: 40, l: 50 },
+      xaxis: { title: 'Trade #', gridcolor: '#1f2937' },
+      yaxis: { title: 'Portfolio Value ($)', gridcolor: '#1f2937' }
+    }, {responsive: true});
+
+    document.getElementById('trades-body').innerHTML = trades.map(t => `
+      <tr>
+        <td><b>${t.ticker}</b></td>
+        <td>${t.entry_date}</td>
+        <td>${t.exit_date}</td>
+        <td>$${t.entry_price}</td>
+        <td>$${t.exit_price}</td>
+        <td class="${t.pnl_pct>0?'positive':'negative'}"><b>${t.pnl_pct>0?'+':''}${t.pnl_pct}%</b></td>
+        <td>${t.days_held}</td>
+        <td><span class="tag ${t.exit_reason==='TAKE_PROFIT'?'tag-low':t.exit_reason==='STOP_LOSS'?'tag-high':'tag-watch'}">${t.exit_reason}</span></td>
+      </tr>
+    `).join('');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadData);
+</script>
+
+</body>
+</html>

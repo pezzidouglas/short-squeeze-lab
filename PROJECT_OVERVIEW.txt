@@ -1,0 +1,77 @@
+
+================================================================================
+                    🎯 SHORT SQUEEZE LAB — PROJECT OVERVIEW
+================================================================================
+
+DIRECTORY STRUCTURE:
+--------------------
+short-squeeze-lab/
+├── app.py                 # Flask API server (backend)
+├── main.py                # CLI runner (scan / backtest / serve / export)
+├── data_fetcher.py        # Yahoo Finance data ingestion
+├── squeeze_engine.py      # Composite squeeze scoring algorithm
+├── backtester.py          # Strategy backtesting engine
+├── requirements.txt       # Python dependencies
+├── deploy.sh              # GitHub + Tiiny deploy script
+├── README.md              # Project documentation
+├── .gitignore             # Git ignore rules
+├── data/                  # Output data storage
+│   ├── .gitkeep
+│   ├── latest_scan.csv
+│   └── latest_scan.json
+└── static/                # Dashboard files (deployed to Tiiny)
+    ├── index.html         # Standalone dashboard (self-contained)
+    └── dashboard.html     # Same as index.html
+
+HOW TO USE:
+-----------
+1. LOCAL SCAN:
+   $ python main.py scan
+   → Fetches live data, ranks by squeeze score, saves to data/
+
+2. BACKTEST:
+   $ python main.py backtest
+   → Simulates strategy on historical data
+
+3. DASHBOARD:
+   $ python main.py serve
+   → Starts Flask server at http://localhost:5000
+
+4. DEPLOY:
+   $ ./deploy.sh
+   → Pushes to GitHub + deploys to Tiiny
+
+SQUEEZE SCORE FORMULA:
+----------------------
+  Score = (SI_Density × 0.40) + (Borrow_Pressure × 0.25)
+        + (Liquidity_Trap × 0.20) + (Momentum_Fuel × 0.15)
+
+  • SI_Density:     short_pct_float normalized 0-100
+  • Borrow_Pressure: days_to_cover + float scarcity
+  • Liquidity_Trap:  short_shares / avg_daily_volume
+  • Momentum_Fuel:   price_compression + SI_increase
+
+STRATEGY RULES:
+---------------
+  Entry:  squeeze_score ≥ 70  AND  volume > 1.5× 20-day avg
+  Hold:   max 5 trading days
+  TP:     +20%
+  SL:     -10%
+
+DATA SOURCES:
+-------------
+  • Yahoo Finance (free) — price, volume, short interest, fundamentals
+  • SEC EDGAR (free) — official filings, float data
+  • Upgrade path: Ortex API ($49/mo) for real-time SI estimates
+
+WATCHLIST (40+ tickers):
+------------------------
+  High-SI: SPRY, PCT, INDI, SLS, RUM, LUCK, PSNY
+  Meme:    GME, AMC, BBBYQ, MULN
+  Biotech: NVAX, GOEV
+  EV:      LCID, RIVN, NIO, XPEV, LI
+  Tech:    TSLA, AAPL, MSFT, NVDA, AMD, INTC, PLTR, SOFI
+  Space:   ASTS, RKLB, IONQ
+  AI:      SOUN, BBAI, SMCI, MSTR
+
+================================================================================
