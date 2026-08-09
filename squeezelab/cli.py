@@ -240,7 +240,9 @@ def cmd_presets(args: argparse.Namespace) -> int:
 
 
 def cmd_backtest(args: argparse.Namespace) -> int:
-    service = MarketDataService(SETTINGS)
+    # With an explicit ticker list there is no reason to fan out across the
+    # whole watchlist first — that fetched 38 names to backtest four.
+    service = MarketDataService(SETTINGS, watchlist=_split(args.tickers) or None)
     result = service.scan(preset=args.preset)
     tickers = _split(args.tickers) or [str(r["ticker"]) for r in result.rows[: args.universe]]
 
@@ -301,7 +303,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
 
 
 def cmd_strategies(args: argparse.Namespace) -> int:
-    service = MarketDataService(SETTINGS)
+    service = MarketDataService(SETTINGS, watchlist=_split(args.tickers) or None)
     result = service.scan(preset=args.preset)
     tickers = _split(args.tickers) or [str(r["ticker"]) for r in result.rows[: args.universe]]
     prices = service.price_history(tickers, period=args.period)

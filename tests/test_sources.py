@@ -221,3 +221,47 @@ def test_snapshot_source_fetches_and_prices(snapshot_source):
 
 def test_snapshot_is_labelled_synthetic(snapshot_source):
     assert snapshot_source.payload()["synthetic"] is True
+
+
+# --------------------------------------------------------------------------
+# Regressions from the first live run on GitHub Actions
+# --------------------------------------------------------------------------
+
+
+def test_sec_is_skipped_rather_than_erroring_without_a_contact(settings, monkeypatch):
+    """SEC 403s anything that doesn't identify itself, so a missing contact is
+    a configuration gap, not a provider outage."""
+    from squeezelab.sources.sec_edgar import SecEdgarSource
+
+    monkeypatch.setattr(settings, "sec_contact", "", raising=False)
+    monkeypatch.setattr(settings, "offline", False, raising=False)
+    source = SecEdgarSource(settings)
+    assert source.available() is False
+    assert source.collect(["GME"]) == {}
+    assert source.health.status == "skipped"
+
+
+def test_sec_declares_a_contact_in_its_user_agent(settings, monkeypatch):
+    from squeezelab.sources.sec_edgar import SecEdgarSource
+
+    monkeypatch.setattr(settings, "sec_contact", "me@example.com", raising=False)
+    monkeypatch.setattr(settings, "offline", False, raising=False)
+    source = SecEdgarSource(settings)
+    assert source.available() is True
+    assert "me@example.com" in source.user_agent()
+
+
+@pytest.mark.parametrize(
+    "body, expected",
+    [
+        ("Exceeded the daily hits limit", "rate limited"),
+        ("<html>nope</html>", "unexpected response"),
+        ("", "empty response"),
+        (None, "empty response"),
+    ],
+)
+def test_stooq_refusals_are_described_not_swallowed(body, expected):
+    """A 200 with a plain-text refusal used to surface as 'no records returned'."""
+    from squeezelab.sources.stooq import describe_refusal
+
+    assert expected in describe_refusal(body)

@@ -52,6 +52,10 @@ class StooqSource(DataSource):
         if text is None:
             text = self.get_text(CSV_URL, params={"s": self.symbol(ticker), "i": "d"})
             if not text or not text.lstrip().lower().startswith("date"):
+                # Stooq answers 200 with a plain-text message when it refuses —
+                # most often a daily hit limit on shared/cloud IPs. Record what
+                # it actually said, or the health line just reads "no records".
+                self.health.detail = describe_refusal(text)
                 return None
             self.cache.set("stooq", ticker, text)
         else:
@@ -102,6 +106,16 @@ class StooqSource(DataSource):
             bars = bars[bars["Date"] >= cutoff]
         keep = [c for c in ("Date", "Open", "High", "Low", "Close", "Volume", "ticker") if c in bars.columns]
         return bars[keep].reset_index(drop=True)
+
+
+def describe_refusal(text: str | None) -> str:
+    """Turn a non-CSV Stooq response into a health message worth reading."""
+    body = " ".join((text or "").split())[:120]
+    if not body:
+        return "empty response"
+    if "exceeded" in body.lower() and "limit" in body.lower():
+        return f"rate limited by Stooq: {body}"
+    return f"unexpected response: {body}"
 
 
 def summarise_bars(bars: pd.DataFrame) -> dict[str, Any]:

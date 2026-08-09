@@ -33,9 +33,16 @@ class SecEdgarSource(DataSource):
         notes="Filed share count from the latest 10-Q/10-K cover page. Set SEC_CONTACT_EMAIL.",
     )
 
+    def available(self) -> bool:
+        # SEC's access policy requires automated clients to identify themselves
+        # with a contact address, and returns 403 to anything that doesn't.
+        # Without one the source reports "skipped" rather than erroring on
+        # every scan — it is a missing setting, not a broken provider.
+        return super().available() and bool(self.settings.sec_contact)
+
     def user_agent(self) -> str:
-        contact = self.settings.sec_contact
-        return f"{self.settings.user_agent} {contact}".strip()
+        # SEC asks for "Company Name contact@example.com".
+        return f"short-squeeze-lab {self.settings.sec_contact}".strip()
 
     # -- ticker -> CIK ----------------------------------------------------
 

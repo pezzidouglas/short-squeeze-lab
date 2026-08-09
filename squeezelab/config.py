@@ -207,7 +207,7 @@ def setup_label(score: float) -> tuple[str, str]:
 
 DEFAULT_WATCHLIST: tuple[str, ...] = (
     "SPRY", "PCT", "INDI", "SLS", "RUM", "LUCK", "PSNY",
-    "GME", "AMC", "MULN", "NVAX", "GOEV", "LCID",
+    "GME", "AMC", "NVAX", "LCID",
     "RIVN", "BYND", "CVNA", "UPST", "AFRM", "HOOD",
     "TSLA", "AAPL", "MSFT", "NVDA", "AMD", "INTC",
     "PLTR", "SOFI", "NIO", "XPEV", "LI",
