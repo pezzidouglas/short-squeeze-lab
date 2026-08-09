@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Short Squeeze Lab</title>
 <meta name="description" content="Multi-source short squeeze scanner: composite scoring, source provenance, head-to-head comparison and backtesting.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0c10'/%3E%3Cpath d='M7 22 L13 13 L18 17 L25 8' fill='none' stroke='%23ffb020' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -271,7 +271,7 @@ th.num, td.num { text-align: right; }
   display: grid; gap: 16px; padding: 12px 10px;
   grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr));
 }
-.detail h4 {
+.detail h4, .card-detail h4 {
   margin: 0 0 6px; font-size: 10px; text-transform: uppercase;
   letter-spacing: .09em; color: var(--accent-text);
 }
@@ -380,14 +380,328 @@ footer.foot {
 }
 footer.foot p { margin: 3px 0; }
 
-@media (max-width: 720px) {
-  thead th { position: static; }
-  .hero-value { font-size: 34px; }
-  .hero, .stat { border-right: 0; border-bottom: 1px solid var(--border); flex: 1 1 100%; }
-  .wrap { padding: 0 10px 84px; }
+/* ------------------------------------------------------------------ *
+ * Touch shell. Everything below is inert on desktop: the elements it
+ * styles are display:none until the mobile breakpoint claims them, so
+ * the terminal layout above renders exactly as it always has.
+ * ------------------------------------------------------------------ */
+
+/* --- ticker cards (replace the 15-column table below 700px) -------- */
+.cards { display: none; list-style: none; margin: 0; padding: 0; }
+.tkr-card { position: relative; border-bottom: 1px solid var(--border); }
+.tkr-card:last-child { border-bottom: 0; }
+.tkr-card.expanded { background: var(--inset); }
+.tkr-card.picked { box-shadow: inset 3px 0 0 var(--accent); }
+.card-face {
+  display: grid; gap: 5px; min-height: 44px;
+  padding: 9px 52px 11px 12px; cursor: pointer;
 }
+.card-face:active { background: var(--raised); }
+.c-top { display: flex; align-items: baseline; gap: 8px; }
+.c-rank { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.c-tkr { font-size: 17px; }
+.c-top .tier { margin-left: auto; font-size: 12px; }
+.c-name {
+  font-size: 12px; color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.c-score { display: flex; align-items: center; gap: 10px; }
+.c-score-v {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -.02em;
+}
+.c-score .meter-track { flex: 1 1 auto; width: auto; height: 8px; }
+.conf-tap {
+  display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto;
+  min-height: 44px; padding: 0 2px; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+}
+.c-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px; }
+.c-metrics .m-k {
+  display: block; font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--ink-3); white-space: nowrap;
+}
+.c-metrics .m-v {
+  display: block; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 14px; white-space: nowrap;
+}
+.pick-toggle {
+  position: absolute; top: 3px; right: 3px; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; padding: 0;
+}
+.pick-toggle .box {
+  width: 20px; height: 20px; border-radius: 4px;
+  border: 1.5px solid var(--axis); background: transparent;
+}
+.pick-toggle[aria-pressed="true"] .box { border-color: transparent; }
+.pick-toggle:disabled { opacity: .3; }
+.card-detail { padding: 0 12px 12px; }
+.card-detail .detail-inner { padding: 0; }
+.show-all { padding: 10px 12px; }
+.show-all button { width: 100%; }
+
+/* --- sticky filter bar + bottom sheets ---------------------------- */
+.filterbar {
+  display: none; position: sticky; z-index: 39; gap: 8px; align-items: center;
+  padding: 6px 0; background: var(--plane); border-bottom: 1px solid var(--rule);
+}
+.filterbar input[type="search"] { flex: 1 1 auto; min-width: 0; }
+.fb-btn { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.fb-btn .count {
+  font-family: var(--mono); font-size: 11px; line-height: 1.5;
+  background: var(--accent); color: #14100a; border-radius: 9px; padding: 0 6px;
+}
+:root[data-theme="light"] .fb-btn .count { color: #fff; }
+
+dialog.sheet {
+  position: fixed; inset: auto 0 0 0; margin: 0; padding: 0;
+  width: 100%; max-width: none; max-height: 85dvh;
+  border: 0; border-top: 1px solid var(--rule); border-radius: 12px 12px 0 0;
+  background: var(--surface); color: var(--ink-1); overflow: auto;
+}
+dialog.sheet::backdrop { background: rgba(0,0,0,.6); }
+.sheet-head {
+  position: sticky; top: 0; z-index: 2; background: var(--surface);
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-bottom: 1px solid var(--rule);
+}
+.sheet-head h2 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--accent-text); margin-right: auto;
+}
+.sheet-body { padding: 0 12px calc(6px + env(safe-area-inset-bottom)); }
+.sheet-body label {
+  display: flex; align-items: center; gap: 10px; min-height: 52px;
+  border-bottom: 1px solid var(--border); font-size: 13px; color: var(--ink-2);
+}
+.sheet-body label > select { margin-left: auto; min-width: 140px; }
+.sheet-body label > input[type="range"] { flex: 1 1 auto; width: auto; }
+.sheet-body .range-value { min-width: 28px; text-align: right; font-size: 14px; }
+.sheet-foot {
+  display: flex; gap: 8px; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rule);
+}
+.sheet-foot button { flex: 1 1 auto; }
+.sort-opt {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: none; border: 0; border-bottom: 1px solid var(--border);
+  border-radius: 0; text-align: left; color: var(--ink-1);
+}
+.sort-opt[aria-current="true"] { color: var(--accent-text); font-weight: 700; }
+.sort-opt .arrow { margin-left: auto; color: var(--accent); }
+
+/* --- touch chart readouts ----------------------------------------- */
+.scrub {
+  display: none; min-height: 17px; margin-bottom: 3px;
+  font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
+}
+.scrub strong { color: var(--ink-1); }
+.tip-close {
+  position: absolute; top: 0; right: 0; width: 44px; height: 44px;
+  background: none; border: 0; color: var(--ink-2); font-size: 18px; line-height: 1;
+}
+/* Paired labels: the phone swaps a word for a glyph in place. */
+.only-narrow, .lbl-narrow { display: none; }
+
+/* --- backtest strategy cards -------------------------------------- */
+.strat-card { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+.strat-card:last-child { border-bottom: 0; }
+.strat-top { display: flex; align-items: baseline; gap: 10px; }
+.strat-top strong { font-size: 13px; }
+.strat-ret {
+  margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 20px; font-weight: 600;
+}
+.strat-card .bar { display: block; margin: 4px 0 3px; }
+.strat-card .bar svg { width: 100%; height: 10px; }
+.strat-meta {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+  display: flex; flex-wrap: wrap; gap: 2px 10px;
+}
+.strat-rules { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+
+/* ================================================================== *
+ * Below 1024px. Two rules hold at every step down from here: the
+ * identity column of a sideways-scrolling table stays pinned, so a
+ * number scrolled into view still says what it belongs to; and no form
+ * control drops under 16px, because iOS force-zooms anything smaller
+ * and never zooms back out.
+ * ================================================================== */
+@media (max-width: 1023px) {
+  html { -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  input[type="number"], input[type="search"], select, button { font-size: 16px; }
+  button, select, input[type="number"], input[type="search"] { min-height: 44px; }
+  button, select { padding: 4px 12px; }
+  input[type="number"] { min-width: 72px; }
+  button:active:not(:disabled) { border-color: var(--axis); background: var(--inset); }
+  .btn-primary:active:not(:disabled) { filter: brightness(1.1); background: var(--accent); }
+
+  /* A 28px thumb needs the whole control custom-drawn — accent-color
+     only reaches the browser's own 14px mark. */
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    background: transparent; border: 0; padding: 0; height: 44px;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--raised); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px;
+    border: 0; border-radius: 50%; background: var(--accent);
+  }
+  input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--raised); }
+  input[type="range"]::-moz-range-thumb { width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--accent); }
+
+  .table-scroll { position: relative; }
+  .table-scroll > table > thead > tr > th:first-child,
+  .table-scroll > table > tbody > tr > td:first-child {
+    position: sticky; left: 0; background: var(--surface);
+  }
+  .table-scroll > table > tbody > tr > td:first-child { z-index: 3; }
+  .table-scroll > table > thead > tr > th:first-child { z-index: 7; }
+  .table-scroll > table > tbody > tr:hover > td:first-child,
+  .table-scroll > table > tbody > tr.expanded > td:first-child { background: var(--inset); }
+  .table-scroll.scrolled > table > thead > tr > th:first-child,
+  .table-scroll.scrolled > table > tbody > tr > td:first-child { box-shadow: 9px 0 11px -7px rgba(0,0,0,.9); }
+
+  .pickbox { width: 20px; height: 20px; }
+  .tray-inner { padding-bottom: calc(7px + env(safe-area-inset-bottom)); }
+  .pick { padding: 0 0 0 6px; }
+  .pick button { width: 44px; height: 44px; font-size: 15px; }
+}
+
+/* Tablet: the table survives once the size and liquidity columns move
+   into the detail row, so keep it and pin ticker beside the pick box. */
+@media (min-width: 700px) and (max-width: 1023px) {
+  #scan-table > thead > tr > th:first-child,
+  #scan-table > tbody > tr > td:first-child { width: 44px; min-width: 44px; }
+  #scan-table > thead > tr > th:nth-child(2),
+  #scan-table > tbody > tr > td:nth-child(2) { position: sticky; left: 44px; background: var(--surface); }
+  #scan-table > tbody > tr > td:nth-child(2) { z-index: 3; }
+  #scan-table > thead > tr > th:nth-child(2) { z-index: 7; }
+  #scan-table > tbody > tr:hover > td:nth-child(2),
+  #scan-table > tbody > tr.expanded > td:nth-child(2) { background: var(--inset); }
+  .table-scroll.scrolled #scan-table > thead > tr > th:nth-child(2),
+  .table-scroll.scrolled #scan-table > tbody > tr > td:nth-child(2) { box-shadow: 9px 0 11px -7px rgba(0,0,0,.9); }
+  .table-scroll.scrolled #scan-table > thead > tr > th:first-child,
+  .table-scroll.scrolled #scan-table > tbody > tr > td:first-child { box-shadow: none; }
+  #scan-table td { padding-top: 6px; padding-bottom: 6px; }
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .hero { grid-column: 1 / -1; }
+  .hero, .stat { border-right: 0; border-bottom: 1px solid var(--border); }
+}
+
+/* ================================================================== *
+ * Phone. 430px behaves exactly like 390px and the candidates table
+ * genuinely needs ~950px, so there is no width in between worth its
+ * own design: one structural switch, table to cards.
+ * ================================================================== */
+@media (max-width: 699px) {
+  /* Clears the two-row tray (picks above a full-width Compare) and the
+     home indicator, which the old flat 84px ignored. */
+  .wrap { padding: 0 10px calc(124px + env(safe-area-inset-bottom)); }
+
+  /* One row, 57px: brand, mode badge, theme, refresh. The version label
+     goes because the wordmark and a 7-character mode badge need every
+     pixel left over from two 44px buttons. */
+  .top-inner { padding: 6px 10px; gap: 7px; flex-wrap: nowrap; }
+  .brand { gap: 6px; min-width: 0; }
+  .brand .ver { display: none; }
+  .brand h1 { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #refresh, #theme-toggle {
+    flex: 0 0 auto; width: 44px; min-width: 44px; height: 44px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 17px;
+  }
+  .lbl-wide { display: none; }
+  .lbl-narrow { display: inline; }
+  .only-narrow { display: inline; }
+  .only-wide { display: none; }
+
+  #mode-badge { min-height: 44px; padding: 3px 9px; }
+
+  #filters { display: none; }
+  .filterbar { display: flex; top: 57px; }   /* 44px controls + 6px padding + rule */
+
+  .scan-table-scroll { display: none; }
+  .cards { display: block; }
+
+  .strip { display: grid; grid-template-columns: 1fr 1fr; }
+  .hero { grid-column: 1 / -1; min-width: 0; }
+  .hero-value { font-size: 34px; }
+  .hero, .stat { border-right: 0; border-bottom: 1px solid var(--border); min-width: 0; }
+  .stat:nth-child(even) { border-right: 1px solid var(--border); }
+  .stat .v { font-size: 17px; }
+
+  .detail-inner { grid-template-columns: 1fr; gap: 14px; }
+  .kv { grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12.5px; }
+  .kv dd { text-align: right; overflow-wrap: anywhere; }
+  .co { max-width: none; }
+
+  .section-head p { font-size: 12px; }
+  .table-view summary { min-height: 44px; display: flex; align-items: center; font-size: 12px; }
+  /* The distribution table's names column is unbounded; let it scroll
+     inside its own box rather than push the page sideways. */
+  .table-view > div { overflow-x: auto; }
+
+  #bt-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  #bt-controls label { flex-direction: column; align-items: stretch; gap: 3px; }
+  #bt-controls input[type="number"] { width: 100% !important; }
+  #bt-controls .spacer { display: none; }
+  #bt-controls #run-backtest { grid-column: 1 / -1; width: 100%; }
+
+  .tray-inner { padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); gap: 6px; }
+  .tray .lbl, .tray .spacer { display: none; }
+  .picks { flex: 1 1 100%; }
+  #clear-picks { flex: 0 0 auto; }
+  #open-compare { flex: 1 1 auto; }
+
+  dialog.compare {
+    width: 100vw; max-width: none; height: 100dvh; max-height: none;
+    margin: 0; border: 0; border-radius: 0;
+  }
+  .dlg-body { padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); }
+  .legend .co-name { display: none; }
+  #close-compare { width: 44px; height: 44px; padding: 0; font-size: 17px; }
+
+  /* Two lines reserved: the readout is longer than its prompt, and the
+     chart must not jump downward the first time you scrub it. */
+  .scrub { display: block; min-height: 34px; }
+
+  /* A chip that carries a tooltip is a tap target. The mark stays its
+     designed size; the hit area grows underneath it. */
+  .chip[data-tip] { position: relative; }
+  .chip[data-tip]::after { content: ""; position: absolute; inset: -14px -8px; }
+  .prov .chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
+
+  /* A tooltip that follows the finger sits under the very point it is
+     describing, so on touch it docks instead. */
+  #tooltip { pointer-events: auto; }
+  #tooltip.docked {
+    left: 8px; right: 8px; top: auto; bottom: calc(12px + env(safe-area-inset-bottom));
+    max-width: none; padding: 11px 46px 11px 12px; font-size: 13px;
+  }
+  body.tray-open #tooltip.docked { bottom: calc(124px + env(safe-area-inset-bottom)); }
+  #tooltip .t-row { font-size: 12.5px; }
+
+  .axis-text, .value-label { font-size: 11px; }
+  .axis-title { font-size: 10px; }
+
+  footer.foot a { display: inline-block; min-height: 44px; line-height: 44px; }
+}
+
+@media (max-width: 359px) {
+  .c-metrics { grid-template-columns: 1fr 1fr; }
+  .c-name { display: none; }
+  .brand .ver { display: none; }
+  /* Tracking goes first, then size — the wordmark still has to fit
+     beside the mode badge and two 44px buttons. */
+  .brand h1 { font-size: 9.5px; letter-spacing: 0; }
+  .top-inner { padding: 6px 8px; gap: 5px; }
+  #mode-badge { padding: 3px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@media print { header.top, .tray, #tooltip, .filters button { display: none !important; } }
+@media print { header.top, .tray, .filterbar, #tooltip, .filters button { display: none !important; } }
 </style>
 </head>
 <body>
@@ -399,20 +713,20 @@ footer.foot p { margin: 3px 0; }
       <h1>Short Squeeze Lab</h1>
       <span class="ver" id="version-label">v2</span>
     </div>
-    <span class="badge" id="mode-badge"><span class="dot"></span><span id="mode-text">loading</span></span>
+    <span class="badge" id="mode-badge" data-tip=""><span class="dot"></span><span id="mode-text">loading</span></span>
     <label class="sr-only" for="preset">Scoring preset</label>
     <select id="preset" title="Weight preset"></select>
     <button class="btn-ghost" id="theme-toggle" aria-label="Switch light or dark theme" title="Light / dark">◐</button>
-    <button class="btn-primary" id="refresh">Refresh</button>
+    <button class="btn-primary" id="refresh" aria-label="Refresh scan"><span class="lbl-wide">Refresh</span><span class="lbl-narrow" aria-hidden="true">↻</span></button>
   </div>
 </header>
 
 <div class="wrap">
 
-  <div class="filters" role="search">
+  <div class="filters" id="filters" role="search">
     <label class="sr-only" for="search">Search ticker or company</label>
     <input type="search" id="search" placeholder="ticker / name   ( / )" autocomplete="off">
-    <label>Risk
+    <label id="lab-tier">Risk
       <select id="f-tier">
         <option value="all">all</option>
         <option value="high">high</option>
@@ -421,12 +735,19 @@ footer.foot p { margin: 3px 0; }
         <option value="low">low</option>
       </select>
     </label>
-    <label>Sector <select id="f-sector"><option value="all">all</option></select></label>
-    <label>Score ≥ <input type="range" id="f-score" min="0" max="100" step="5" value="0"><span class="range-value" id="f-score-val">0</span></label>
-    <label>Conf ≥ <input type="range" id="f-conf" min="0" max="100" step="5" value="0"><span class="range-value" id="f-conf-val">0</span></label>
+    <label id="lab-sector">Sector <select id="f-sector"><option value="all">all</option></select></label>
+    <label id="lab-score">Score ≥ <input type="range" id="f-score" min="0" max="100" step="5" value="0"><span class="range-value" id="f-score-val">0</span></label>
+    <label id="lab-conf">Conf ≥ <input type="range" id="f-conf" min="0" max="100" step="5" value="0"><span class="range-value" id="f-conf-val">0</span></label>
     <span class="spacer"></span>
     <button id="clear-filters" class="btn-ghost">clear</button>
     <button id="export-csv" class="btn-ghost">csv</button>
+  </div>
+
+  <!-- Phone chrome: one 56px bar carries search, sort and the filter
+       sheet, replacing the three wrapped rows of the desktop filter row. -->
+  <div class="filterbar" id="filterbar">
+    <button class="fb-btn btn-ghost" id="open-sort" aria-haspopup="dialog">Sort <span class="arrow" id="sort-arrow">▾</span></button>
+    <button class="fb-btn btn-ghost" id="open-filters" aria-haspopup="dialog">Filters <span class="count" id="filter-count" hidden>0</span></button>
   </div>
 
   <div id="notices"></div>
@@ -437,16 +758,17 @@ footer.foot p { margin: 3px 0; }
   <section aria-labelledby="cand-h">
     <div class="section-head">
       <h2 id="cand-h">Candidates</h2>
-      <p>Tick up to four to compare. Click a row for its component breakdown and which source supplied each number.</p>
+      <p><span class="only-wide">Tick up to four to compare. Click a row for its component breakdown and which source supplied each number.</span><span class="only-narrow">Tap a card for its breakdown and which source supplied each number. Select up to three to compare.</span></p>
       <span class="right" id="table-count"></span>
     </div>
     <div class="panel">
-      <div class="table-scroll">
+      <div class="table-scroll scan-table-scroll">
         <table id="scan-table">
           <thead><tr id="scan-head"></tr></thead>
           <tbody id="scan-body"></tbody>
         </table>
       </div>
+      <ul class="cards" id="scan-list"></ul>
       <div class="empty" id="table-empty" hidden>No tickers match these filters.</div>
     </div>
   </section>
@@ -503,12 +825,12 @@ footer.foot p { margin: 3px 0; }
     </div>
     <div class="panel">
       <div class="panel-body">
-        <div class="filters" style="border:0; padding-top:0">
-          <label>Score ≥ <input type="number" id="bt-score" value="70" min="0" max="100" step="1" style="width:56px"></label>
-          <label>Vol × <input type="number" id="bt-vol" value="1.5" min="0" max="10" step="0.1" style="width:56px"></label>
-          <label>Hold <input type="number" id="bt-hold" value="5" min="1" max="60" step="1" style="width:48px"></label>
-          <label>TP % <input type="number" id="bt-tp" value="20" min="1" max="500" step="1" style="width:56px"></label>
-          <label>SL % <input type="number" id="bt-sl" value="10" min="1" max="90" step="1" style="width:56px"></label>
+        <div class="filters" id="bt-controls" style="border:0; padding-top:0">
+          <label>Score ≥ <input type="number" id="bt-score" value="70" min="0" max="100" step="1" inputmode="decimal" style="width:56px"></label>
+          <label>Vol × <input type="number" id="bt-vol" value="1.5" min="0" max="10" step="0.1" inputmode="decimal" style="width:56px"></label>
+          <label>Hold <input type="number" id="bt-hold" value="5" min="1" max="60" step="1" inputmode="decimal" style="width:48px"></label>
+          <label>TP % <input type="number" id="bt-tp" value="20" min="1" max="500" step="1" inputmode="decimal" style="width:56px"></label>
+          <label>SL % <input type="number" id="bt-sl" value="10" min="1" max="90" step="1" inputmode="decimal" style="width:56px"></label>
           <span class="spacer"></span>
           <button class="btn-primary" id="run-backtest">Run</button>
         </div>
@@ -562,9 +884,30 @@ footer.foot p { margin: 3px 0; }
 <dialog class="compare" id="compare-dialog" aria-labelledby="cmp-title">
   <div class="dlg-head">
     <h2 id="cmp-title">Head to head</h2>
-    <button class="btn-ghost" id="close-compare">close</button>
+    <button class="btn-ghost" id="close-compare" aria-label="Close comparison"><span class="lbl-wide">close</span><span class="lbl-narrow" aria-hidden="true">✕</span></button>
   </div>
   <div class="dlg-body" id="compare-body"></div>
+</dialog>
+
+<!-- Phone-only sheets. The desktop filter row keeps its own controls;
+     these borrow them by relocation, so there is one of each control. -->
+<dialog class="sheet" id="sort-sheet" aria-labelledby="sort-title">
+  <div class="sheet-head">
+    <h2 id="sort-title">Sort</h2>
+    <button class="btn-ghost" data-close-sheet>Done</button>
+  </div>
+  <div class="sheet-body" id="sort-options"></div>
+</dialog>
+
+<dialog class="sheet" id="filter-sheet" aria-labelledby="filter-title">
+  <div class="sheet-head">
+    <h2 id="filter-title">Filters</h2>
+    <button class="btn-ghost" data-close-sheet>Done</button>
+  </div>
+  <div class="sheet-body" id="filter-fields">
+    <label id="lab-preset">Scoring preset</label>
+  </div>
+  <div class="sheet-foot" id="filter-actions"></div>
 </dialog>
 
 <div id="tooltip" role="status" aria-live="polite"></div>
@@ -590,16 +933,38 @@ const State = {
   rows: [], filtered: [], picks: [], expanded: new Set(),
   sort: { key: "squeeze_score", dir: -1 },
   presets: {}, preset: "balanced", apiAvailable: false,
+  tradesOpen: new Set(), tradeLimit: 10, cardLimit: 10,
 };
 
 const SERIES = ["--s1", "--s2", "--s3", "--s4"];
 const MAX_PICKS = 4;
+/* Four tickers cannot be read side by side in 368px — the third and
+   fourth silently fell off the compare table — so the phone caps at 3. */
+const MAX_PICKS_NARROW = 3;
 const COMPONENTS = [
   ["si_score", "SI density"],
   ["borrow_score", "Borrow"],
   ["liquidity_score", "Liquidity"],
   ["momentum_score", "Momentum"],
   ["flow_score", "Off-exch flow"],
+];
+
+/* Two breakpoints, one structural switch. 700px is where the 15-column
+   table stops being a table; 1024px is where touch rules stop applying. */
+const NARROW = matchMedia("(max-width: 699px)");
+const TOUCH_TIER = matchMedia("(max-width: 1023px)");
+const isNarrow = () => NARROW.matches;
+const maxPicks = () => (isNarrow() ? MAX_PICKS_NARROW : MAX_PICKS);
+
+/* Sort keys offered on the phone, where there is no sortable <thead> to
+   click: [key, sheet label, chrome label]. */
+const SORT_KEYS = [
+  ["squeeze_score", "Score", "Score"],
+  ["short_pct_float", "SI % float", "SI %"],
+  ["short_ratio", "Days to cover", "DTC"],
+  ["off_exchange_short_pct", "Off-exchange short", "Off-exch"],
+  ["data_confidence", "Data confidence", "Conf"],
+  ["ticker", "Ticker", "Ticker"],
 ];
 
 /* ---------- formatting ---------------------------------------------- */
@@ -640,23 +1005,49 @@ function tierOf(row) {
 /* ---------- tooltip -------------------------------------------------- */
 
 const Tip = {
-  node: null,
-  show(event, html) {
+  node: null, pinned: false,
+  show(event, html, anchor) {
     if (!this.node) this.node = el("tooltip");
+    if (isNarrow()) return this.dock(html);
     this.node.innerHTML = html;
     this.node.classList.add("on");
-    this.move(event);
+    this.move(event, anchor);
   },
-  move(event) {
-    if (!this.node) return;
+  /* On touch the tooltip docks above the tray instead of following the
+     pointer: a finger already covers the point being described. */
+  dock(html) {
+    // A modal dialog lives in the top layer, so a tooltip left in <body>
+    // would be painted behind it. Ride along inside whichever is open.
+    const host = document.querySelector("dialog[open]") || document.body;
+    if (this.node.parentNode !== host) host.appendChild(this.node);
+    this.node.innerHTML = html + '<button class="tip-close" aria-label="Close">✕</button>';
+    this.node.style.left = ""; this.node.style.top = "";
+    this.node.classList.add("on", "docked");
+    this.pinned = true;
+    this.node.querySelector(".tip-close").addEventListener("click", () => Tip.hide());
+  },
+  move(event, anchor) {
+    if (!this.node || this.pinned) return;
     const pad = 13, box = this.node.getBoundingClientRect();
-    let x = event.clientX + pad, y = event.clientY + pad;
-    if (x + box.width > window.innerWidth - 8) x = event.clientX - box.width - pad;
-    if (y + box.height > window.innerHeight - 8) y = event.clientY - box.height - pad;
+    // A focus event carries no coordinates; fall back to the node itself so
+    // keyboard and switch-control users get the tooltip somewhere sane.
+    let cx = event && event.clientX, cy = event && event.clientY;
+    if (cx === undefined || cx === null) {
+      const at = (anchor || event.target).getBoundingClientRect();
+      cx = at.left + at.width / 2; cy = at.bottom;
+    }
+    let x = cx + pad, y = cy + pad;
+    if (x + box.width > window.innerWidth - 8) x = cx - box.width - pad;
+    if (y + box.height > window.innerHeight - 8) y = cy - box.height - pad;
     this.node.style.left = Math.max(8, x) + "px";
     this.node.style.top = Math.max(8, y) + "px";
   },
-  hide() { if (this.node) this.node.classList.remove("on"); },
+  hide() {
+    if (!this.node) return;
+    this.pinned = false;
+    this.node.classList.remove("on", "docked");
+    if (this.node.parentNode !== document.body) document.body.appendChild(this.node);
+  },
 };
 
 function tipRows(title, rows) {
@@ -666,11 +1057,23 @@ function tipRows(title, rows) {
 
 function attachTips(root) {
   root.querySelectorAll("[data-tip]").forEach((node) => {
-    node.addEventListener("mouseenter", (e) => Tip.show(e, node.dataset.tip));
-    node.addEventListener("mousemove", (e) => Tip.move(e));
-    node.addEventListener("mouseleave", () => Tip.hide());
-    node.addEventListener("focus", (e) => Tip.show(e, node.dataset.tip));
-    node.addEventListener("blur", () => Tip.hide());
+    // SVG rects and table cells are not focusable, so the focus fallback
+    // never fired for anyone. Make every tip a real stop.
+    if (!node.hasAttribute("tabindex")) {
+      node.setAttribute("tabindex", "0");
+      node.setAttribute("role", "button");
+    }
+    node.addEventListener("mouseenter", (e) => { if (!isNarrow()) Tip.show(e, node.dataset.tip, node); });
+    node.addEventListener("mousemove", (e) => { if (!isNarrow()) Tip.move(e, node); });
+    node.addEventListener("mouseleave", () => { if (!isNarrow()) Tip.hide(); });
+    node.addEventListener("focus", (e) => Tip.show(e, node.dataset.tip, node));
+    node.addEventListener("blur", () => { if (!isNarrow()) Tip.hide(); });
+    // Tap to pin. stopPropagation keeps the card underneath from expanding.
+    node.addEventListener("click", (e) => {
+      if (!isNarrow()) return;
+      e.stopPropagation();
+      Tip.show(e, node.dataset.tip, node);
+    });
   });
 }
 
@@ -687,6 +1090,15 @@ const newSvg = (w, h) => svgEl("svg", {
   viewBox: `0 0 ${w} ${h}`, width: "100%", height: h, role: "img",
   preserveAspectRatio: "xMinYMin meet",
 });
+
+/** A hardcoded viewBox width plus width:100% scales the type down with
+ *  the marks — 9.5px labels landed at 6px on a phone. Below 700px the
+ *  charts measure their container and draw at 1:1 instead. */
+function fitWidth(container, design) {
+  if (!isNarrow()) return design;
+  const w = Math.round(container.clientWidth);
+  return w > 60 ? w : design;
+}
 
 function niceTicks(min, max, count = 4) {
   if (min === max) { min -= 1; max += 1; }
@@ -705,7 +1117,9 @@ const seqRamp = () => ["--seq-100", "--seq-200", "--seq-300", "--seq-400", "--se
 /** Score histogram — one series, one hue. */
 function histogram(container, bins, opts = {}) {
   container.innerHTML = "";
-  const W = 540, H = 190, M = { top: 10, right: 8, bottom: 34, left: 30 };
+  const narrow = isNarrow();
+  const W = fitWidth(container, 540), H = narrow ? 240 : 190;
+  const M = { top: 10, right: 8, bottom: narrow ? 40 : 34, left: narrow ? 34 : 30 };
   const plotW = W - M.left - M.right, plotH = H - M.top - M.bottom;
   const svg = newSvg(W, H);
   svg.setAttribute("aria-label", opts.label || "Distribution");
@@ -758,7 +1172,9 @@ function histogram(container, bins, opts = {}) {
 /** Scatter, sequential colour for a continuous magnitude. */
 function scatter(container, points, opts = {}) {
   container.innerHTML = "";
-  const W = 540, H = 230, M = { top: 16, right: 10, bottom: 58, left: 36 };
+  const narrow = isNarrow();
+  const W = fitWidth(container, 540), H = narrow ? 280 : 230;
+  const M = { top: 16, right: 10, bottom: narrow ? 66 : 58, left: narrow ? 42 : 36 };
   const plotW = W - M.left - M.right, plotH = H - M.top - M.bottom;
   const svg = newSvg(W, H);
   svg.setAttribute("aria-label", opts.label || "Scatter plot");
@@ -780,7 +1196,9 @@ function scatter(container, points, opts = {}) {
     svg.appendChild(label);
   });
   for (let e = xMin; e <= xMax; e++) {
-    const label = svgEl("text", { x: sx(Math.pow(10, e)), y: H - M.bottom + 13, class: "axis-text", "text-anchor": "middle" });
+    // At 11px the end labels run past the plot edges, so they hug them.
+    const anchor = narrow && e === xMin ? "start" : narrow && e === xMax ? "end" : "middle";
+    const label = svgEl("text", { x: sx(Math.pow(10, e)), y: H - M.bottom + 13, class: "axis-text", "text-anchor": anchor });
     label.textContent = compact(Math.pow(10, e), 0);
     svg.appendChild(label);
   }
@@ -790,17 +1208,18 @@ function scatter(container, points, opts = {}) {
 
   points.forEach((p) => {
     // 2px surface ring keeps overlapping dots legible.
-    svg.appendChild(svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: 6, fill: cssVar("--surface") }));
-    svg.appendChild(svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: 4, fill: colourFor(p.score) }));
-    const hit = svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: 12, fill: "transparent" });
+    svg.appendChild(svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: narrow ? 8 : 6, fill: cssVar("--surface") }));
+    svg.appendChild(svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: narrow ? 6 : 4, fill: colourFor(p.score) }));
+    const hit = svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: narrow ? 22 : 12, fill: "transparent" });
     hit.setAttribute("data-tip", tipRows(p.label, [
       ["score", nf(p.score, 1)], ["short % float", pct(p.y)],
       ["float", compact(p.x)], ["days to cover", nf(p.dtc, 1)],
     ]));
     svg.appendChild(hit);
   });
-  // Label the extremes only, never every point.
-  points.slice().sort((a, b) => b.score - a.score).slice(0, 4).forEach((p) => {
+  // Label the extremes only, never every point — and at phone width even
+  // four ticker labels collide into a smudge, so label two.
+  points.slice().sort((a, b) => b.score - a.score).slice(0, narrow ? 2 : 4).forEach((p) => {
     const label = svgEl("text", { x: sx(p.x), y: sy(p.y) - 9, class: "value-label", "text-anchor": "middle" });
     label.textContent = p.label;
     svg.appendChild(label);
@@ -828,10 +1247,12 @@ function scatter(container, points, opts = {}) {
 /** Horizontal bars, one hue — a single ticker's components. */
 function hBars(container, rows, opts = {}) {
   container.innerHTML = "";
-  const rowH = 19, W = 300, M = { top: 2, right: 36, bottom: 2, left: 88 };
+  const narrow = isNarrow();
+  const rowH = narrow ? 26 : 19, W = fitWidth(container, 300);
+  const M = { top: 2, right: narrow ? 42 : 36, bottom: 2, left: narrow ? 96 : 88 };
   const H = M.top + M.bottom + rows.length * rowH;
   const svg = newSvg(W, H);
-  svg.style.maxWidth = W * 1.5 + "px";
+  svg.style.maxWidth = (narrow ? W : W * 1.5) + "px";
   const plotW = W - M.left - M.right, max = opts.max || 100;
 
   rows.forEach((row, i) => {
@@ -856,8 +1277,10 @@ function hBars(container, rows, opts = {}) {
 /** Grouped horizontal bars — up to 4 series, always direct-labelled. */
 function groupedBars(container, groups, series, opts = {}) {
   container.innerHTML = "";
-  const barH = 14, gap = 2, groupPad = 14;
-  const W = 600, M = { top: 6, right: 48, bottom: 22, left: 108 };
+  const narrow = isNarrow();
+  const barH = narrow ? 17 : 14, gap = 2, groupPad = 14;
+  const W = fitWidth(container, 600);
+  const M = { top: 6, right: narrow ? 42 : 48, bottom: 22, left: narrow ? 96 : 108 };
   const groupH = series.length * (barH + gap) + groupPad;
   const H = M.top + M.bottom + groups.length * groupH;
   const svg = newSvg(W, H);
@@ -911,13 +1334,23 @@ function groupedBars(container, groups, series, opts = {}) {
 /** Line chart with a crosshair. series[0] leads; others are context. */
 function lineChart(container, series, opts = {}) {
   container.innerHTML = "";
-  const W = 540, H = 200, M = { top: 8, right: 10, bottom: 26, left: 46 };
+  const narrow = isNarrow();
+  const W = fitWidth(container, 540), H = narrow ? 230 : 200;
+  const M = { top: 8, right: 10, bottom: narrow ? 30 : 26, left: narrow ? 54 : 46 };
   const plotW = W - M.left - M.right, plotH = H - M.top - M.bottom;
   const svg = newSvg(W, H);
   svg.setAttribute("aria-label", opts.label || "Line chart");
 
   const all = series.flatMap((s) => s.points.map((p) => p.y));
   if (!all.length) { container.innerHTML = '<div class="empty">No data</div>'; return; }
+
+  // The scrub readout is a fixed caption above the plot, not a tooltip
+  // under the finger — on touch the finger is on the point being read.
+  const readout = document.createElement("div");
+  readout.className = "scrub";
+  readout.setAttribute("aria-live", "polite");
+  readout.innerHTML = '<span class="muted">drag across the chart to read values</span>';
+  container.appendChild(readout);
   const yTicks = niceTicks(Math.min(...all), Math.max(...all), 4);
   const yMin = Math.min(yTicks[0], Math.min(...all));
   const yMax = Math.max(yTicks[yTicks.length - 1], Math.max(...all));
@@ -978,7 +1411,10 @@ function lineChart(container, series, opts = {}) {
     return dot;
   });
   const overlay = svgEl("rect", { x: M.left, y: M.top, width: plotW, height: plotH, fill: "transparent" });
-  overlay.addEventListener("mousemove", (event) => {
+  // pan-y lets a vertical drag still scroll the page while a horizontal
+  // drag scrubs — without it the chart would swallow the whole gesture.
+  overlay.style.touchAction = "pan-y";
+  const scrub = (event) => {
     const box = svg.getBoundingClientRect(), scale = W / box.width;
     const px = (event.clientX - box.left) * scale;
     const index = Math.max(0, Math.min(count - 1, Math.round(((px - M.left) / plotW) * (count - 1))));
@@ -994,9 +1430,25 @@ function lineChart(container, series, opts = {}) {
       dots[si].setAttribute("opacity", 1);
       rows.push([s.name, opts.yFormat ? opts.yFormat(point.y) : compact(point.y)]);
     });
-    Tip.show(event, tipRows(series[0].points[index] ? series[0].points[index].x : "", rows));
+    const at = series[0].points[index] ? series[0].points[index].x : "";
+    if (isNarrow()) {
+      readout.innerHTML = `<strong>${esc(at)}</strong> · ` +
+        rows.map(([k, v]) => `${esc(k)} ${esc(v)}`).join(" · ");
+    } else {
+      Tip.show(event, tipRows(at, rows));
+    }
+  };
+  overlay.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "mouse") overlay.setPointerCapture(event.pointerId);
+    scrub(event);
   });
-  overlay.addEventListener("mouseleave", () => {
+  overlay.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse" && !event.buttons && !overlay.hasPointerCapture(event.pointerId)) return;
+    scrub(event);
+  });
+  overlay.addEventListener("pointerleave", (event) => {
+    // A touch scrub keeps its last reading; only the mouse clears on exit.
+    if (event.pointerType !== "mouse") return;
     crosshair.setAttribute("opacity", 0);
     dots.forEach((d) => d.setAttribute("opacity", 0));
     Tip.hide();
@@ -1005,9 +1457,12 @@ function lineChart(container, series, opts = {}) {
   container.appendChild(svg);
 }
 
-/** Diverging bar around zero, for a signed return in a table cell. */
-function divergingBar(value, max) {
-  const half = 40, scale = Math.max(Math.abs(max), 1);
+/** Diverging bar around zero, for a signed return in a table cell.
+ *  `half` is the design half-width: the strategy cards ask for a wider
+ *  one, since a viewBox stretched by CSS would only centre the 80px mark
+ *  in the card rather than fill it. */
+function divergingBar(value, max, half = 40) {
+  const scale = Math.max(Math.abs(max), 1);
   const w = Math.min(half, (Math.abs(value) / scale) * half);
   const positive = value >= 0;
   return `<svg width="${half * 2}" height="10" viewBox="0 0 ${half * 2} 10" aria-hidden="true">
@@ -1080,6 +1535,7 @@ function embedded() {
 async function boot() {
   restoreTheme();
   wireControls();
+  applyLayout();
   const fallback = embedded();
   try {
     const [config, scan] = await Promise.all([api("/api/config"), api(`/api/scan?preset=${State.preset}`)]);
@@ -1135,7 +1591,8 @@ function setBusy(on) {
   // Hold the previous render at reduced opacity rather than flashing a skeleton.
   document.querySelectorAll("section, .strip").forEach((s) => s.classList.toggle("busy", !!on));
   el("refresh").disabled = !!on;
-  el("refresh").textContent = on ? "…" : "Refresh";
+  el("refresh").querySelector(".lbl-wide").textContent = on ? "…" : "Refresh";
+  el("refresh").querySelector(".lbl-narrow").textContent = on ? "…" : "↻";
 }
 
 /* =====================================================================
@@ -1156,9 +1613,12 @@ function renderMode() {
   el("mode-text").textContent = ({
     live: "live", sample: State.apiAvailable ? "sample" : "static", error: "no data", loading: "loading",
   })[State.mode] || State.mode;
-  badge.title = State.mode === "live"
+  const explain = State.mode === "live"
     ? "Every row was supplied by a live source."
     : "Rows come from the bundled sample dataset — the scoring and backtest code is real, the market data is not.";
+  badge.title = explain;
+  // A title attribute never surfaces on touch; the tip does.
+  badge.dataset.tip = tipRows("data mode", [[el("mode-text").textContent, explain]]);
 }
 
 function renderNotices() {
@@ -1183,8 +1643,9 @@ function showNotice(kind, title, body) {
 function renderPresetOptions() {
   const select = el("preset");
   const names = Object.keys(State.presets || {});
-  if (!names.length) { select.hidden = true; return; }
-  select.hidden = false;
+  const row = el("lab-preset");
+  if (!names.length) { select.hidden = true; row.hidden = true; return; }
+  select.hidden = false; row.hidden = false;
   select.innerHTML = names.map((n) => `<option value="${esc(n)}"${n === State.preset ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 
@@ -1263,8 +1724,27 @@ const COLUMNS = [
   { key: "market_cap", label: "Mkt cap", sortable: true, num: true },
 ];
 
+/* Between 700 and 1023px the table survives once the size and liquidity
+   columns move into the detail row, and rank goes with them so the pick
+   box and ticker can be pinned at deterministic offsets. */
+const TABLET_DROP = new Set(["rank", "float", "avg_volume_10d", "market_cap"]);
+function visibleColumns() {
+  return TOUCH_TIER.matches && !isNarrow() ? COLUMNS.filter((c) => !TABLET_DROP.has(c.key)) : COLUMNS;
+}
+
 function renderTable() {
-  el("scan-head").innerHTML = COLUMNS.map((c) => {
+  el("table-count").textContent = `${State.filtered.length} / ${State.rows.length}`;
+  el("table-empty").hidden = State.filtered.length > 0;
+  // Empty the path that is not in use: both carry `comp-<ticker>` chart
+  // containers, and getElementById would hand the hidden one back first.
+  if (isNarrow()) { el("scan-body").innerHTML = ""; renderCards(); }
+  else { el("scan-list").innerHTML = ""; renderRows(); }
+  drawDetailCharts();
+}
+
+function renderRows() {
+  const columns = visibleColumns();
+  el("scan-head").innerHTML = columns.map((c) => {
     const active = State.sort.key === c.key;
     const arrow = active ? `<span class="arrow">${State.sort.dir < 0 ? "▾" : "▴"}</span>` : "";
     return `<th class="${c.sortable ? "sortable" : ""} ${c.num ? "num" : ""}"
@@ -1273,8 +1753,6 @@ function renderTable() {
 
   const body = el("scan-body");
   body.innerHTML = State.filtered.map(rowHtml).join("");
-  el("table-count").textContent = `${State.filtered.length} / ${State.rows.length}`;
-  el("table-empty").hidden = State.filtered.length > 0;
 
   body.querySelectorAll("tr[data-ticker]").forEach((tr) => {
     tr.addEventListener("click", (event) => {
@@ -1295,7 +1773,87 @@ function renderTable() {
     th.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sort(); } });
   });
   attachTips(body);
-  drawDetailCharts();
+}
+
+/** Cards, not a CSS reflow of the table: the 15 <td>s carry no label
+ *  text, and the detail grid measures itself against the table's 953px
+ *  rather than the viewport, so no stylesheet alone can fix either. */
+function renderCards() {
+  const list = el("scan-list");
+  // A card is 5x the height of a row, so the list opens at the top ten
+  // rather than 25 — the sort control decides what "top" means.
+  const shown = State.filtered.slice(0, State.cardLimit);
+  list.innerHTML = shown.map(cardHtml).join("") + (State.filtered.length > shown.length
+    ? `<li class="show-all"><button class="btn-ghost" id="show-all-cards">Show all ${State.filtered.length}</button></li>`
+    : "");
+  list.querySelectorAll("li[data-ticker]").forEach((li) => {
+    const face = li.querySelector(".card-face");
+    const open = () => toggleRow(li.dataset.ticker);
+    face.addEventListener("click", (event) => {
+      if (event.target.closest("button, a, [data-tip]")) return;
+      open();
+    });
+    face.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); }
+    });
+    const pick = li.querySelector(".pick-toggle");
+    pick.addEventListener("click", (event) => { event.stopPropagation(); togglePick(pick.dataset.pick); });
+  });
+  const more = el("show-all-cards");
+  if (more) more.addEventListener("click", () => {
+    State.cardLimit = Infinity;
+    renderCards();
+    drawDetailCharts();
+  });
+  attachTips(list);
+}
+
+const trendMark = (t) => (t == null ? ""
+  : ` <span class="muted small">${t > 0 ? "▲" : t < 0 ? "▼" : "·"}${nf(Math.abs(t), 1)}</span>`);
+
+function staleChip(row) {
+  const age = row.short_interest_age_days;
+  if (age == null || age <= 30) return "";
+  // The age lived in a title attribute, which touch never surfaces.
+  return ` <span class="chip warn" data-tip="${esc(tipRows(`${row.ticker} short interest`, [
+    ["as of", row.short_interest_date || "–"], ["age", `${age} days`],
+    ["why", "exchange files settle twice a month"],
+  ]))}">${age}d</span>`;
+}
+
+function cardHtml(row) {
+  const tier = tierOf(row);
+  const picked = State.picks.includes(row.ticker);
+  const open = State.expanded.has(row.ticker);
+  const conflicts = (row.conflicts || []).length;
+  const full = !picked && State.picks.length >= maxPicks();
+  const swatch = picked ? cssVar(SERIES[State.picks.indexOf(row.ticker)]) : "";
+
+  return `<li class="tkr-card${open ? " expanded" : ""}${picked ? " picked" : ""}" data-ticker="${esc(row.ticker)}">
+    <div class="card-face" role="button" tabindex="0" aria-expanded="${open}">
+      <div class="c-top">
+        <span class="c-rank">${row.rank ?? ""}</span>
+        <span class="c-tkr ticker">${esc(row.ticker)}</span>
+        <span class="tier tier-${tier}"><span class="glyph">${TIERS[tier].glyph}</span> ${TIERS[tier].label}</span>
+      </div>
+      <div class="c-name">${esc(row.name || "")}</div>
+      <div class="c-score">
+        <span class="c-score-v">${nf(row.squeeze_score, 1)}</span>
+        <span class="meter-track"><span class="meter-fill" style="width:${Math.max(0, Math.min(100, row.squeeze_score || 0))}%"></span></span>
+        <span class="conf-tap" data-tip="${esc(confidenceTip(row))}">conf ${nf(row.data_confidence, 0)}${conflicts ? ` <span class="chip warn">⚠${conflicts}</span>` : ""}</span>
+      </div>
+      <div class="c-metrics">
+        <span class="m"><span class="m-k">SI % float</span><span class="m-v">${pct(row.short_pct_float)}${staleChip(row)}</span></span>
+        <span class="m"><span class="m-k">DTC</span><span class="m-v">${nf(row.short_ratio, 1)}</span></span>
+        <span class="m"><span class="m-k">Off-exch</span><span class="m-v">${pct(row.off_exchange_short_pct)}${trendMark(row.off_exchange_trend)}</span></span>
+      </div>
+    </div>
+    <button class="pick-toggle" data-pick="${esc(row.ticker)}" aria-pressed="${picked}"${full ? " disabled" : ""}
+      aria-label="${picked ? "Remove" : "Select"} ${esc(row.ticker)} for comparison">
+      <span class="box"${picked ? ` style="background:${swatch}"` : ""}></span>
+    </button>
+    ${open ? `<div class="card-detail">${detailHtml(row)}</div>` : ""}
+  </li>`;
 }
 
 function rowHtml(row) {
@@ -1306,31 +1864,34 @@ function rowHtml(row) {
   const age = row.short_interest_age_days;
   const trend = row.off_exchange_trend;
 
-  const cells = `
-    <td><input class="pickbox" type="checkbox" data-pick="${esc(row.ticker)}" ${picked ? "checked" : ""}
-        ${!picked && State.picks.length >= MAX_PICKS ? "disabled" : ""} aria-label="Compare ${esc(row.ticker)}"></td>
-    <td class="num muted">${row.rank ?? ""}</td>
-    <td class="ticker">${esc(row.ticker)}</td>
-    <td><span class="co">${esc(row.name || "")}</span></td>
-    <td class="num">
+  const cells = {
+    __pick: `<td><input class="pickbox" type="checkbox" data-pick="${esc(row.ticker)}" ${picked ? "checked" : ""}
+        ${!picked && State.picks.length >= maxPicks() ? "disabled" : ""} aria-label="Compare ${esc(row.ticker)}"></td>`,
+    rank: `<td class="num muted">${row.rank ?? ""}</td>`,
+    ticker: `<td class="ticker">${esc(row.ticker)}</td>`,
+    name: `<td><span class="co">${esc(row.name || "")}</span></td>`,
+    squeeze_score: `<td class="num">
       <span class="meter">
         <span>${nf(row.squeeze_score, 1)}</span>
         <span class="meter-track"><span class="meter-fill" style="width:${Math.max(0, Math.min(100, row.squeeze_score || 0))}%"></span></span>
       </span>
-    </td>
-    <td><span class="tier tier-${tier}"><span class="glyph">${TIERS[tier].glyph}</span> ${TIERS[tier].label}</span></td>
-    <td class="num" data-tip="${esc(confidenceTip(row))}">${nf(row.data_confidence, 0)}${conflicts ? ` <span class="chip warn">${conflicts}</span>` : ""}</td>
-    <td class="num">${pct(row.short_pct_float)}${age != null && age > 30 ? ` <span class="chip warn" title="short interest is ${age} days old">${age}d</span>` : ""}</td>
-    <td class="num">${nf(row.short_ratio, 1)}</td>
-    <td class="num">${pct(row.off_exchange_short_pct)}</td>
-    <td class="num">${trend == null ? "–" : `<span class="muted">${trend > 0 ? "▲" : trend < 0 ? "▼" : "·"}</span> ${nf(Math.abs(trend), 1)}`}</td>
-    <td class="num">${compact(row.float, 1)}</td>
-    <td class="num">${compact(row.avg_volume_10d, 1)}</td>
-    <td class="num">${money(row.current_price)}</td>
-    <td class="num">${compact(row.market_cap, 1)}</td>`;
+    </td>`,
+    setup_tier: `<td><span class="tier tier-${tier}"><span class="glyph">${TIERS[tier].glyph}</span> ${TIERS[tier].label}</span></td>`,
+    data_confidence: `<td class="num" data-tip="${esc(confidenceTip(row))}">${nf(row.data_confidence, 0)}${conflicts ? ` <span class="chip warn">${conflicts}</span>` : ""}</td>`,
+    short_pct_float: `<td class="num">${pct(row.short_pct_float)}${age != null && age > 30 ? ` <span class="chip warn" title="short interest is ${age} days old">${age}d</span>` : ""}</td>`,
+    short_ratio: `<td class="num">${nf(row.short_ratio, 1)}</td>`,
+    off_exchange_short_pct: `<td class="num">${pct(row.off_exchange_short_pct)}</td>`,
+    off_exchange_trend: `<td class="num">${trend == null ? "–" : `<span class="muted">${trend > 0 ? "▲" : trend < 0 ? "▼" : "·"}</span> ${nf(Math.abs(trend), 1)}`}</td>`,
+    float: `<td class="num">${compact(row.float, 1)}</td>`,
+    avg_volume_10d: `<td class="num">${compact(row.avg_volume_10d, 1)}</td>`,
+    current_price: `<td class="num">${money(row.current_price)}</td>`,
+    market_cap: `<td class="num">${compact(row.market_cap, 1)}</td>`,
+  };
+  const columns = visibleColumns();
 
-  return `<tr data-ticker="${esc(row.ticker)}" class="${open ? "expanded" : ""}${picked ? " picked" : ""}">${cells}</tr>` +
-    (open ? `<tr class="detail"><td colspan="${COLUMNS.length}">${detailHtml(row)}</td></tr>` : "");
+  return `<tr data-ticker="${esc(row.ticker)}" class="${open ? "expanded" : ""}${picked ? " picked" : ""}">${
+    columns.map((c) => cells[c.key]).join("")}</tr>` +
+    (open ? `<tr class="detail"><td colspan="${columns.length}">${detailHtml(row)}</td></tr>` : "");
 }
 
 function confidenceTip(row) {
@@ -1363,16 +1924,28 @@ function detailHtml(row) {
     </div>`).join("");
 
   const series = row.off_exchange_series || [];
+  const narrow = isNarrow();
 
-  return `<div class="detail-inner">
+  const components = `
     <div>
       <h4>Score components</h4>
       <div class="chart" id="comp-${esc(row.ticker)}"></div>
       ${missing ? `<div class="small muted" style="margin-top:4px">${missing} component${missing > 1 ? "s" : ""} had no inputs and were left out; the remaining weights were renormalised.</div>` : ""}
-    </div>
+    </div>`;
+
+  // The card face drops price, float, volume and market cap, and truncates
+  // the company name — the detail row is where they come back.
+  const demoted = narrow ? `
+        <dt>company</dt><dd>${esc(row.name || "–")}</dd>
+        <dt>price</dt><dd>${money(row.current_price)}</dd>
+        <dt>float</dt><dd>${compact(row.float, 1)}</dd>
+        <dt>avg vol 10d</dt><dd>${compact(row.avg_volume_10d, 1)}</dd>
+        <dt>market cap</dt><dd>${compact(row.market_cap, 1)}</dd>` : "";
+
+  const numbers = `
     <div>
       <h4>Key numbers</h4>
-      <dl class="kv">
+      <dl class="kv">${demoted}
         <dt>shares short</dt><dd>${compact(row.shares_short)}</dd>
         <dt>prior month</dt><dd>${compact(row.shares_short_prior)}</dd>
         <dt>SI as of</dt><dd>${esc(row.short_interest_date || "–")}${row.short_interest_age_days != null ? ` (${row.short_interest_age_days}d)` : ""}</dd>
@@ -1382,15 +1955,22 @@ function detailHtml(row) {
         <dt>percentile</dt><dd>${nf(row.percentile, 0)}</dd>
         <dt>conf-adjusted</dt><dd>${nf(row.confidence_adjusted_score, 1)}</dd>
       </dl>
-    </div>
-    <div>
+    </div>`;
+
+  const flow = `
       <h4>Off-exchange short volume</h4>
-      ${series.length ? `<div class="chart" id="flow-${esc(row.ticker)}"></div>` : '<div class="small muted">No FINRA daily data for this ticker.</div>'}
-      <h4 style="margin-top:10px">Where each number came from</h4>
+      ${series.length ? `<div class="chart" id="flow-${esc(row.ticker)}"></div>` : '<div class="small muted">No FINRA daily data for this ticker.</div>'}`;
+  const prov = `
+      <h4${narrow ? "" : ' style="margin-top:10px"'}>Where each number came from</h4>
       <div class="prov">${provenance || '<span class="small muted">single source</span>'}</div>
-      ${conflicts ? `<h4 style="margin-top:8px">Source disagreements</h4>${conflicts}` : ""}
-    </div>
-  </div>`;
+      ${conflicts ? `<h4 style="margin-top:8px">Source disagreements</h4>${conflicts}` : ""}`;
+
+  // Phone order leads with the numbers the card face had to drop; desktop
+  // keeps its three-column reading order untouched.
+  const blocks = narrow
+    ? `${numbers}${components}<div>${flow}</div><div>${prov}</div>`
+    : `${components}${numbers}<div>${flow}${prov}</div>`;
+  return `<div class="detail-inner">${blocks}</div>`;
 }
 
 function toggleRow(ticker) {
@@ -1465,7 +2045,21 @@ function renderSources() {
   const coverage = payload.coverage || {}, wins = coverage.wins || {};
   const fields = Object.keys(wins).filter((f) => f !== "ticker").sort();
   const sources = (coverage.sources || []).slice();
-  if (fields.length && sources.length > 1) {
+  if (isNarrow() && fields.length) {
+    // A -45° header ramp over a 128px label gutter does not survive 368px,
+    // and the cross-tab adds nothing a list does not already say.
+    const bySource = {};
+    fields.forEach((field) => Object.entries(wins[field] || {}).forEach(([source, count]) => {
+      if (count) (bySource[source] = bySource[source] || []).push(field.replace(/_/g, " "));
+    }));
+    const entries = Object.entries(bySource).sort((a, b) => b[1].length - a[1].length);
+    el("chart-coverage").innerHTML = entries.length ? entries.map(([source, list]) => `
+      <div style="margin-bottom:9px">
+        <div style="font-size:12px"><strong>${esc(source)}</strong>
+          <span class="muted small"> · ${list.length} field${list.length > 1 ? "s" : ""} won</span></div>
+        <div class="prov" style="margin-top:3px">${list.map((f) => `<span class="chip">${esc(f)}</span>`).join("")}</div>
+      </div>`).join("") : '<div class="empty">No field-level provenance recorded.</div>';
+  } else if (fields.length && sources.length > 1) {
     heatmap(el("chart-coverage"), fields.map((f) => ({ label: f.replace(/_/g, " "), key: f })), sources,
       (row, column) => (wins[row.key] || {})[column] || 0, { label: "Which source supplied each field" });
   } else if (fields.length) {
@@ -1494,13 +2088,16 @@ function renderSources() {
 function togglePick(ticker) {
   const index = State.picks.indexOf(ticker);
   if (index >= 0) State.picks.splice(index, 1);
-  else if (State.picks.length < MAX_PICKS) State.picks.push(ticker);
+  else if (State.picks.length < maxPicks()) State.picks.push(ticker);
   renderPicks();
   renderTable();
 }
 
 function renderPicks() {
-  el("tray").classList.toggle("open", State.picks.length > 0);
+  const open = State.picks.length > 0;
+  el("tray").classList.toggle("open", open);
+  // The docked tooltip has to clear the tray, and only the tray knows.
+  document.body.classList.toggle("tray-open", open);
   el("picks").innerHTML = State.picks.map((t, i) => `
     <span class="pick"><span class="swatch" style="background:${cssVar(SERIES[i])}"></span>${esc(t)}
     <button data-drop="${esc(t)}" aria-label="Remove ${esc(t)}">×</button></span>`).join("");
@@ -1532,7 +2129,7 @@ function openCompare() {
 
   el("compare-body").innerHTML = `
     <div class="legend" style="margin-bottom:8px">
-      ${rows.map((r, i) => `<span class="item"><span class="swatch" style="background:${cssVar(SERIES[i])}"></span><span class="ticker">${esc(r.ticker)}</span> <span class="muted">${esc((r.name || "").slice(0, 22))}</span></span>`).join("")}
+      ${rows.map((r, i) => `<span class="item"><span class="swatch" style="background:${cssVar(SERIES[i])}"></span><span class="ticker">${esc(r.ticker)}</span> <span class="muted co-name">${esc((r.name || "").slice(0, 22))}</span></span>`).join("")}
     </div>
     <div class="chart" id="cmp-chart"></div>
     <p class="small muted" style="margin:4px 0 14px">Component scores, 0–100. Higher means more squeeze pressure on that dimension — not a better company.</p>
@@ -1631,20 +2228,67 @@ function renderBacktest() {
 
   const trades = result.trades || [];
   el("trade-count").textContent = `${trades.length} closed`;
-  el("trades").innerHTML = trades.length ? `
+  renderTrades(trades);
+  renderStrategies();
+}
+
+const pnlColour = (v) => (v >= 0 ? "var(--pos-text)" : "var(--neg-text)");
+const exitLabel = (t) => String(t.exit_reason || "").replace(/_/g, " ").toLowerCase();
+
+function renderTrades(trades) {
+  const box = el("trades");
+  if (!trades.length) {
+    box.innerHTML = '<div class="empty">No entries fired. Lower the score threshold or the volume multiple.</div>';
+    return;
+  }
+  const recent = trades.slice(-40).reverse();
+
+  if (!isNarrow()) {
+    box.innerHTML = `
     <table>
       <thead><tr><th>Ticker</th><th>Entry</th><th>Exit</th><th class="num">In</th><th class="num">Out</th><th class="num">P&amp;L</th><th class="num">Bars</th><th>Reason</th></tr></thead>
-      <tbody>${trades.slice(-40).reverse().map((t) => `
+      <tbody>${recent.map((t) => `
         <tr><td class="ticker">${esc(t.ticker)}</td>
         <td class="small mono">${esc(t.entry_date)}</td><td class="small mono">${esc(t.exit_date)}</td>
         <td class="num">${nf(t.entry_price)}</td><td class="num">${nf(t.exit_price)}</td>
-        <td class="num" style="color:${t.pnl_pct >= 0 ? "var(--pos-text)" : "var(--neg-text)"}">${signed(t.pnl_pct)}</td>
+        <td class="num" style="color:${pnlColour(t.pnl_pct)}">${signed(t.pnl_pct)}</td>
         <td class="num">${t.bars_held}</td>
-        <td class="small muted">${esc(t.exit_reason.replace(/_/g, " ").toLowerCase())}</td></tr>`).join("")}</tbody>
-    </table>${trades.length > 40 ? '<p class="small muted" style="padding:6px 8px">Showing the 40 most recent closes.</p>' : ""}`
-    : '<div class="empty">No entries fired. Lower the score threshold or the volume multiple.</div>';
+        <td class="small muted">${esc(exitLabel(t))}</td></tr>`).join("")}</tbody>
+    </table>${trades.length > 40 ? '<p class="small muted" style="padding:6px 8px">Showing the 40 most recent closes.</p>' : ""}`;
+    return;
+  }
 
-  renderStrategies();
+  // Phone: P&L is the only column anyone reads, so it comes second and the
+  // two ISO dates that ate 340px of a 346px table move into the tap detail.
+  const shown = recent.slice(0, State.tradeLimit);
+  const remaining = recent.length - shown.length;
+  box.innerHTML = `
+    <table>
+      <thead><tr><th>Ticker</th><th class="num">P&amp;L</th><th class="num">Bars</th><th>Exit</th></tr></thead>
+      <tbody>${shown.map((t, i) => {
+        const open = State.tradesOpen.has(i);
+        return `<tr data-trade="${i}" class="${open ? "expanded" : ""}">
+          <td class="ticker">${esc(t.ticker)}</td>
+          <td class="num" style="color:${pnlColour(t.pnl_pct)}">${signed(t.pnl_pct)}</td>
+          <td class="num">${t.bars_held}</td>
+          <td class="small muted">${esc(exitLabel(t))} <span class="mono">${esc(String(t.exit_date || "").slice(5))}</span></td>
+        </tr>` + (open ? `<tr class="detail"><td colspan="4"><dl class="kv" style="padding:8px 10px">
+          <dt>entry</dt><dd>${esc(t.entry_date)} @ ${nf(t.entry_price)}</dd>
+          <dt>exit</dt><dd>${esc(t.exit_date)} @ ${nf(t.exit_price)}</dd>
+        </dl></td></tr>` : "");
+      }).join("")}</tbody>
+    </table>
+    ${remaining > 0
+      ? `<div style="padding:8px 10px"><button class="btn-ghost" id="more-trades" style="width:100%">Show ${Math.min(30, remaining)} more</button></div>`
+      : `<p class="small muted" style="padding:6px 8px">Showing the ${recent.length} most recent closes.</p>`}`;
+
+  box.querySelectorAll("tr[data-trade]").forEach((tr) => tr.addEventListener("click", () => {
+    const key = Number(tr.dataset.trade);
+    if (State.tradesOpen.has(key)) State.tradesOpen.delete(key); else State.tradesOpen.add(key);
+    renderTrades(trades);
+  }));
+  const more = el("more-trades");
+  if (more) more.addEventListener("click", () => { State.tradeLimit += 30; renderTrades(trades); });
 }
 
 function renderStrategies() {
@@ -1652,6 +2296,30 @@ function renderStrategies() {
   const box = el("strategy-table");
   if (!rows.length) { box.innerHTML = '<div class="empty">Run a backtest to compare exit rules.</div>'; return; }
   const max = Math.max(...rows.map((r) => Math.abs(r.total_return_pct || 0)), 1);
+
+  if (isNarrow()) {
+    // Five rows and ten columns: at 346px the table hid 57% of itself,
+    // including every risk column. Five cards hide nothing.
+    box.innerHTML = rows.map((r) => {
+      const p = r.params || {};
+      return `<div class="strat-card">
+        <div class="strat-top"><strong>${esc(r.label || "–")}</strong>
+          <span class="strat-ret" style="color:${pnlColour(r.total_return_pct || 0)}">${signed(r.total_return_pct)}</span></div>
+        <span class="bar">${divergingBar(r.total_return_pct || 0, max, 160)}</span>
+        <div class="strat-meta">
+          <span>vs hold ${signed(r.excess_return_pct)}</span>
+          <span>max DD ${nf(r.max_drawdown_pct, 1)}%</span>
+          <span>sharpe ${r.sharpe == null ? "–" : nf(r.sharpe, 2)}</span>
+          <span>${r.total_trades || 0} trades</span>
+          <span>win ${nf(r.win_rate, 1)}%</span>
+          <span>PF ${r.profit_factor == null ? "–" : nf(r.profit_factor, 2)}</span>
+        </div>
+        <div class="strat-rules">≥${p.entry_score} tp${nf((p.take_profit || 0) * 100, 0)} sl${nf((p.stop_loss || 0) * 100, 0)} ${p.hold_days}b${p.trailing_stop ? ` trail${nf(p.trailing_stop * 100, 0)}` : ""}</div>
+      </div>`;
+    }).join("");
+    return;
+  }
+
   box.innerHTML = `
     <table>
       <thead><tr><th>Strategy</th><th class="num">Return</th><th></th><th class="num">vs hold</th>
@@ -1709,8 +2377,89 @@ function toggleTheme() {
   render(); renderSources(); renderBacktest(); renderPicks();
 }
 
+/* =====================================================================
+ * Layout switch
+ *
+ * Every control exists exactly once and is relocated between the desktop
+ * filter row and the phone's sticky bar and sheets. Two copies would mean
+ * two values to keep in sync, and the filters read straight off the DOM.
+ * ===================================================================== */
+
+const MOVABLE = ["search", "lab-tier", "lab-sector", "lab-score", "lab-conf",
+  "clear-filters", "export-csv", "preset"];
+const Homes = new Map();
+
+function rememberHomes() {
+  MOVABLE.forEach((id) => {
+    const node = el(id);
+    Homes.set(id, { parent: node.parentNode, next: node.nextSibling });
+  });
+}
+
+function goHome(id) {
+  const home = Homes.get(id), node = el(id);
+  if (home && node.parentNode !== home.parent) home.parent.insertBefore(node, home.next);
+}
+
+function applyLayout() {
+  const narrow = isNarrow();
+  if (narrow) {
+    const bar = el("filterbar");
+    bar.insertBefore(el("search"), bar.firstElementChild);
+    ["lab-tier", "lab-sector", "lab-score", "lab-conf"]
+      .forEach((id) => el("filter-fields").insertBefore(el(id), el("lab-preset")));
+    el("lab-preset").appendChild(el("preset"));
+    ["clear-filters", "export-csv"].forEach((id) => el("filter-actions").appendChild(el(id)));
+    // The / shortcut still works; advertising it in a 168px field does not.
+    el("search").placeholder = "ticker / name";
+  } else {
+    // Reverse order, so each node's original next sibling is back in place
+    // by the time the node before it is restored.
+    MOVABLE.slice().reverse().forEach(goHome);
+    el("search").placeholder = "ticker / name   ( / )";
+    ["sort-sheet", "filter-sheet"].forEach((id) => { if (el(id).open) el(id).close(); });
+  }
+  // The scatter's table view is the more useful artefact on a phone.
+  el("scatter-table").closest("details").open = narrow;
+  while (State.picks.length > maxPicks()) State.picks.pop();
+  renderSortOptions();
+  updateFilterChrome();
+}
+
+function renderSortOptions() {
+  const box = el("sort-options");
+  box.innerHTML = SORT_KEYS.map(([key, label]) => {
+    const active = State.sort.key === key;
+    return `<button class="sort-opt" data-key="${key}" aria-current="${active}">${esc(label)}${
+      active ? `<span class="arrow">${State.sort.dir < 0 ? "▾ high to low" : "▴ low to high"}</span>` : ""}</button>`;
+  }).join("");
+  box.querySelectorAll("[data-key]").forEach((button) => button.addEventListener("click", () => {
+    const key = button.dataset.key;
+    State.sort = { key, dir: State.sort.key === key ? -State.sort.dir : (key === "ticker" ? 1 : -1) };
+    renderSortOptions();
+    updateFilterChrome();
+    applyFilters(); renderStrip(); renderTable(); renderCharts();
+  }));
+}
+
+function updateFilterChrome() {
+  const entry = SORT_KEYS.find(([key]) => key === State.sort.key);
+  el("sort-arrow").textContent = `${entry ? entry[2] : "custom"} ${State.sort.dir < 0 ? "▾" : "▴"}`;
+  const active = [
+    el("search").value.trim() !== "",
+    el("f-tier").value !== "all",
+    el("f-sector").value !== "all",
+    Number(el("f-score").value) > 0,
+    Number(el("f-conf").value) > 0,
+  ].filter(Boolean).length;
+  const count = el("filter-count");
+  count.textContent = String(active);
+  count.hidden = active === 0;
+}
+
 function wireControls() {
-  const rerender = () => { applyFilters(); renderStrip(); renderTable(); renderCharts(); };
+  rememberHomes();
+  const rerender = () => { applyFilters(); renderStrip(); renderTable(); renderCharts(); updateFilterChrome(); };
   ["search", "f-tier", "f-sector"].forEach((id) => el(id).addEventListener("input", rerender));
   ["f-score", "f-conf"].forEach((id) => el(id).addEventListener("input", () => {
     el(id + "-val").textContent = el(id).value;
@@ -1722,6 +2471,14 @@ function wireControls() {
     el("f-score-val").textContent = "0"; el("f-conf-val").textContent = "0";
     rerender();
   });
+  el("open-sort").addEventListener("click", () => el("sort-sheet").showModal());
+  el("open-filters").addEventListener("click", () => el("filter-sheet").showModal());
+  document.querySelectorAll("dialog.sheet").forEach((sheet) => {
+    sheet.querySelectorAll("[data-close-sheet]").forEach((b) => b.addEventListener("click", () => sheet.close()));
+    // The backdrop is the dialog's own box outside its children.
+    sheet.addEventListener("click", (event) => { if (event.target === sheet) sheet.close(); });
+  });
+  attachTips(el("mode-badge").parentNode);
   el("refresh").addEventListener("click", () => reload(true));
   el("preset").addEventListener("change", () => { State.preset = el("preset").value; reload(false); });
   el("theme-toggle").addEventListener("click", toggleTheme);
@@ -1739,6 +2496,29 @@ function wireControls() {
     if (event.key === "/") { event.preventDefault(); el("search").focus(); }
     if (event.key.toLowerCase() === "c" && State.picks.length >= 2) openCompare();
     if (event.key.toLowerCase() === "r") reload(true);
+  });
+
+  // Scroll does not bubble, so the shadow that says "there is more to the
+  // right" is wired in the capture phase for every scroller at once.
+  document.addEventListener("scroll", (event) => {
+    const box = event.target;
+    if (box && box.classList && box.classList.contains("table-scroll")) {
+      box.classList.toggle("scrolled", box.scrollLeft > 0);
+    }
+  }, true);
+
+  // A pinned tooltip is dismissed by tapping it, tapping outside, or
+  // opening another — the same three exits a hover tooltip has.
+  document.addEventListener("pointerdown", (event) => {
+    if (!Tip.pinned) return;
+    if (event.target.closest("#tooltip") || event.target.closest("[data-tip]")) return;
+    Tip.hide();
+  });
+
+  NARROW.addEventListener("change", () => {
+    Tip.hide();
+    applyLayout();
+    render(); renderSources(); renderBacktest(); renderPicks();
   });
 
   window.addEventListener("resize", debounce(() => { renderCharts(); renderSources(); renderBacktest(); }, 200));
