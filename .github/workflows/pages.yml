@@ -1,0 +1,77 @@
+name: publish dashboard
+
+# Builds the standalone dashboard against live sources and publishes it to
+# GitHub Pages. No zip, no upload, no expiry — and it refreshes itself, which
+# a hand-uploaded file never does.
+#
+# One-time setup: repository Settings → Pages → Source: "GitHub Actions".
+# Until that is set, this workflow's deploy step fails and nothing else breaks.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 21:30 UTC on weekdays — after the US close, so the scan reflects a
+    # completed session rather than mid-day prices.
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+# Allow one publish at a time; let a running one finish rather than shipping
+# a half-built page.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      SQUEEZE_SOURCES: yahoo,finra
+      SQUEEZE_CACHE_TTL: "0"
+      SQUEEZE_SNAPSHOT_FALLBACK: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Build the page with live data
+        run: python scripts/build_static.py --universe 15
+
+      - name: Refuse to publish anything but live data
+        run: |
+          python - <<'EOF'
+          import json, re, sys
+          html = open("static/index.html", encoding="utf-8").read()
+          blob = re.search(r'<script id="embedded-data" type="application/json">(.*?)</script>', html, re.S).group(1)
+          payload = json.loads(blob)
+          mode = payload["scan"]["data_mode"]
+          rows = len(payload["scan"]["rows"])
+          print(f"data_mode={mode} rows={rows}")
+          if mode != "live":
+              sys.exit(f"refusing to publish: data_mode is {mode!r}, not 'live'")
+          if rows < 5:
+              sys.exit(f"refusing to publish: only {rows} rows scored")
+          EOF
+
+      - name: Stage the site
+        run: |
+          mkdir -p _site
+          cp static/index.html _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
