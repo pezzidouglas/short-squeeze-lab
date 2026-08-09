@@ -58,3 +58,45 @@ jobs:
 
       - name: Backtest on live prices
         run: python main.py backtest --tickers GME,AMC,SPRY,PCT --period 1y
+
+  # Builds the standalone dashboard with LIVE data and uploads it as an
+  # artifact. Download it and drop it on tiiny.site (or any static host) —
+  # the copy committed to the repo is built from the offline sample and
+  # labels itself as such, which is not what you want on a public URL.
+  build-static:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 12
+    env:
+      SQUEEZE_SOURCES: yahoo,finra
+      SQUEEZE_CACHE_TTL: "0"
+      SQUEEZE_SNAPSHOT_FALLBACK: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Build the page with live data
+        run: python scripts/build_static.py --universe 15
+
+      - name: Confirm it is not the sample dataset
+        run: |
+          python - <<'EOF'
+          import json, re, sys
+          html = open("static/index.html", encoding="utf-8").read()
+          blob = re.search(r'<script id="embedded-data" type="application/json">(.*?)</script>', html, re.S).group(1)
+          mode = json.loads(blob)["scan"]["data_mode"]
+          rows = len(json.loads(blob)["scan"]["rows"])
+          print(f"data_mode={mode} rows={rows}")
+          if mode != "live":
+              sys.exit(f"refusing to publish: data_mode is {mode!r}, not 'live'")
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-live
+          path: static/index.html
+          retention-days: 30
