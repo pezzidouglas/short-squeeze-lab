@@ -218,6 +218,16 @@ python scripts/build_static.py      # embed a real scan + backtest into the page
 A page built that way says **Sample snapshot** in its header when the data
 underneath is the bundled fixture.
 
+**Deployed at <https://amber-florance-77.tiiny.site/>.** Don't upload the
+`static/index.html` committed here — it embeds the offline sample and labels
+itself `STATIC`. The `build-static` CI job rebuilds it against live sources and
+uploads it as the `dashboard-live` artifact, refusing to produce anything whose
+embedded `data_mode` isn't `live`. Download that and upload it instead.
+
+The deployed copy is a snapshot frozen at build time, not a live page: the
+preset selector and the backtest parameter controls need the API, so they are
+inert there. Run `python main.py serve` for the fully interactive version.
+
 ---
 
 ## CLI

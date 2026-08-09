@@ -12,7 +12,9 @@
 set -euo pipefail
 
 REPO="pezzidouglas/short-squeeze-lab"
-TIINY_URL="k-squeeze-lab.tiiny.site"
+# The live page. Free tiiny subdomains are auto-generated and can lapse —
+# update this if you redeploy to a different one.
+TIINY_URL="amber-florance-77.tiiny.site"
 BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
 
 echo "Short Squeeze Lab — deploy"
