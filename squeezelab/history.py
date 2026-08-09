@@ -15,6 +15,16 @@ available, so it is held at its most recent value across the window. That is a
 real limitation, not a hidden one: every reconstructed frame carries a
 `si_basis` column saying which fields were held constant, and the backtest
 summary repeats it.
+
+Borrow fees, shortable-share counts and option open interest are deliberately
+*absent* from `STATIC_FIELDS`. All three are snapshots of the present with no
+free history, and holding today's value across a year would be strictly worse
+than holding short interest: today's 90% borrow fee is partly a consequence of
+the squeeze the backtest is pretending to predict. So the borrow component
+reconstructs from days-to-cover and float alone, the gamma component has no
+inputs at all and is dropped and renormalised away, and the result understates
+what a live scan sees rather than flattering it. Anyone adding one of these to
+`STATIC_FIELDS` is adding lookahead, not coverage.
 """
 
 from __future__ import annotations
@@ -23,7 +33,7 @@ from typing import Any, Sequence
 
 import pandas as pd
 
-from .engine import SqueezeEngine
+from .engine import COMPONENTS, SqueezeEngine
 
 TRADING_DAYS_YEAR = 252
 STATIC_FIELDS = (
@@ -93,11 +103,12 @@ def reconstruct_scores(
             {
                 "timestamp": stamp,
                 "squeeze_score": block["squeeze_score"],
-                "si_score": block["si_score"],
-                "borrow_score": block["borrow_score"],
-                "liquidity_score": block["liquidity_score"],
-                "momentum_score": block["momentum_score"],
-                "flow_score": block["flow_score"],
+                # Driven off COMPONENTS rather than listed, so a component
+                # added to the engine cannot go missing from the frame the
+                # backtest charts. A component with no reconstructable inputs
+                # comes through as an all-None column, which is the honest
+                # answer, not an omission.
+                **{f"{key}_score": block[f"{key}_score"] for key in COMPONENTS},
                 "si_basis": basis,
             }
         )

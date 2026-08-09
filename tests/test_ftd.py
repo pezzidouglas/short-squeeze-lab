@@ -412,6 +412,71 @@ def test_every_period_missing_reports_an_error_not_a_silent_empty(ftd_settings):
     assert "no fails-to-deliver file published" in source.health.detail
 
 
+class _StatusSession:
+    """Answers every request with one status code, like a host refusing a scan."""
+
+    def __init__(self, status: int) -> None:
+        self.status = status
+        self.requested: list[str] = []
+
+    def get(self, url, params=None, headers=None, timeout=None):  # noqa: ANN001
+        self.requested.append(url)
+        return _FakeResponse(self.status, b"")
+
+
+class _RefusingSession(_FakeSession):
+    """Like `_FakeSession`, but refuses any URL naming `refuse` with `status`."""
+
+    def __init__(self, routes: dict[str, bytes], refuse: str, status: int = 403) -> None:
+        super().__init__(routes)
+        self.refuse = refuse
+        self.status = status
+
+    def get(self, url, params=None, headers=None, timeout=None):  # noqa: ANN001
+        if self.refuse in url:
+            self.requested.append(url)
+            return _FakeResponse(self.status, b"")
+        return super().get(url, params, headers, timeout)
+
+
+def test_a_404_is_the_one_answer_that_records_a_miss(ftd_settings):
+    """Nothing published yet is the only case the miss cache may remember."""
+    source = SecFtdSource(ftd_settings, _StatusSession(404), today=SCAN_DAY)
+    assert source.collect(["GME"]) == {}
+    assert source.health.status == "error"
+    assert "no fails-to-deliver file published" in source.health.detail
+    assert source.cache.get("sec_ftd_miss", "202607a") is True
+    assert source.cache.get("sec_ftd_miss", "202606b") is True
+
+
+@pytest.mark.parametrize("status, phrase", [(403, "denied access"), (429, "rate-limited")])
+def test_a_refusal_is_reported_and_never_cached_as_a_missing_period(ftd_settings, status, phrase):
+    """403/429 are about us, not about the file; caching them freezes the source."""
+    session = _StatusSession(status)
+    source = SecFtdSource(ftd_settings, session, today=SCAN_DAY)
+
+    assert source.collect(["GME"]) == {}
+    assert source.health.status == "error"
+    assert f"HTTP {status}" in source.health.detail and phrase in source.health.detail
+    assert "no fails-to-deliver file published" not in source.health.detail
+    assert source.cache.get("sec_ftd_miss", "202607a") is None
+    # One refused request ends the walk: the legacy template, the remaining
+    # candidates and the index page would all hit the same wall.
+    assert session.requested == [_url("202607a")]
+
+
+def test_a_refusal_mid_walk_keeps_the_periods_already_fetched(ftd_settings):
+    routes = {_url("202606b"): _zip_bytes(FTD_FIXTURE)}
+    session = _RefusingSession(routes, refuse="202606a")
+    source = SecFtdSource(ftd_settings, session, today=SCAN_DAY)
+
+    records = source.collect(["GME"])
+    assert records["GME"]["ftd_persist_days"] == 4  # the one period that answered
+    assert "denied access" in source.health.detail
+    assert source.cache.get("sec_ftd_miss", "202606a") is None  # retried next scan
+    assert source.cache.get("sec_ftd_miss", "202607a") is True  # a real 404 still counts
+
+
 def test_a_corrupt_archive_is_reported_not_raised(ftd_settings):
     routes = {_url("202606b"): b"PK\x03\x04 truncated download"}
     source, _ = _source(ftd_settings, routes)

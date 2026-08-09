@@ -41,6 +41,7 @@ Yahoo's cookie/crumb dance, and a half-working transport is worse than reporting
 
 from __future__ import annotations
 
+import math
 import os
 import threading
 import time
@@ -93,6 +94,14 @@ CIRCUIT_BREAKER = 5      # consecutive failures before the run gives up
 EXPIRY_CACHE_TTL = 60 * 60 * 6           # expiration lists change weekly
 NO_OPTIONS_TTL = 60 * 60 * 24 * 7        # "this ticker has no chain" stays true
 
+# Significant figures the two denominators are quantised to inside the derived
+# cache key. Spot keeps three because the band edges sit 5%/30% away from it, so
+# a sub-percent tick cannot move which strikes are selected; float keeps two
+# because it is revised in lumps and the percentage it feeds is published to
+# four decimals off a number that is itself an estimate.
+SPOT_KEY_SIGFIGS = 3
+FLOAT_KEY_SIGFIGS = 2
+
 
 def _env_int(name: str, default: int) -> int:
     try:
@@ -140,8 +149,9 @@ class OptionsSource(DataSource):
         notes=(
             "Near-the-money call open interest against the float — the only free read on "
             "forced hedging demand. Needs yfinance; off by default because a cold scan "
-            "costs up to three requests per ticker. OI is T-1 and unsigned, so this is a "
-            "filter that removes names, not a trigger that selects them."
+            "costs up to four requests per ticker (an expiry list, one per selected expiry, "
+            "and a spot). OI is T-1 and unsigned, so this is a filter that removes names, "
+            "not a trigger that selects them."
         ),
     )
 
@@ -229,8 +239,9 @@ class OptionsSource(DataSource):
         """Spot from the caller when it has one, otherwise from yfinance.
 
         Wiring `price_lookup` is the point: a scan already holds a price from
-        Yahoo or Stooq, and reusing it keeps this source inside the three
-        requests per ticker its budget assumes.
+        Yahoo or Stooq, and reusing it drops a cold ticker from the four
+        requests its budget assumes (expiry list, one per selected expiry, and
+        this one) to three.
         """
         injected = _call_lookup(self.price_lookup, ticker)
         if injected:
@@ -272,7 +283,22 @@ class OptionsSource(DataSource):
         if not selected:
             return None  # every listed expiry sits outside the window
 
-        cache_key = "_".join([ticker, *(expiry for expiry, _ in selected)])
+        # Resolved before the cache probe because they are inputs to the cached
+        # block, not labels on it: the band is cut around spot and the headline
+        # percentage divides by float, so a key built from the expiries alone
+        # would serve one scan's strike selection against another's price. Both
+        # enter the key quantised — keyed raw, a one-cent tick would miss every
+        # time and the cache would never answer anything.
+        spot = self._spot(ticker, handle)
+        float_shares = _call_lookup(self.float_lookup, ticker)
+        cache_key = "_".join(
+            [
+                ticker,
+                *(expiry for expiry, _ in selected),
+                _key_bucket(spot, SPOT_KEY_SIGFIGS),
+                _key_bucket(float_shares, FLOAT_KEY_SIGFIGS),
+            ]
+        )
         cached = self.cache.get("options", cache_key)
         if isinstance(cached, dict) and cached:
             self.health.from_cache = True
@@ -290,11 +316,7 @@ class OptionsSource(DataSource):
                 raise SourceError(f"every option chain request for {ticker} failed")
             return None
 
-        values = compute_options_metrics(
-            chains,
-            spot=self._spot(ticker, handle),
-            float_shares=_call_lookup(self.float_lookup, ticker),
-        )
+        values = compute_options_metrics(chains, spot=spot, float_shares=float_shares)
         if values:
             self.cache.set("options", cache_key, values)
         return values or None
@@ -320,9 +342,15 @@ class OptionsSource(DataSource):
                     state.stopped = f"stopped after {state.streak} consecutive failures: {exc}"
             return None
         with state.lock:
-            state.streak = 0
             if values is None:
+                # A skip does not clear the streak. "No chain" is indistinguishable
+                # from a provider answering every request with nothing, and a
+                # breaker that a skip resets would never trip on that provider —
+                # only a ticker that actually came back with data proves the
+                # provider is alive.
                 state.skipped += 1
+            else:
+                state.streak = 0
         return values
 
     # -- contract ---------------------------------------------------------
@@ -358,7 +386,13 @@ class OptionsSource(DataSource):
             # coverage number it substitutes says most of it, and inventing a
             # second channel for the rest would be worse than losing it.
             self.health.detail = "; ".join(notes)[:300]
-        if not records and state.errors:
+        if state.errors and not records and not state.skipped:
+            # Only when *nothing* came back alive: an empty `records` on its own
+            # is the ordinary outcome of a watchlist whose names either list no
+            # chain or list one nothing qualified in, and calling that an outage
+            # would turn the health line red on a scan that worked exactly as
+            # designed. A ticker the provider answered — even with "no options" —
+            # is proof it is up.
             raise SourceError(f"all {state.errors} option-chain requests failed")
         return records
 
@@ -631,6 +665,20 @@ def _non_negative(value: Any) -> float | None:
     if parsed is None or parsed < 0:
         return None
     return parsed
+
+
+def _key_bucket(value: float | None, sigfigs: int) -> str:
+    """A cache-key fragment for a denominator, stable under noise.
+
+    Written as mantissa+exponent rather than a rounded float so the fragment
+    does not carry binary-repr artefacts into a filename. A missing value gets
+    its own token: "no float" and "some float" produce different records and
+    must not collide.
+    """
+    if not value or value <= 0:
+        return "na"
+    exponent = math.floor(math.log10(value)) - sigfigs + 1
+    return f"{round(value / 10 ** exponent)}e{exponent}"
 
 
 def _sum_field(rows: Sequence[dict[str, Any]], field_name: str) -> float:

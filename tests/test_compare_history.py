@@ -72,12 +72,27 @@ def test_compare_tickers_verdict_names_the_driving_component():
     assert verdict["driver_score"] == 100.0
 
 
-def test_compare_tickers_handles_absent_metrics():
+def test_compare_tickers_drops_metrics_nobody_reported():
+    """A row of dashes says nothing a missing row does not say better — and it
+    is what every opt-in feed would print for a scan that did not run it."""
     rows = [{"ticker": "X", "squeeze_score": 10.0}, {"ticker": "Y", "squeeze_score": 20.0}]
     payload = compare_tickers(rows, ["X", "Y"])
+    fields = {m["field"] for m in payload["metrics"]}
+    assert "squeeze_score" in fields
+    assert "short_pct_float" not in fields
+    assert "borrow_fee_pct" not in fields
+
+
+def test_compare_tickers_keeps_a_metric_one_ticker_reported():
+    """Partial coverage is a comparison; no coverage is not."""
+    rows = [
+        {"ticker": "X", "squeeze_score": 10.0, "short_pct_float": 22.0},
+        {"ticker": "Y", "squeeze_score": 20.0},
+    ]
+    payload = compare_tickers(rows, ["X", "Y"])
     si = next(m for m in payload["metrics"] if m["field"] == "short_pct_float")
-    assert si["leader"] is None
-    assert si["values"] == {"X": None, "Y": None}
+    assert si["leader"] == "X"
+    assert si["values"] == {"X": 22.0, "Y": None}
 
 
 # --------------------------------------------------------------------------

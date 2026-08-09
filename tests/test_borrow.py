@@ -707,10 +707,31 @@ def test_an_implausible_benchmark_is_reported(live_settings, monkeypatch):
     monkeypatch.setenv("SQUEEZE_BORROW_ENABLED", "1")
     source = BorrowSource(live_settings, session=_StubSession(WRONG_COLUMN_FIXTURE))
 
-    source.collect(["GME", "AAPL", "AMC", "INDI"])
+    records = source.collect(["GME", "AAPL", "AMC", "INDI"])
 
-    assert source.health.status == "ok"
+    assert records == {}                       # suspect fees are not worth serving
+    assert source.health.status == "error"
     assert "column layout may have changed" in source.health.detail
+
+
+def test_the_layout_tripwire_survives_the_partial_coverage_path(live_settings, monkeypatch):
+    """The tripwire has to reach `health.detail` on the path this source is
+    normally on, not just when coverage happens to be total.
+
+    A plain `self.health.detail = ...` inside `_fetch` cannot do that:
+    `DataSource.collect` overwrites the string with "<n>/<m> tickers covered"
+    whenever some requested tickers are missing — and partial coverage is this
+    source's steady state, so the one message worth reading would be the one
+    always thrown away. Raising is what keeps it.
+    """
+    monkeypatch.setenv("SQUEEZE_BORROW_ENABLED", "1")
+    source = BorrowSource(live_settings, session=_StubSession(WRONG_COLUMN_FIXTURE))
+
+    # GME and AAPL are in the file, NOSUCH is not: partial coverage without the fix.
+    source.collect(["GME", "AAPL", "NOSUCH"])
+
+    assert "column layout may have changed" in source.health.detail
+    assert "tickers covered" not in source.health.detail
 
 
 def test_a_clean_run_records_the_benchmark_as_positive_evidence(live_settings, monkeypatch):

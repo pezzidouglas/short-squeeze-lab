@@ -67,7 +67,14 @@ Period = tuple[int, int, str]
 FtdPoint = tuple[str, float, float | None]
 FtdTable = dict[str, list[FtdPoint]]
 
-_HTTP_4XX_RE = re.compile(r"HTTP 4\d\d")
+# The only two answers that mean "this file is not here": 404 for a period SEC
+# has not published (or a path it never used), 410 for one it has retired. Every
+# other status is about *us or the server* — 403 is an access denial (SEC blocks
+# clients whose User-Agent carries no contact), 429 is a rate limit, 5xx is an
+# outage — and none of them is evidence about whether the file exists. Treating
+# them as absence both misreports the failure and writes it into the miss cache,
+# which would freeze a transient refusal into a permanent "never published".
+_HTTP_MISSING_RE = re.compile(r"\bHTTP (?:404|410)\b")
 _LINK_RE = re.compile(
     r"""href\s*=\s*["']?(?P<url>[^"'>\s]*cnsfails(?P<year>\d{4})(?P<month>\d{2})(?P<half>[ab])\.(?:zip|txt))""",
     re.IGNORECASE,
@@ -108,6 +115,9 @@ class SecFtdSource(DataSource):
         # Published periods never change, so successful parses get a long TTL.
         # Misses deliberately do NOT go here (see `_period_table`).
         self.file_cache = DiskCache(self.settings.cache_dir, FILE_CACHE_TTL)
+        # Why the walk-back stopped early, when it was a refusal rather than an
+        # absence. Carried out of the loop so `_fetch` can report it.
+        self._walk_error: Exception | None = None
 
     @property
     def today(self) -> date:
@@ -172,7 +182,15 @@ class SecFtdSource(DataSource):
         for period in candidate_periods(self.today, PERIOD_SEARCH_LIMIT):
             if len(periods) >= limit:
                 break
-            table = self._period_table(period)
+            try:
+                table = self._period_table(period)
+            except SourceError as exc:
+                # A refusal (403), a throttle (429) or an outage says nothing
+                # about this period and everything about the next request, so
+                # walking further would just collect the same failure. Keep the
+                # periods already earned and report why the window stops here.
+                self._walk_error = exc
+                break
             if table:
                 periods.append((period, table))
         periods.reverse()
@@ -206,14 +224,28 @@ class SecFtdSource(DataSource):
     # -- contract ---------------------------------------------------------
 
     def _fetch(self, tickers: Sequence[str]) -> SourceRecords:
+        self._walk_error = None
         periods = self.recent_periods()
-        if not periods:
+        # The index page is the answer to "the naming scheme moved again", which
+        # is only a live hypothesis when the templates actually 404. After a
+        # refusal it would be two more requests into the same wall.
+        if not periods and self._walk_error is None:
             periods = self._periods_from_index()
         if not periods:
+            if self._walk_error is not None:
+                # Claiming nothing was published would repeat the very mistake
+                # the miss cache used to make: SEC refused us, it did not run out
+                # of files.
+                raise SourceError(access_detail(self._walk_error))
             raise SourceError(
                 f"no fails-to-deliver file published in the last {PERIOD_SEARCH_LIMIT} periods"
             )
-        if len(periods) < PERIODS_WANTED:
+        if self._walk_error is not None:
+            self.health.detail = (
+                f"window cut short after {len(periods)} of {PERIODS_WANTED} periods: "
+                f"{access_detail(self._walk_error)}"
+            )
+        elif len(periods) < PERIODS_WANTED:
             self.health.detail = (
                 f"only {len(periods)} of {PERIODS_WANTED} periods available; window is shorter than usual"
             )
@@ -506,5 +538,20 @@ def _iso(stamp: str) -> str:
 
 
 def _is_missing(error: Exception) -> bool:
-    """base.get reports a 4xx as `HTTP <code> for <url>`; anything else is transport."""
-    return bool(_HTTP_4XX_RE.search(str(error)))
+    """base.get reports a status as `HTTP <code> for <url>`; only 404/410 mean absent."""
+    return bool(_HTTP_MISSING_RE.search(str(error)))
+
+
+def access_detail(error: Exception) -> str:
+    """Say what a refusal actually was, so health does not read as "no data".
+
+    A scan that is being denied or throttled looks identical to a quiet source
+    unless the panel is told otherwise, and the two need opposite responses:
+    one is a configuration/etiquette fix, the other is a wait.
+    """
+    text = str(error)
+    if "HTTP 403" in text:
+        return f"SEC denied access: {text} — set SEC_CONTACT_EMAIL so the User-Agent carries a contact"
+    if "HTTP 429" in text:
+        return f"SEC rate-limited the scan: {text} — retry later; the period is not recorded as missing"
+    return text

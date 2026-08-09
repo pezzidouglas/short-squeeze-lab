@@ -12,9 +12,12 @@ from typing import Iterable, Sequence
 
 from ..config import Settings
 from .base import DataSource, DiskCache, SourceError, SourceHealth, SourceMeta, SourceRecords
+from .borrow import BorrowSource
 from .finra import FinraSource
 from .finviz import FinvizSource
+from .options import OptionsSource
 from .sec_edgar import SecEdgarSource
+from .sec_ftd import SecFtdSource
 from .snapshot import SnapshotSource
 from .stooq import StooqSource
 from .yahoo import YahooSource
@@ -25,8 +28,19 @@ SOURCE_REGISTRY: dict[str, type[DataSource]] = {
     "finviz": FinvizSource,
     "finra": FinraSource,
     "sec": SecEdgarSource,
+    "sec_ftd": SecFtdSource,
+    "borrow": BorrowSource,
+    "options": OptionsSource,
     "snapshot": SnapshotSource,
 }
+
+# Sources whose numbers need a denominator — float, spot price — that they
+# deliberately do not fetch themselves, because refetching it would duplicate
+# Yahoo/Finviz at the wrong layer. `MarketDataService` collects these in a
+# second pass and injects the lookups from what the first pass returned; run
+# concurrently with everything else they would simply have no denominator and
+# would drop their only cross-ticker-comparable fields.
+DEPENDENT_SOURCES: frozenset[str] = frozenset({"sec_ftd", "options"})
 
 __all__ = [
     "DataSource",
@@ -36,11 +50,15 @@ __all__ = [
     "SourceMeta",
     "SourceRecords",
     "SOURCE_REGISTRY",
+    "DEPENDENT_SOURCES",
     "build_sources",
     "describe_sources",
+    "BorrowSource",
     "FinraSource",
     "FinvizSource",
+    "OptionsSource",
     "SecEdgarSource",
+    "SecFtdSource",
     "SnapshotSource",
     "StooqSource",
     "YahooSource",

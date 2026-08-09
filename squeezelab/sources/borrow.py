@@ -147,6 +147,20 @@ class BorrowSource(DataSource):
             return {ticker: dict(values) for ticker, values in cached.items()}
 
         records, diagnostics = self._table()
+
+        tripwire = layout_tripwire(records)
+        if tripwire:
+            # Raised, not assigned. `collect()` overwrites `health.detail` with
+            # "<n>/<m> tickers covered" on the partial path — the ordinary
+            # outcome for this source, since IBKR does not list every name — so
+            # a plain `self.health.detail = tripwire` here is discarded before
+            # anyone can read it. The `SourceError` path is the only one that
+            # reports the message verbatim, and it is also the honest status:
+            # if the rate columns no longer mean what the parser thinks, every
+            # fee below is suspect, and the module already refuses rather than
+            # guesses on the layouts `parse_header` can see.
+            raise SourceError(tripwire)
+
         index = build_symbol_index(records)
         matched: SourceRecords = {t: dict(records[index[t]]) for t in wanted if t in index}
 
@@ -161,7 +175,8 @@ class BorrowSource(DataSource):
             )
         # `collect()` keeps this detail on the empty and error paths but replaces
         # it with a coverage line on the partial path, which is the common one.
-        # Nothing here may be the *only* place a problem is reported.
+        # Nothing here may be the *only* place a problem is reported — anything
+        # that must always be seen is raised instead (see `layout_tripwire`).
         self.health.detail = "; ".join(notes)[:300]
 
         if matched:
@@ -430,6 +445,23 @@ def implied_benchmark_rate(records: dict[str, dict[str, Any]]) -> float | None:
     return round(median(sums), 2)
 
 
+def layout_tripwire(records: dict[str, dict[str, Any]]) -> str | None:
+    """The refusal message when the rate columns stop meaning what we think.
+
+    Split out of `_diagnose` because this is the one diagnosis that may not be a
+    note: notes reach `health.detail`, and `collect()` overwrites that string on
+    the partial path. `_fetch` raises this, so it lands on the one path
+    `collect()` reports verbatim.
+
+    None when the implied benchmark rate is plausible, or when too few rows
+    carry both a rebate and a fee for the median to mean anything.
+    """
+    benchmark = implied_benchmark_rate(records)
+    if benchmark is None or BENCHMARK_BAND[0] <= benchmark <= BENCHMARK_BAND[1]:
+        return None
+    return f"column layout may have changed: implied benchmark rate {benchmark:.1f}% is implausible"
+
+
 def looks_like_shortable_file(text: str | None) -> bool:
     """Cheap sniff run before parsing, so an HTML body is reported as HTML."""
     head = _strip_bom(text or "").lstrip()[:SNIFF_CHARS]
@@ -495,14 +527,16 @@ def cache_key(tickers: Sequence[str]) -> str:
 
 
 def _diagnose(records: dict[str, dict[str, Any]], diagnostics: dict[str, Any]) -> list[str]:
-    """Health notes about how the parse went, most alarming first."""
+    """Health notes about how the parse went, most alarming first.
+
+    Everything here is survivable — a note is advisory, and `collect()` may drop
+    the lot on the partial path. The implausible-benchmark case is deliberately
+    absent: it is a `SourceError` raised by `_fetch` via `layout_tripwire`,
+    because it is the one finding that must never be advisory.
+    """
     notes: list[str] = []
     benchmark = implied_benchmark_rate(records)
     plausible = benchmark is not None and BENCHMARK_BAND[0] <= benchmark <= BENCHMARK_BAND[1]
-    if benchmark is not None and not plausible:
-        notes.append(
-            f"column layout may have changed: implied benchmark rate {benchmark:.1f}% is implausible"
-        )
     if diagnostics.get("truncated"):
         notes.append("download looks truncated (no #EOF); tail-of-alphabet symbols may be missing")
     if diagnostics.get("rows_skipped"):

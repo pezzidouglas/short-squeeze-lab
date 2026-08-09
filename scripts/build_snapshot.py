@@ -105,6 +105,110 @@ def build_bars(rng: random.Random, closes: list[float], avg_volume: float, dates
     }
 
 
+# --------------------------------------------------------------------------
+# Opt-in feeds
+# --------------------------------------------------------------------------
+# These three exist so an offline run exercises the borrow and gamma scoring
+# paths instead of leaving them permanently blank. Each is derived from the
+# ticker's own profile — a tight float with a crowded short gets an expensive
+# borrow, thin loan inventory, more fails and a heavier call ladder — so the
+# sample stays internally consistent under every derived percentage the engine
+# computes back off it. Still not market data: `synthetic: true` covers these
+# exactly as it covers the rest.
+
+
+def _pressure(float_shares: float, short_pct: float) -> float:
+    """0-1 crowding proxy: how short the name is, against how little there is."""
+    crowding = min(short_pct / 40.0, 1.0)
+    scarcity = min(max((9.0 - math.log10(max(float_shares, 1e5))) / 2.0, 0.0), 1.0)
+    return min(0.62 * crowding + 0.38 * scarcity, 1.0)
+
+
+def stock_loan(rng: random.Random, float_shares: float, short_pct: float) -> dict:
+    pressure = _pressure(float_shares, short_pct)
+    # General collateral under ~1%/yr; a genuinely hard borrow runs to tens of
+    # percent. Exponential rather than linear, which is how the real curve runs.
+    fee = round(0.35 * math.exp(4.6 * pressure) * rng.uniform(0.8, 1.25), 2)
+    shares = round(float_shares * (0.012 * (1.05 - pressure) ** 2) * rng.uniform(0.5, 1.6), -2)
+    return {
+        "borrow_fee_pct": fee,
+        # The broker's own funding rate less the fee — negative on anything
+        # hard, which is the whole cost of carry a short is paying.
+        "borrow_rebate_pct": round(4.3 - fee, 2),
+        "shortable_shares": max(shares, 0.0),
+        "shortable_shares_basis": "exact" if pressure > 0.45 else "floor",
+        "borrow_as_of": AS_OF.isoformat(),
+    }
+
+
+def fails_to_deliver(
+    rng: random.Random, dates: list, float_shares: float, short_pct: float, price: float
+) -> dict:
+    pressure = _pressure(float_shares, short_pct)
+    # Published ~a month after a half-month period closes, so the freshest
+    # datum here is deliberately stale — the engine surfaces `ftd_date` with
+    # every number precisely because of this.
+    stamps = [dates[-1] - timedelta(days=40 - i * 2) for i in range(11)]
+    base = float_shares * 0.0007 * (0.3 + pressure) * rng.uniform(0.6, 1.5)
+    points = [max(base * rng.uniform(0.35, 2.1), 100.0) for _ in stamps]
+    peak = max(points)
+    window = sum(points) / len(points)
+    fast = sum(points[-3:]) / 3
+    return {
+        "ftd_shares_peak": round(peak, 2),
+        "ftd_shares_avg": round(window, 2),
+        "ftd_persist_days": len(points),
+        "ftd_pct_float": round(peak / float_shares * 100, 4),
+        "ftd_notional": round(peak * price, 2),
+        "ftd_trend": round((fast / window - 1) * 100, 2),
+        "ftd_date": stamps[-1].isoformat(),
+        "ftd_series": [
+            {"date": day.isoformat(), "shares": round(value, 2), "price": round(price, 2)}
+            for day, value in zip(stamps, points)
+        ],
+    }
+
+
+def option_chain(
+    rng: random.Random, dates: list, float_shares: float, short_pct: float, price: float
+) -> dict:
+    pressure = _pressure(float_shares, short_pct)
+    # Sub-$2 names mostly have no listed chain worth reading, and a screener
+    # that invents one for them teaches the wrong thing about its own coverage.
+    if price < 2.0 or rng.random() < 0.15:
+        return {}
+
+    # Contracts, then shares: one contract is 100 shares, and every percentage
+    # downstream is share-equivalent.
+    contracts = float_shares / 100 * (0.015 + 0.11 * pressure) * rng.uniform(0.55, 1.5)
+    shares = contracts * 100
+    step = max(round(price * 0.05, 2), 0.01)
+    strikes = [round(price + (i - 3) * step, 2) for i in range(7)]
+    ladder = []
+    for index, strike in enumerate(strikes):
+        # Heaviest at the money, thinning either side.
+        weight = math.exp(-((index - 3) ** 2) / 4.5)
+        oi = contracts * weight / 3.6
+        ladder.append(
+            {
+                "strike": strike,
+                "call_oi": round(oi, 2),
+                "call_volume": round(oi * rng.uniform(0.2, 1.9), 2),
+            }
+        )
+    return {
+        "options_ntm_call_oi": round(shares, 2),
+        "options_ntm_call_oi_pct_float": round(shares / float_shares * 100, 4),
+        "options_call_volume_oi_ratio": round(rng.uniform(0.15, 2.3), 2),
+        "options_call_put_oi_ratio": round(rng.uniform(0.7, 4.5), 2),
+        # Inverted from a last trade, not a mid — context, never scored.
+        "options_atm_iv": round(45 + 210 * pressure * rng.uniform(0.6, 1.3), 2),
+        "options_oi_ladder": ladder,
+        "options_expiry": (dates[-1] + timedelta(days=rng.choice([16, 23, 30]))).isoformat(),
+        "options_window_days": rng.choice([30, 37, 44, 58]),
+    }
+
+
 def build() -> dict:
     records: dict[str, dict] = {}
     prices: dict[str, dict] = {}
@@ -163,6 +267,9 @@ def build() -> dict:
             "off_exchange_short_pct": round(slow, 2),
             "off_exchange_trend": round(fast - slow, 2),
             "off_exchange_series": series,
+            **stock_loan(rng, float_shares, short_pct),
+            **fails_to_deliver(rng, dates, float_shares, short_pct, closes[-1]),
+            **option_chain(rng, dates, float_shares, short_pct, closes[-1]),
         }
 
     return {

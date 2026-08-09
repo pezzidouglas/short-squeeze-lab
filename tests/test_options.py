@@ -16,6 +16,7 @@ import pytest
 from squeezelab.config import Settings
 from squeezelab.sources import options as options_module
 from squeezelab.sources.options import (
+    CIRCUIT_BREAKER,
     LADDER_STRIKES,
     MIN_NTM_OI,
     ChainSlice,
@@ -577,6 +578,53 @@ def test_every_ticker_failing_is_an_error_not_an_empty_scan(live_settings, monke
     assert "option-chain requests failed" in source.health.detail
 
 
+def test_a_lone_failure_beside_names_with_no_chain_is_not_an_outage(live_settings, monkeypatch):
+    """An empty scan is the ordinary end of a watchlist, not a dead provider.
+
+    SPRY lists no chain, TSBX lists one nothing qualified in, AMC failed. Two of
+    the three answered, so the provider is demonstrably up and the one failure is
+    a partial-coverage note — reading this as "every request failed" turns a scan
+    that worked as designed red.
+    """
+    thin = _frame([(20.0, None, None, 12.5)])  # a real chain; no OI, no usable IV
+    fake = _FakeYf(
+        {
+            "SPRY": _FakeTicker(expiries=()),
+            "TSBX": _FakeTicker(expiries=(EXPIRY,), chains={EXPIRY: _FakeChain(thin, thin)}),
+            "AMC": _FakeTicker(error=RuntimeError("429 too many requests")),
+        }
+    )
+    source = _source(live_settings, fake, monkeypatch, price_lookup=lambda t: SPOT)
+    assert source.collect(["SPRY", "TSBX", "AMC"]) == {}
+    assert source.health.status == "empty"
+    assert "1 ticker(s) failed" in source.health.detail
+
+
+def test_a_provider_answering_only_with_nothing_still_trips_the_breaker(tmp_path, monkeypatch):
+    """A skip is not proof of life, so it must not clear the failure streak.
+
+    Single-worker settings pin the order: the failures and the skips strictly
+    alternate, so a streak a skip resets never reaches the breaker and a provider
+    that fails half its requests would be allowed to run the budget out.
+    """
+    settings = Settings(
+        data_dir=str(tmp_path), cache_ttl_seconds=0, offline=False,
+        enabled_sources=("options",), max_workers=1, request_delay=0.0,
+    )
+    tickers: list[str] = []
+    tickers_by_symbol: dict[str, _FakeTicker] = {}
+    for i in range(CIRCUIT_BREAKER):
+        tickers_by_symbol[f"BAD{i}"] = _FakeTicker(error=RuntimeError("429 too many requests"))
+        tickers_by_symbol[f"NIL{i}"] = _FakeTicker(expiries=())
+        tickers += [f"BAD{i}", f"NIL{i}"]
+
+    source = _source(settings, _FakeYf(tickers_by_symbol), monkeypatch)
+    assert source.collect(tickers) == {}
+    assert "consecutive failures" in source.health.detail
+    # The breaker fired on the last failure, so the skip behind it never ran.
+    assert tickers_by_symbol[f"NIL{CIRCUIT_BREAKER - 1}"].option_list_calls == 0
+
+
 def test_a_provider_failure_is_not_cached_as_no_options(live_settings, monkeypatch):
     """Caching an outage for a week would keep the ticker dark long after it lifts."""
     fake = _FakeYf({"GME": _FakeTicker(error=RuntimeError("429 too many requests"))})
@@ -627,6 +675,68 @@ def test_an_exhausted_budget_stops_the_run(live_settings, monkeypatch, liquid_ca
     assert source.collect(["GME", "AMC"]) == {}
     assert source.health.status == "empty"
     assert "budget" in source.health.detail
+
+
+@pytest.fixture
+def caching_settings(tmp_path) -> Settings:
+    """Like `live_settings`, but with the derived-record cache actually on."""
+    return Settings(
+        data_dir=str(tmp_path), cache_ttl_seconds=600, offline=False,
+        enabled_sources=("options",), max_workers=1, request_delay=0.0,
+    )
+
+
+def _gme(liquid_calls, liquid_puts) -> _FakeYf:
+    return _FakeYf(
+        {"GME": _FakeTicker(expiries=(EXPIRY,), chains={EXPIRY: _FakeChain(liquid_calls, liquid_puts)})}
+    )
+
+
+def test_derived_cache_turns_over_on_a_moved_spot(
+    caching_settings, monkeypatch, liquid_calls, liquid_puts
+):
+    """Spot cuts the band, so a cache key without it serves the wrong strikes."""
+    quote = {"spot": SPOT}
+    fake = _gme(liquid_calls, liquid_puts)
+    source = _source(caching_settings, fake, monkeypatch, price_lookup=lambda t: quote["spot"])
+    assert source.collect(["GME"])["GME"]["options_ntm_call_oi"] == 1_600_000
+
+    quote["spot"] = 30.00  # the band is now [28.50, 39.00]: only 30 and 35 qualify
+    records = source.collect(["GME"])
+    assert records["GME"]["options_ntm_call_oi"] == (1500 + 500) * 100
+
+
+def test_derived_cache_turns_over_on_a_revised_float(
+    caching_settings, monkeypatch, liquid_calls, liquid_puts
+):
+    """Float is the headline denominator; a stale one halves or doubles the number."""
+    shares = {"float": FLOAT_SHARES}
+    fake = _gme(liquid_calls, liquid_puts)
+    source = _source(
+        caching_settings, fake, monkeypatch,
+        float_lookup=lambda t: shares["float"], price_lookup=lambda t: SPOT,
+    )
+    first = source.collect(["GME"])
+    assert first["GME"]["options_ntm_call_oi_pct_float"] == pytest.approx(8.00)
+
+    shares["float"] = FLOAT_SHARES * 2
+    second = source.collect(["GME"])
+    assert second["GME"]["options_ntm_call_oi_pct_float"] == pytest.approx(4.00)
+
+
+def test_a_penny_of_drift_still_answers_from_the_derived_cache(
+    caching_settings, monkeypatch, liquid_calls, liquid_puts
+):
+    """Quantised, not raw: a key that tracked every tick would never hit."""
+    quote = {"spot": SPOT}
+    fake = _gme(liquid_calls, liquid_puts)
+    source = _source(caching_settings, fake, monkeypatch, price_lookup=lambda t: quote["spot"])
+    source.collect(["GME"])
+
+    fake.tickers["GME"].chain_calls.clear()
+    quote["spot"] = SPOT + 0.01  # too small to move a band edge by a strike
+    assert source.collect(["GME"])["GME"]["options_ntm_call_oi"] == 1_600_000
+    assert fake.tickers["GME"].chain_calls == []
 
 
 def test_ladder_and_series_survive_the_disk_cache(tmp_path, monkeypatch, liquid_calls, liquid_puts):

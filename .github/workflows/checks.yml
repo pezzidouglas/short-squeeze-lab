@@ -34,11 +34,19 @@ jobs:
     continue-on-error: true
     timeout-minutes: 12
     env:
-      SQUEEZE_SOURCES: yahoo,stooq,finra,sec
+      SQUEEZE_SOURCES: yahoo,stooq,finra,sec,sec_ftd,borrow,options
       SQUEEZE_CACHE_TTL: "0"
       # No snapshot fallback here — the whole point is to see the live sources
       # succeed or fail on their own.
       SQUEEZE_SNAPSHOT_FALLBACK: "0"
+      # The IBKR shortable-share endpoint was written from documentation and
+      # has never been exercised against the live host. This job is the only
+      # place that can find out, and "borrow: error" here costs nothing.
+      SQUEEZE_BORROW_ENABLED: "1"
+      # A cold options scan is up to four requests per ticker, so the
+      # diagnostic universe is capped rather than the whole watchlist.
+      SQUEEZE_OPTIONS_MAX_TICKERS: "8"
+      SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

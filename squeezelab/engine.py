@@ -1,13 +1,14 @@
 """
 Squeeze scoring engine.
 
-Five components, each scored 0-100 from its own inputs and then weighted:
+Six components, each scored 0-100 from its own inputs and then weighted:
 
   si        short interest as a share of float — the raw fuel
-  borrow    days-to-cover and float scarcity — how hard it is to get out
+  borrow    what a short costs and how scarce the stock is — the cost of being wrong
   liquidity short position measured against real daily volume — the trap
   momentum  price compression plus a rising short position — the spark
   flow      FINRA off-exchange short volume and its trend — is it still on?
+  gamma     near-the-money call open interest against the float — who is forced to buy
 
 Two things differ from a naive weighted average, and both matter:
 
@@ -29,7 +30,7 @@ from typing import Any, Iterable, Sequence
 from .config import COMPONENT_LABELS, resolve_weights, setup_label
 from .consolidate import ConsolidatedScan, TickerRecord, short_interest_age_days
 
-COMPONENTS: tuple[str, ...] = ("si", "borrow", "liquidity", "momentum", "flow")
+COMPONENTS: tuple[str, ...] = ("si", "borrow", "liquidity", "momentum", "flow", "gamma")
 
 
 @dataclass
@@ -111,25 +112,84 @@ class SqueezeEngine:
         return ComponentResult("si", clamp(score), {"short_pct_float": round(si, 2)})
 
     def score_borrow_pressure(self, values: dict[str, Any]) -> ComponentResult:
-        """Days to cover plus float scarcity — the cost of being wrong and short."""
+        """What a short actually costs, and how scarce the stock is.
+
+        Days-to-cover and float size are *proxies* for the price of borrow.
+        When a stock-loan feed is enabled the price itself is available, so it
+        takes the largest share and the proxies are demoted rather than dropped
+        — one broker's indications are not the whole market.
+
+        The proxy-only weights (0.28 / 0.12) are deliberately in the same 7:3
+        ratio the component used before any loan data existed: `_weighted`
+        renormalises over whatever is present, so a scan without `borrow`
+        enabled scores identically to how it always did.
+        """
         dtc = _num(values, "short_ratio")
         float_shares = _num(values, "float") or _num(values, "shares_outstanding")
-        if dtc is None and float_shares is None:
-            return ComponentResult("borrow", None, note="no days-to-cover or float")
+        fee = _num(values, "borrow_fee_pct")
+        available = _num(values, "shortable_shares")
+        ftd_pct = _num(values, "ftd_pct_float")
+        if dtc is None and float_shares is None and fee is None and available is None:
+            return ComponentResult("borrow", None, note="no borrow rate, days-to-cover or float")
 
         parts: list[tuple[float, float]] = []
         inputs: dict[str, Any] = {}
+
+        if fee is not None:
+            # General collateral sits under ~1%/yr and says nothing. The curve
+            # is steep through the single digits, where a name stops being
+            # freely borrowable, and flattens past 50% where the rate is
+            # already prohibitive and more of it changes no decision.
+            parts.append((
+                clamp(piecewise(fee, [(0, 0), (1, 8), (3, 30), (5, 45), (10, 62), (25, 80), (50, 92), (100, 100)])),
+                0.40,
+            ))
+            inputs["borrow_fee_pct"] = round(fee, 2)
+
         if dtc is not None:
             dtc_score = piecewise(dtc, [(0, 0), (1, 18), (2, 35), (3, 52), (5, 76), (8, 92), (12, 100)])
-            parts.append((dtc_score, 0.7))
+            parts.append((dtc_score, 0.28))
             inputs["short_ratio"] = round(dtc, 2)
+
         if float_shares:
             # 10M float is as scarce as it gets; past 1B scarcity stops mattering.
             span = math.log10(1e9) - math.log10(1e7)
             scarcity = (math.log10(1e9) - math.log10(max(float_shares, 1e5))) / span
             scarcity_score = clamp(scarcity * 100)
-            parts.append((scarcity_score, 0.3))
+            parts.append((scarcity_score, 0.12))
             inputs["float"] = float_shares
+
+        if available is not None and float_shares:
+            # Inventory left, as a share of float. Zero available is the single
+            # most squeeze-relevant reading in the file — no new short can be
+            # opened at that broker at any price — so it must score 100, which
+            # is why this reads a count rather than testing it for truthiness.
+            supply_pct = available / float_shares * 100
+            basis = values.get("shortable_shares_basis")
+            score = clamp(piecewise(supply_pct, [(0, 100), (0.05, 82), (0.2, 62), (0.5, 45), (1.0, 30), (3.0, 12), (8.0, 0)]))
+            # A censored ">N" row is a floor on supply, so the real pressure is
+            # at most what the floor implies. Scoring it as exact would invent
+            # scarcity for the liquid names a human checks first.
+            weight = 0.12 if basis != "floor" else 0.05
+            parts.append((score, weight))
+            inputs["shortable_pct_float"] = round(supply_pct, 4)
+            if basis:
+                inputs["shortable_shares_basis"] = basis
+
+        if ftd_pct is not None:
+            # Fails corroborate a hard borrow — the delivery leg is harder to
+            # source — but the freshest datum is ~40 days old and fails arise
+            # overwhelmingly from operational causes. Smallest weight in the
+            # component, and never on its own: see `sec_ftd`'s module docstring.
+            parts.append((
+                clamp(piecewise(ftd_pct, [(0, 0), (0.05, 20), (0.2, 45), (0.5, 65), (1.0, 82), (3.0, 100)])),
+                0.08,
+            ))
+            inputs["ftd_pct_float"] = round(ftd_pct, 4)
+            if values.get("ftd_date"):
+                # The vintage travels with the number, always.
+                inputs["ftd_date"] = values["ftd_date"]
+
         return ComponentResult("borrow", _weighted(parts), inputs)
 
     def score_liquidity_trap(self, values: dict[str, Any]) -> ComponentResult:
@@ -195,6 +255,60 @@ class SqueezeEngine:
             inputs["off_exchange_trend"] = round(trend, 2)
         return ComponentResult("flow", _weighted(parts), inputs)
 
+    def score_gamma_pressure(self, values: dict[str, Any]) -> ComponentResult:
+        """Near-the-money call open interest against the float.
+
+        Short interest says how many shares are owed; it says nothing about
+        whether anyone is *forced to buy*. Calls already written in strikes a
+        plausible move converts to in-the-money oblige whoever is short them to
+        buy real shares to stay hedged, into a supply the short interest
+        already says is tight.
+
+        Scored only off the share-equivalent percentage of float, because that
+        is the only cross-ticker comparable reading the chain produces: a raw
+        contract count says nothing without knowing what it is a count against.
+        Implied vol is carried as context and deliberately not scored — Yahoo
+        inverts it from `lastPrice` rather than a mid, so on a strike that last
+        traded days ago it is fiction.
+        """
+        pct_float = _num(values, "options_ntm_call_oi_pct_float")
+        if pct_float is None:
+            return ComponentResult(
+                "gamma", None, note="no near-the-money call OI measured against a float"
+            )
+
+        parts = [(
+            clamp(piecewise(pct_float, [(0, 0), (1, 18), (3, 38), (6, 57), (10, 73), (20, 90), (35, 100)])),
+            0.7,
+        )]
+        inputs: dict[str, Any] = {
+            "options_ntm_call_oi_pct_float": round(pct_float, 3),
+            "options_ntm_call_oi": _num(values, "options_ntm_call_oi"),
+        }
+
+        turnover = _num(values, "options_call_volume_oi_ratio")
+        if turnover is not None:
+            # Open interest is T-1: OCC settles overnight, so on the day a ramp
+            # is actually built the level above is stale and this ratio is the
+            # only fresh column. Above 1.0 the session traded more contracts
+            # than were open — the ladder being read is already wrong, upward.
+            parts.append((
+                clamp(piecewise(turnover, [(0, 0), (0.2, 25), (0.5, 50), (1.0, 75), (2.0, 92), (4.0, 100)])),
+                0.3,
+            ))
+            inputs["options_call_volume_oi_ratio"] = round(turnover, 2)
+
+        for context in ("options_atm_iv", "options_expiry", "options_window_days"):
+            if values.get(context) is not None:
+                inputs[context] = values[context]
+
+        return ComponentResult(
+            "gamma",
+            _weighted(parts),
+            inputs,
+            note="" if turnover is not None else "open interest is T-1 and no fresh volume corroborates it",
+        )
+
     # -- composite --------------------------------------------------------
 
     def score(self, values: dict[str, Any]) -> dict[str, Any]:
@@ -205,6 +319,7 @@ class SqueezeEngine:
             "liquidity": self.score_liquidity_trap(values),
             "momentum": self.score_momentum_fuel(values),
             "flow": self.score_flow(values),
+            "gamma": self.score_gamma_pressure(values),
         }
 
         available = {k: r for k, r in results.items() if r.score is not None and self.weights.get(k, 0) > 0}
