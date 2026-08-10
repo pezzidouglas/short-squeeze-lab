@@ -6,7 +6,30 @@ import pytest
 
 from squeezelab.config import resolve_weights, setup_label
 from squeezelab.consolidate import consolidate
-from squeezelab.engine import SqueezeEngine, piecewise
+from squeezelab.engine import COMPONENTS, SqueezeEngine, piecewise
+
+# The opt-in feeds, kept out of BASE so every existing expectation still
+# describes what a default scan actually sees.
+BORROW = {
+    "borrow_fee_pct": 28.0,
+    "shortable_shares": 25_000.0,
+    "shortable_shares_basis": "exact",
+    "borrow_rebate_pct": -23.0,
+    "borrow_as_of": "2026-08-07",
+}
+FTD = {
+    "ftd_pct_float": 0.6,
+    "ftd_shares_peak": 600_000.0,
+    "ftd_date": "2026-06-30",
+}
+OPTIONS = {
+    "options_ntm_call_oi_pct_float": 8.0,
+    "options_ntm_call_oi": 8e6,
+    "options_call_volume_oi_ratio": 1.4,
+    "options_atm_iv": 140.0,
+    "options_expiry": "2026-09-18",
+    "options_window_days": 40,
+}
 
 BASE = {
     "ticker": "TEST",
@@ -97,6 +120,125 @@ def test_liquidity_derives_shares_short_when_absent():
 
 
 # --------------------------------------------------------------------------
+# Opt-in feeds: stock loan, fails-to-deliver, option chains
+# --------------------------------------------------------------------------
+
+
+def test_borrow_scores_identically_when_no_loan_data_is_enabled():
+    """The proxy-only weights keep the 7:3 ratio the component always used, so
+    enabling nothing must not move a single existing score."""
+    engine = SqueezeEngine()
+    result = engine.score_borrow_pressure({"short_ratio": 6.0, "float": 100e6})
+    dtc = piecewise(6.0, [(0, 0), (1, 18), (2, 35), (3, 52), (5, 76), (8, 92), (12, 100)])
+    import math
+
+    span = math.log10(1e9) - math.log10(1e7)
+    scarcity = (math.log10(1e9) - math.log10(100e6)) / span * 100
+    assert result.score == pytest.approx(dtc * 0.7 + scarcity * 0.3)
+
+
+def test_a_measured_borrow_fee_outweighs_the_proxies_for_it():
+    engine = SqueezeEngine()
+    cheap = engine.score_borrow_pressure({"short_ratio": 6.0, "float": 100e6, "borrow_fee_pct": 0.3})
+    dear = engine.score_borrow_pressure({"short_ratio": 6.0, "float": 100e6, "borrow_fee_pct": 60.0})
+    assert dear.score > cheap.score
+    # 0.40 of the component against 0.40 of proxies: the fee must be able to
+    # move the score by more than either proxy alone.
+    assert dear.score - cheap.score > 35
+
+
+def test_zero_shortable_shares_is_the_top_of_the_scarcity_curve():
+    """No new short can be opened at any price — the one reading that must not
+    be lost to a truthiness check on the share count."""
+    engine = SqueezeEngine()
+    none_left = engine.score_borrow_pressure({"float": 100e6, "shortable_shares": 0.0})
+    plenty = engine.score_borrow_pressure({"float": 100e6, "shortable_shares": 20e6})
+    assert none_left.inputs["shortable_pct_float"] == 0.0
+    assert none_left.score > plenty.score
+
+
+def test_a_censored_shortable_count_is_discounted_not_trusted():
+    engine = SqueezeEngine()
+    values = {"float": 100e6, "short_ratio": 6.0, "shortable_shares": 10e6}
+    exact = engine.score_borrow_pressure({**values, "shortable_shares_basis": "exact"})
+    floor = engine.score_borrow_pressure({**values, "shortable_shares_basis": "floor"})
+    # ">10M available" is a floor on supply, so it may only nudge the score.
+    assert floor.score != exact.score
+    assert floor.inputs["shortable_shares_basis"] == "floor"
+
+
+def test_fails_to_deliver_corroborate_borrow_and_carry_their_vintage():
+    engine = SqueezeEngine()
+    quiet = engine.score_borrow_pressure({"short_ratio": 6.0, "float": 100e6, **FTD, "ftd_pct_float": 0.0})
+    heavy = engine.score_borrow_pressure({"short_ratio": 6.0, "float": 100e6, **FTD})
+    assert heavy.score > quiet.score
+    # ~40 days stale by construction, so the date is never separable from it.
+    assert heavy.inputs["ftd_date"] == FTD["ftd_date"]
+
+
+def test_ftd_alone_never_scores_the_borrow_component():
+    """Fails are corroboration. On their own they are an operational statistic."""
+    engine = SqueezeEngine()
+    assert engine.score_borrow_pressure({"ftd_pct_float": 3.0}).score is None
+
+
+def test_gamma_needs_a_float_to_measure_call_open_interest_against():
+    engine = SqueezeEngine()
+    assert engine.score_gamma_pressure({"options_ntm_call_oi": 8e6}).score is None
+    assert engine.score_gamma_pressure(OPTIONS).score is not None
+
+
+def test_gamma_rises_with_near_the_money_call_oi():
+    engine = SqueezeEngine()
+    scores = [
+        engine.score_gamma_pressure({**OPTIONS, "options_ntm_call_oi_pct_float": pct}).score
+        for pct in (0.5, 3.0, 10.0, 25.0)
+    ]
+    assert scores == sorted(scores)
+
+
+def test_implied_vol_is_carried_as_context_and_never_scored():
+    """Yahoo inverts IV from lastPrice, so on a stale strike it is fiction."""
+    engine = SqueezeEngine()
+    calm = engine.score_gamma_pressure({**OPTIONS, "options_atm_iv": 30.0})
+    wild = engine.score_gamma_pressure({**OPTIONS, "options_atm_iv": 400.0})
+    assert calm.score == wild.score
+    assert wild.inputs["options_atm_iv"] == 400.0
+
+
+def test_stale_open_interest_says_so_when_no_volume_corroborates_it():
+    engine = SqueezeEngine()
+    without = engine.score_gamma_pressure(
+        {k: v for k, v in OPTIONS.items() if k != "options_call_volume_oi_ratio"}
+    )
+    assert "T-1" in without.note
+    assert engine.score_gamma_pressure(OPTIONS).note == ""
+
+
+def test_classic_ignores_every_component_added_since():
+    """`classic` freezes the *weighting*, so a new component cannot reach it —
+    not even through renormalisation, because a zero-weight component is
+    excluded from the model rather than scored and multiplied by nothing."""
+    engine = SqueezeEngine(preset="classic")
+    plain = engine.score(BASE)
+    enriched = engine.score(with_(**OPTIONS))
+    assert plain["squeeze_score"] == enriched["squeeze_score"]
+    assert enriched["gamma_score"] is not None  # scored, then given no weight
+    assert engine.weights["gamma"] == 0.0
+
+
+def test_classic_does_not_freeze_the_data_inside_the_components_it_weights():
+    """Enabling the stock-loan feed sharpens `borrow` under every preset. That
+    is the point of collecting it, and `classic` is a weighting, not a data
+    vintage — so this is a documented change, not a comparability break."""
+    engine = SqueezeEngine(preset="classic")
+    plain = engine.score(BASE)
+    enriched = engine.score(with_(**BORROW, **FTD))
+    assert enriched["squeeze_score"] != plain["squeeze_score"]
+    assert enriched["borrow_score"] != plain["borrow_score"]
+
+
+# --------------------------------------------------------------------------
 # Missing inputs
 # --------------------------------------------------------------------------
 
@@ -117,7 +259,10 @@ def test_missing_component_is_dropped_not_scored_zero():
 
 def test_evidence_weight_reports_how_much_of_the_model_ran():
     engine = SqueezeEngine(preset="balanced")
-    assert engine.score(BASE)["evidence_weight"] == pytest.approx(1.0)
+    # BASE carries no option chain, so gamma's weight is genuinely absent —
+    # evidence_weight is the honest measure of that, not a bug.
+    assert engine.score(BASE)["evidence_weight"] == pytest.approx(0.90)
+    assert engine.score(with_(**OPTIONS))["evidence_weight"] == pytest.approx(1.0)
     thin = engine.score({"ticker": "X", "short_pct_float": 30})
     assert 0 < thin["evidence_weight"] < 1.0
 
@@ -125,7 +270,7 @@ def test_evidence_weight_reports_how_much_of_the_model_ran():
 def test_a_record_with_nothing_scores_zero_rather_than_crashing():
     block = SqueezeEngine().score({"ticker": "EMPTY"})
     assert block["squeeze_score"] == 0.0
-    assert len(block["components_missing"]) == 5
+    assert len(block["components_missing"]) == len(COMPONENTS)
 
 
 # --------------------------------------------------------------------------

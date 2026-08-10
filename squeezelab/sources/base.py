@@ -143,6 +143,18 @@ class DiskCache:
 # --------------------------------------------------------------------------
 
 
+def _is_connect_timeout(exc: Exception) -> bool:
+    """True for "the host never accepted a connection", not "it answered slowly".
+
+    A read timeout means something is there and struggling, which a retry can
+    genuinely fix. A connect timeout means nothing is listening on that host
+    and port, which a retry cannot.
+    """
+    if requests is None:  # pragma: no cover - no requests, no requests errors
+        return False
+    return isinstance(exc, requests.exceptions.ConnectTimeout)
+
+
 class DataSource:
     """Base class. Subclasses implement `_fetch` and optionally `fetch_prices`."""
 
@@ -168,19 +180,30 @@ class DataSource:
     def user_agent(self) -> str:
         return self.settings.user_agent
 
-    def get(self, url: str, *, params: dict[str, Any] | None = None, headers: dict[str, str] | None = None) -> Any:
-        """GET with retries and exponential backoff. Returns a Response."""
+    def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+        retries: int | None = None,
+    ) -> Any:
+        """GET with retries and exponential backoff. Returns a Response.
+
+        `timeout` and `retries` override the settings for one call. A source
+        probing a list of candidate mirrors wants a short, single-attempt
+        budget per candidate — the default 3 attempts each is a sensible
+        policy for one known-good endpoint and a latency trap for four.
+        """
         if self.settings.offline:
             raise SourceError("offline mode is enabled")
+        timeout = self.settings.http_timeout if timeout is None else timeout
+        retries = self.settings.http_retries if retries is None else retries
         last_error: Exception | None = None
-        for attempt in range(self.settings.http_retries + 1):
+        for attempt in range(retries + 1):
             try:
-                resp = self.session.get(
-                    url,
-                    params=params,
-                    headers=headers,
-                    timeout=self.settings.http_timeout,
-                )
+                resp = self.session.get(url, params=params, headers=headers, timeout=timeout)
                 if resp.status_code == 200:
                     return resp
                 # 4xx other than rate limiting will not improve on retry.
@@ -191,7 +214,13 @@ class DataSource:
                 raise
             except Exception as exc:  # network errors, TLS, timeouts
                 last_error = exc
-            if attempt < self.settings.http_retries:
+                if _is_connect_timeout(exc):
+                    # Nothing accepted the TCP connection inside the budget.
+                    # Retrying seconds later asks the same unreachable host the
+                    # same question and pays the full timeout again — one dead
+                    # host cost 75s of scan latency in CI before this check.
+                    break
+            if attempt < retries:
                 time.sleep(min(2 ** attempt, 8) * 0.5)
         raise SourceError(str(last_error or "request failed"))
 

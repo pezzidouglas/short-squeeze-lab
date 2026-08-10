@@ -18,7 +18,7 @@ from typing import Any, Sequence
 from .config import DEFAULT_WATCHLIST, SETTINGS, Settings
 from .consolidate import ConsolidatedScan, consolidate, coverage_matrix, disagreement_report
 from .engine import SqueezeEngine
-from .sources import DataSource, build_sources
+from .sources import DEPENDENT_SOURCES, DataSource, build_sources
 
 
 @dataclass
@@ -75,15 +75,27 @@ class MarketDataService:
 
     def collect(self, tickers: Sequence[str]) -> tuple[dict[str, dict[str, dict[str, Any]]], list[DataSource]]:
         """Run every source concurrently. Returns {source_key: records}."""
-        live = [s for s in self.sources if s.meta.key != "snapshot"]
+        live = [
+            s for s in self.sources
+            if s.meta.key != "snapshot" and s.meta.key not in DEPENDENT_SOURCES
+        ]
+        dependent = [s for s in self.sources if s.meta.key in DEPENDENT_SOURCES]
         snapshot = [s for s in self.sources if s.meta.key == "snapshot"]
 
         collected: dict[str, dict[str, dict[str, Any]]] = {}
         if live:
-            workers = max(1, min(self.settings.max_workers, len(live)))
-            with ThreadPoolExecutor(max_workers=workers) as pool:
-                for source, records in zip(live, pool.map(lambda s: s.collect(tickers), live)):
-                    collected[source.meta.key] = records
+            collected.update(self._run(live, tickers))
+
+        # Second pass. Fails-to-deliver and option open interest are only
+        # comparable across tickers once divided by a float, and the option
+        # near-the-money band needs a spot price to exist at all — neither of
+        # which those sources fetch, precisely so they do not become a second
+        # copy of Yahoo. Both expose the lookups as public attributes for the
+        # caller to fill in, which is what this does with the first pass's
+        # merged values.
+        if dependent:
+            self._wire_lookups(dependent, collected, tickers)
+            collected.update(self._run(dependent, tickers))
 
         live_rows = sum(len(r) for r in collected.values())
         # Snapshot only runs when it is needed — as a filler for uncovered
@@ -93,6 +105,54 @@ class MarketDataService:
                 collected[source.meta.key] = source.collect(tickers)
 
         return collected, list(self.sources)
+
+    def _run(
+        self, sources: Sequence[DataSource], tickers: Sequence[str]
+    ) -> dict[str, dict[str, dict[str, Any]]]:
+        """Collect from a batch of sources concurrently."""
+        workers = max(1, min(self.settings.max_workers, len(sources)))
+        out: dict[str, dict[str, dict[str, Any]]] = {}
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for source, records in zip(sources, pool.map(lambda s: s.collect(tickers), sources)):
+                out[source.meta.key] = records
+        return out
+
+    def _wire_lookups(
+        self,
+        dependent: Sequence[DataSource],
+        collected: dict[str, dict[str, dict[str, Any]]],
+        tickers: Sequence[str],
+    ) -> None:
+        """Give the second-pass sources their denominators from the first pass.
+
+        The values are consolidated rather than read off one provider, so the
+        float behind `ftd_pct_float` is the same float the scoring engine used
+        — a percentage computed against a different denominator than the one on
+        screen is worse than no percentage.
+
+        A lookup that is already set (a test wiring a stub, say) is left alone.
+        """
+        merged = consolidate(collected, tickers).by_ticker()
+
+        def _reader(field_name: str):
+            def lookup(ticker: str) -> float | None:
+                record = merged.get(ticker.upper())
+                if record is None:
+                    return None
+                value = record.values.get(field_name)
+                try:
+                    number = float(value)  # type: ignore[arg-type]
+                except (TypeError, ValueError):
+                    return None
+                return number if number > 0 else None
+
+            return lookup
+
+        for source in dependent:
+            if getattr(source, "float_lookup", None) is None and hasattr(source, "float_lookup"):
+                source.float_lookup = _reader("float")
+            if getattr(source, "price_lookup", None) is None and hasattr(source, "price_lookup"):
+                source.price_lookup = _reader("current_price")
 
     @staticmethod
     def _missing(collected: dict[str, dict[str, dict[str, Any]]], tickers: Sequence[str]) -> bool:

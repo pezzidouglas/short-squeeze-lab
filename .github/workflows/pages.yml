@@ -40,9 +40,20 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
-      SQUEEZE_SOURCES: yahoo,finra
+      # `options` and `sec_ftd` are here because the gamma component and the
+      # fails-to-deliver corroboration are the reason to look at this page
+      # rather than a stock screener. Both degrade to "skipped" on their own
+      # (a missing package, a missing contact address) without touching
+      # data_mode, so neither can block a publish.
+      #
+      # `borrow` is deliberately absent: the IBKR endpoint has never been
+      # confirmed against the live host, and the publish job is the wrong
+      # place to find that out. It runs in `checks.yml` instead.
+      SQUEEZE_SOURCES: yahoo,finra,options,sec_ftd
       SQUEEZE_CACHE_TTL: "0"
       SQUEEZE_SNAPSHOT_FALLBACK: "0"
+      SQUEEZE_OPTIONS_MAX_TICKERS: "15"
+      SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

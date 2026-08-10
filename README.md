@@ -33,9 +33,14 @@ keeps the losers.
 | **Stooq** | daily | Independent end-of-day bars; cross-checks Yahoo's price, backs the backtester | no |
 | **SEC EDGAR** | quarterly | Filed share count off the 10-Q/10-K cover page — the tie-breaker on float | no* |
 | **Finviz** | daily | Float short and days-to-cover for a whole watchlist in one request | `FINVIZ_AUTH_TOKEN` |
+| **Yahoo option chains** | realtime | Near-the-money call open interest against the float — who is *forced* to buy | no† |
+| **IBKR shortable shares** | realtime | Borrow fee and loan inventory — the measured cost of a short, not a proxy | no‡ |
+| **SEC fails-to-deliver** | semi-monthly | CNS open fails — weak corroboration of a hard borrow | no* |
 | **Snapshot** | static | Bundled offline sample so nothing breaks without a network | no |
 
-<sub>* SEC asks automated clients to identify themselves — set `SEC_CONTACT_EMAIL`.</sub>
+<sub>* SEC asks automated clients to identify themselves — set `SEC_CONTACT_EMAIL`.</sub><br>
+<sub>† Needs `yfinance`; a cold scan costs up to four requests per ticker, so `SQUEEZE_OPTIONS_MAX_TICKERS` caps it (default 40).</sub><br>
+<sub>‡ Off by default, and <b>the default URLs do not currently work</b> — CI got a TCP connect timeout from <code>ftp3.interactivebrokers.com:443</code>, so nothing is listening for HTTPS there (the service is real but speaks FTP, which <code>requests</code> cannot). The parser is fixture-tested and believed correct; the transport is not. Point <code>IBKR_SHORTABLE_URL</code> at a mirror that serves <code>usa.txt</code> over HTTP(S), or set <code>SQUEEZE_BORROW_ENABLED=1</code> to try the defaults anyway.</sub>
 
 FINRA's consolidated short interest file is used too when
 `FINRA_API_CLIENT_ID` / `FINRA_API_CLIENT_SECRET` are set. Without them the
@@ -46,6 +51,28 @@ credentials.
 interest tells you where shorts were up to two weeks ago. FINRA publishes, every
 trading day, what share of off-exchange volume was sold short. It answers a
 different question — *are they still pressing?* — and it is free.
+
+**The option chain is the reason the score has a sixth component.** Short
+interest says how many shares are owed; it says nothing about whether anyone is
+*forced to buy*. Calls already written in strikes a plausible move converts to
+in-the-money oblige whoever is short them to buy real shares to stay hedged,
+into a supply the short interest already says is tight. That is the necessary
+condition for a reflexive move, and it is the one free datum that speaks to it.
+
+Three caveats travel with it, permanently: open interest is T-1, so on the day a
+ramp is actually built the level is stale and `options_call_volume_oi_ratio` is
+the only fresh column; open interest counts contracts and cannot be signed, so
+"dealers are short the calls" inverts wherever buy-writes dominate; and implied
+volatility is inverted from `lastPrice` rather than a mid, which is why it is
+published as context and never scored.
+
+**Fails-to-deliver are the weakest source here, and are labelled as such.** A
+fail is a trade that did not settle on time. Hard-to-borrow names fail more, so
+persistent large fails corroborate a tight borrow — but fails arise
+overwhelmingly from operational causes, Reg SHO forces close-out, and the SEC
+publishes roughly a month after a half-month period closes. They are not naked
+shorting, not "synthetic shares", and not hidden short interest. `ftd_date`
+travels with every number for that reason.
 
 ### What happens when sources disagree
 
@@ -77,25 +104,45 @@ opinion is not the same thing as being confirmed.
 
 ## The score
 
-Five components, each 0–100, combined by a named weight preset.
+Six components, each 0–100, combined by a named weight preset.
 
 | Component | What it measures |
 |---|---|
 | Short interest density | Short position as a share of float — the raw fuel |
-| Borrow pressure | Days to cover and float scarcity — how hard it is to get out |
+| Borrow pressure | What a short costs and how scarce the stock is |
 | Liquidity trap | Short position measured in days of *real* traded volume |
 | Momentum fuel | Compression against the 52-week range, plus a growing short position |
 | Off-exchange flow | FINRA daily short volume and its 5-day-vs-20-day trend |
+| Forced-hedging demand | Near-the-money call open interest as a share of float |
 
 ```
-classic      40 / 25 / 20 / 15 /  0    the original 1.x model, preserved
-balanced     30 / 20 / 18 / 12 / 20    default
-tight_float  30 / 30 / 28 /  7 /  5    small floats, hard borrows
-momentum     22 / 13 / 15 / 35 / 15    already moving
-flow         20 / 15 / 15 / 10 / 40    lean on the daily FINRA signal
+               si borrow  liq  mom flow gamma
+classic        40     25   20   15    0     0   the original 1.x model, preserved
+balanced       28     20   16   10   16    10   default
+tight_float    28     28   26    6    5     7   small floats, hard borrows
+momentum       20     12   13   32   13    10   already moving
+flow           18     14   13    8   35    12   lean on the daily FINRA signal
+gamma          18     24   12    8    8    30   lean on borrow cost + call OI
 ```
 
-Two things worth knowing:
+**Borrow pressure prefers the measurement to the proxy.** Days-to-cover and
+float size are stand-ins for the price of stock loan. When the IBKR feed is
+enabled that price is available and takes the largest share of the component,
+with the proxies demoted rather than dropped — one broker's indications are not
+the whole market. With no loan data the proxies keep the exact 7:3 ratio the
+component always used, so enabling nothing changes nothing.
+
+`classic` freezes the *weighting*, not the data: a component added later carries
+a zero and is excluded from the model outright, so it cannot reach `classic`
+even through renormalisation. Enabling the stock-loan feed does sharpen `borrow`
+under every preset, this one included. Comparability holds across presets on one
+scan, and across scans run on the same sources.
+
+The `gamma` preset is only worth selecting with `options` (and ideally `borrow`)
+enabled — without them its two headline components have no inputs, are dropped,
+and it collapses to a rougher `balanced`.
+
+Two more things worth knowing:
 
 **A component with no inputs is dropped, and the rest are renormalised.** It is
 not scored zero. A missing short-interest feed used to quietly bury a name at
@@ -298,7 +345,20 @@ Scan responses carry `data_mode` (`live` / `mixed` / `snapshot` / `empty`) and
 | `SQUEEZE_MAX_WORKERS` | `6` | Source fan-out concurrency |
 | `FINVIZ_AUTH_TOKEN` | — | Enables the Finviz source |
 | `FINRA_API_CLIENT_ID` / `_SECRET` | — | Enables FINRA consolidated short interest |
-| `SEC_CONTACT_EMAIL` | — | Contact address in the User-Agent SEC asks for |
+| `SEC_CONTACT_EMAIL` | — | Contact address in the User-Agent SEC asks for; also gates `sec_ftd` |
+| `SQUEEZE_BORROW_ENABLED` | `0` | Enables the IBKR shortable-shares source |
+| `IBKR_SHORTABLE_URL` | — | Point the borrow source at a known-good mirror (implies enabled) |
+| `SQUEEZE_OPTIONS_ENABLED` | `1` | Option chains, when `options` is in `SQUEEZE_SOURCES` |
+| `SQUEEZE_OPTIONS_MAX_TICKERS` | `40` | Cap on tickers given an option-chain lookup per scan |
+| `SQUEEZE_OPTIONS_BUDGET` | `25.0` | Wall-clock seconds the option pass may spend |
+
+Sources are collected in two passes. Fails-to-deliver and option open interest
+are only comparable across tickers once divided by a float, and the option
+near-the-money band needs a spot price to exist at all — neither of which those
+sources fetch, deliberately, so they do not become a second copy of Yahoo. The
+service runs everything else first and hands them the *consolidated* float and
+price, so the denominator behind `ftd_pct_float` is the same one the scoring
+engine used.
 
 A source that fails never kills a scan. It reports `error` / `empty` / `partial`
 in its health block, the remaining sources carry the run, and the reason shows
@@ -310,7 +370,7 @@ up in the dashboard and the CLI.
 squeezelab/
   sources/        one module per provider, all behind one contract
   consolidate.py  field-level merge, provenance, agreement, confidence
-  engine.py       five-component scoring, presets, ranking
+  engine.py       six-component scoring, presets, ranking
   history.py      per-day signal reconstruction for backtests
   backtest.py     portfolio simulation, metrics, strategy comparison
   compare.py      ticker / source / preset comparison views
@@ -320,7 +380,7 @@ squeezelab/
   data/           bundled offline snapshot
 static/index.html the dashboard, self-contained
 scripts/          snapshot + static-page builders
-tests/            141 tests, no network
+tests/            367 tests, no network
 ```
 
 `data_fetcher.py`, `squeeze_engine.py` and `backtester.py` remain as thin

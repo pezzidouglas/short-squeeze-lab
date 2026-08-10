@@ -33,6 +33,12 @@ COMPARE_METRICS: tuple[tuple[str, bool], ...] = (
     ("short_ratio", True),
     ("off_exchange_short_pct", True),
     ("off_exchange_trend", True),
+    # Opt-in feeds. They drop out of the table entirely when their source did
+    # not run, rather than printing a row of dashes for everyone who has not
+    # enabled them.
+    ("borrow_fee_pct", True),
+    ("options_ntm_call_oi_pct_float", True),
+    ("ftd_pct_float", True),
     ("float", False),
     ("avg_volume_10d", False),
     ("market_cap", False),
@@ -82,10 +88,12 @@ def compare_tickers(rows: Sequence[dict[str, Any]], tickers: Sequence[str]) -> d
     for field, higher_is_hotter in COMPARE_METRICS:
         values = {str(r["ticker"]).upper(): _value(r, field) for r in selected}
         present = {k: v for k, v in values.items() if v is not None}
+        if not present:
+            # Nobody reported it — a row of dashes says nothing a missing row
+            # does not say better.
+            continue
         label, unit = _label(field)
-        leader = None
-        if present:
-            leader = (max if higher_is_hotter else min)(present, key=lambda k: present[k])
+        leader = (max if higher_is_hotter else min)(present, key=lambda k: present[k])
         metrics.append(
             {
                 "field": field,

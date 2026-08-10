@@ -63,9 +63,45 @@ FIELD_SPECS: dict[str, FieldSpec] = {
         FieldSpec("off_exchange_short_pct", NUMERIC, "Off-exch short vol", "%", 0.15, key=True),
         FieldSpec("off_exchange_trend", NUMERIC, "Off-exch 5d vs 20d", "pp", 0.30),
         FieldSpec("off_exchange_series", SERIES, "Off-exch short vol history"),
+        # -- Stock loan (IBKR) ------------------------------------------------
+        # The measured cost and availability of borrow, rather than the
+        # days-to-cover proxy for it.
+        FieldSpec("borrow_fee_pct", NUMERIC, "Borrow fee", "%/yr", 0.25),
+        FieldSpec("borrow_rebate_pct", NUMERIC, "Rebate rate", "%/yr", 0.25),
+        FieldSpec("shortable_shares", NUMERIC, "Shortable shares", "sh", 0.30),
+        FieldSpec("shortable_shares_basis", TEXT, "Shortable basis"),
+        FieldSpec("borrow_as_of", DATE, "Borrow as of"),
+        # -- Fails to deliver (SEC) -------------------------------------------
+        # ~40 days stale by construction, and a weak corroboration of borrow
+        # scarcity rather than a reading of short interest. `ftd_date` travels
+        # with every number here for exactly that reason.
+        FieldSpec("ftd_shares_peak", NUMERIC, "FTD peak", "sh", 0.10),
+        FieldSpec("ftd_shares_avg", NUMERIC, "FTD average", "sh", 0.10),
+        FieldSpec("ftd_persist_days", NUMERIC, "FTD settlement days", "d", 0.20),
+        FieldSpec("ftd_pct_float", NUMERIC, "FTD peak % float", "%", 0.15),
+        FieldSpec("ftd_notional", NUMERIC, "FTD peak notional", "$", 0.15),
+        FieldSpec("ftd_trend", NUMERIC, "FTD recent vs window", "%", 0.30),
+        FieldSpec("ftd_date", DATE, "FTD as of"),
+        FieldSpec("ftd_series", SERIES, "FTD history"),
+        # -- Option chain (Yahoo) ---------------------------------------------
+        # Forced-hedging demand. Open interest is T-1 and unsigned, so the
+        # volume/OI ratio ships beside the level to say how stale it is.
+        FieldSpec("options_ntm_call_oi", NUMERIC, "NTM call OI", "contracts", 0.15),
+        FieldSpec("options_ntm_call_oi_pct_float", NUMERIC, "NTM call OI % float", "%", 0.15),
+        FieldSpec("options_call_volume_oi_ratio", NUMERIC, "Call volume / OI", "x", 0.25),
+        FieldSpec("options_call_put_oi_ratio", NUMERIC, "Call / put OI", "x", 0.25),
+        FieldSpec("options_atm_iv", NUMERIC, "ATM implied vol", "%", 0.20),
+        FieldSpec("options_expiry", DATE, "Nearest expiry"),
+        FieldSpec("options_window_days", NUMERIC, "Expiry window", "d", 0.30),
+        FieldSpec("options_oi_ladder", SERIES, "Call OI by strike"),
     ]
 }
 
+# Coverage of these fields is 40% of a ticker's data confidence, so membership
+# is restricted to fields a *default* scan can actually obtain. Borrow, FTD and
+# option fields are all opt-in (a credential or an env flag), and marking them
+# key would score every stock scanner user's data as incomplete for declining
+# to enable a source they were never asked to enable.
 KEY_FIELDS: tuple[str, ...] = tuple(n for n, s in FIELD_SPECS.items() if s.key)
 
 # --------------------------------------------------------------------------
@@ -75,7 +111,9 @@ KEY_FIELDS: tuple[str, ...] = tuple(n for n, s in FIELD_SPECS.items() if s.key)
 # kept as a candidate so the dashboard can show the disagreement instead of
 # hiding it. Sources not listed for a field fall back to DEFAULT_PRIORITY.
 
-DEFAULT_PRIORITY: tuple[str, ...] = ("yahoo", "finviz", "finra", "sec", "stooq", "snapshot")
+DEFAULT_PRIORITY: tuple[str, ...] = (
+    "yahoo", "finviz", "finra", "sec", "stooq", "borrow", "options", "sec_ftd", "snapshot",
+)
 
 FIELD_PRIORITY: dict[str, tuple[str, ...]] = {
     # FINRA publishes the official semi-monthly short interest; it is the
@@ -104,6 +142,25 @@ FIELD_PRIORITY: dict[str, tuple[str, ...]] = {
     "name": ("yahoo", "sec", "finviz", "snapshot"),
 }
 
+# Borrow, FTD and option fields have exactly one live producer each, so listing
+# them says little about precedence — but a field absent from this map falls
+# back to DEFAULT_PRIORITY, which puts Yahoo and Finviz ahead of the source
+# that actually produces it, and reads in `coverage_matrix` as "nobody owns
+# it". The offline snapshot trails each one so it fills a gap and never wins.
+for _sole_source, _fields in (
+    ("borrow", ("borrow_fee_pct", "borrow_rebate_pct", "shortable_shares",
+                "shortable_shares_basis", "borrow_as_of")),
+    ("sec_ftd", ("ftd_shares_peak", "ftd_shares_avg", "ftd_persist_days", "ftd_pct_float",
+                 "ftd_notional", "ftd_trend", "ftd_date", "ftd_series")),
+    ("options", ("options_ntm_call_oi", "options_ntm_call_oi_pct_float",
+                 "options_call_volume_oi_ratio", "options_call_put_oi_ratio",
+                 "options_atm_iv", "options_expiry", "options_window_days",
+                 "options_oi_ladder")),
+):
+    for _field_name in _fields:
+        FIELD_PRIORITY[_field_name] = (_sole_source, "snapshot")
+del _sole_source, _fields, _field_name
+
 
 def priority_for(field_name: str) -> tuple[str, ...]:
     return FIELD_PRIORITY.get(field_name, DEFAULT_PRIORITY)
@@ -112,8 +169,16 @@ def priority_for(field_name: str) -> tuple[str, ...]:
 # --------------------------------------------------------------------------
 # Scoring weight presets
 # --------------------------------------------------------------------------
-# Each preset must sum to 1.0 across the five components. `classic` reproduces
-# the original 40/25/20/15 model so historical scores stay comparable.
+# Each preset sums to 1.0 across the six components. `classic` reproduces the
+# original 40/25/20/15 model, carrying a zero on every *component* added since,
+# so historical scores stay comparable. A zero-weight component is excluded
+# from scoring outright rather than scored and multiplied by nothing, so a
+# whole new component cannot perturb it even indirectly.
+#
+# What `classic` does not freeze is the data inside the components it does
+# weight: enabling the stock-loan feed sharpens `borrow` under every preset,
+# this one included. It is a weighting, not a data vintage — comparability
+# holds across presets on one scan, and across scans run on the same sources.
 
 WEIGHT_PRESETS: dict[str, dict[str, float]] = {
     "classic": {
@@ -122,34 +187,52 @@ WEIGHT_PRESETS: dict[str, dict[str, float]] = {
         "liquidity": 0.20,
         "momentum": 0.15,
         "flow": 0.00,
+        "gamma": 0.00,
     },
     "balanced": {
-        "si": 0.30,
+        "si": 0.28,
         "borrow": 0.20,
-        "liquidity": 0.18,
-        "momentum": 0.12,
-        "flow": 0.20,
+        "liquidity": 0.16,
+        "momentum": 0.10,
+        "flow": 0.16,
+        "gamma": 0.10,
     },
     "tight_float": {
-        "si": 0.30,
-        "borrow": 0.30,
-        "liquidity": 0.28,
-        "momentum": 0.07,
+        "si": 0.28,
+        "borrow": 0.28,
+        "liquidity": 0.26,
+        "momentum": 0.06,
         "flow": 0.05,
+        "gamma": 0.07,
     },
     "momentum": {
-        "si": 0.22,
-        "borrow": 0.13,
-        "liquidity": 0.15,
-        "momentum": 0.35,
-        "flow": 0.15,
+        "si": 0.20,
+        "borrow": 0.12,
+        "liquidity": 0.13,
+        "momentum": 0.32,
+        "flow": 0.13,
+        "gamma": 0.10,
     },
     "flow": {
-        "si": 0.20,
-        "borrow": 0.15,
-        "liquidity": 0.15,
-        "momentum": 0.10,
-        "flow": 0.40,
+        "si": 0.18,
+        "borrow": 0.14,
+        "liquidity": 0.13,
+        "momentum": 0.08,
+        "flow": 0.35,
+        "gamma": 0.12,
+    },
+    # Leans on the two components that need an opt-in source: measured borrow
+    # cost and near-the-money call open interest. Scores every name in a scan
+    # that has neither identically to `balanced` minus those inputs, because a
+    # component with no data is dropped and the rest renormalised — so this
+    # preset is only worth selecting with `borrow` and `options` enabled.
+    "gamma": {
+        "si": 0.18,
+        "borrow": 0.24,
+        "liquidity": 0.12,
+        "momentum": 0.08,
+        "flow": 0.08,
+        "gamma": 0.30,
     },
 }
 
@@ -161,6 +244,7 @@ COMPONENT_LABELS: dict[str, str] = {
     "liquidity": "Liquidity trap",
     "momentum": "Momentum fuel",
     "flow": "Off-exchange flow",
+    "gamma": "Forced-hedging demand",
 }
 
 
