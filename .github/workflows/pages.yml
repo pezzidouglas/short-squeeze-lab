@@ -86,11 +86,80 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-# A tiiny.site mirror was attempted and removed. Probing found that
-# api.tiiny.host is a live API server — it answers with Express's own
-# "Cannot POST /<path>" 404s — but none of /deploy, /v1/sites (bearer or
-# api_key form) is the right route, and tiiny.host/api/deploy is blocked at
-# CloudFront. Writing the real call needs tiiny's documented endpoint and
-# field names; guessing further would just send an API key at paths that do
-# not exist, on every push and every weekday. The TIINY_API_KEY secret can
-# stay — it costs nothing and is what the job would need.
+      - name: Package Tiiny mirror
+        run: |
+          cd _site
+          zip -q ../dashboard-live.zip index.html
+
+      - name: Publish Tiiny mirror
+        env:
+          TIINY_API_KEY: ${{ secrets.TIINY_API_KEY }}
+          TIINY_DOMAIN: short-squeeze-lab.tiiny.site
+        run: |
+          set -euo pipefail
+
+          if [ -z "${TIINY_API_KEY:-}" ]; then
+            echo "::error::TIINY_API_KEY is not configured in repository secrets"
+            exit 1
+          fi
+
+          profile_status="$(
+            curl --silent --show-error \
+              --output tiiny-profile.json \
+              --write-out "%{http_code}" \
+              --header "x-api-key: ${TIINY_API_KEY}" \
+              "https://ext.tiiny.host/v1/profile"
+          )"
+
+          if [[ ! "${profile_status}" =~ ^2 ]]; then
+            echo "::error::Tiiny profile check failed with HTTP ${profile_status}"
+            jq -c 'if type == "object" then del(.apiKey, .api_key, .key, .token) else . end' \
+              tiiny-profile.json 2>/dev/null || true
+            exit 1
+          fi
+
+          if jq -e --arg domain "${TIINY_DOMAIN}" \
+            '(.data.links // []) | index($domain) != null' \
+            tiiny-profile.json >/dev/null; then
+            method=PUT
+            action=Updated
+          else
+            method=POST
+            action=Created
+          fi
+
+          deploy_status="$(
+            curl --silent --show-error --location \
+              --request "${method}" \
+              --output tiiny-deploy.json \
+              --write-out "%{http_code}" \
+              --header "x-api-key: ${TIINY_API_KEY}" \
+              --form "files=@dashboard-live.zip;type=application/zip" \
+              --form "domain=${TIINY_DOMAIN}" \
+              "https://ext.tiiny.host/v1/upload"
+          )"
+
+          if [[ ! "${deploy_status}" =~ ^2 ]]; then
+            echo "::error::Tiiny deployment failed with HTTP ${deploy_status}"
+            jq -c 'if type == "object" then del(.apiKey, .api_key, .key, .token) else . end' \
+              tiiny-deploy.json 2>/dev/null || true
+            exit 1
+          fi
+
+          link="$(jq -r '.data.link // empty' tiiny-deploy.json)"
+          if [ -z "${link}" ]; then
+            echo "::error::Tiiny deployment succeeded but returned no project link"
+            exit 1
+          fi
+
+          if [[ "${link}" == http* ]]; then
+            url="${link}"
+          else
+            url="https://${link}"
+          fi
+
+          echo "${action} Tiiny mirror: ${url}"
+          {
+            echo "### Tiiny mirror"
+            echo "- ${action}: ${url}"
+          } >> "${GITHUB_STEP_SUMMARY}"
