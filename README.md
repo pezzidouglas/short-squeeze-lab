@@ -220,7 +220,9 @@ underneath is the bundled fixture.
 
 **Published to GitHub Pages** by `.github/workflows/pages.yml` on every push to
 `main` and again each weekday after the US close, so the public page refreshes
-itself. It needs one setting, once:
+itself. The published scan runs `yahoo,stooq,finviz,finra,sec`. Finviz stays
+skipped until `FINVIZ_AUTH_TOKEN` is set as a repository secret; SEC identifies
+itself with `SEC_CONTACT_EMAIL`. Pages itself needs one setting, once:
 [**Settings → Pages → Source: "GitHub Actions"**](https://github.com/pezzidouglas/short-squeeze-lab/settings/pages).
 That cannot be automated — `GITHUB_TOKEN` is refused by the Pages creation API —
 so until it is set the publish job fails at `configure-pages` and nothing else
