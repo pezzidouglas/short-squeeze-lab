@@ -40,9 +40,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
-      SQUEEZE_SOURCES: yahoo,finra
+      SQUEEZE_SOURCES: yahoo,stooq,finviz,finra,sec
       SQUEEZE_CACHE_TTL: "0"
       SQUEEZE_SNAPSHOT_FALLBACK: "0"
+      FINVIZ_AUTH_TOKEN: ${{ secrets.FINVIZ_AUTH_TOKEN }}
+      SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL || 'pezzidouglas@gmail.com' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
