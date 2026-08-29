@@ -1,17 +1,15 @@
 name: publish dashboard
 
-# Builds the standalone dashboard against live sources and publishes it to
-# GitHub Pages. No zip, no upload, no expiry — and it refreshes itself, which
-# a hand-uploaded file never does.
+# Builds the standalone dashboard against live sources, then publishes it to
+# GitHub Pages and to the Tiiny mirror as two independent jobs. Pages going
+# down (site missing, source flipped, account limits) must not block Tiiny —
+# that mirror is the public URL that still works.
 #
-# One-time setup, unavoidable: repository Settings → Pages → Source:
-# "GitHub Actions".  https://github.com/pezzidouglas/short-squeeze-lab/settings/pages
-#
-# configure-pages is asked to enable Pages itself, but GITHUB_TOKEN cannot
-# create a Pages site — that API rejects the workflow token with "Resource not
-# accessible by integration". The enablement flag is kept because it is a
-# no-op once the site exists and does work for a token that has the right, but
-# it cannot replace the manual step.
+# One-time Pages setup, if you want that URL back:
+# Settings → Pages → Source: "GitHub Actions".
+# https://github.com/pezzidouglas/short-squeeze-lab/settings/pages
+# GITHUB_TOKEN cannot create a Pages site. The enablement flag is a no-op
+# once the site exists and cannot replace that manual step.
 
 on:
   push:
@@ -22,8 +20,6 @@ on:
     - cron: "30 21 * * 1-5"
   workflow_dispatch:
 
-# Allow one publish at a time; let a running one finish rather than shipping
-# a half-built page.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -33,18 +29,16 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  SQUEEZE_SOURCES: yahoo,stooq,finviz,finra,sec
+  SQUEEZE_CACHE_TTL: "0"
+  SQUEEZE_SNAPSHOT_FALLBACK: "0"
+  FINVIZ_AUTH_TOKEN: ${{ secrets.FINVIZ_AUTH_TOKEN }}
+  SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL || 'pezzidouglas@gmail.com' }}
+
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    env:
-      SQUEEZE_SOURCES: yahoo,stooq,finviz,finra,sec
-      SQUEEZE_CACHE_TTL: "0"
-      SQUEEZE_SNAPSHOT_FALLBACK: "0"
-      FINVIZ_AUTH_TOKEN: ${{ secrets.FINVIZ_AUTH_TOKEN }}
-      SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL || 'pezzidouglas@gmail.com' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -77,10 +71,27 @@ jobs:
           mkdir -p _site
           cp static/index.html _site/index.html
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-live
+          path: _site
+          retention-days: 7
+
+  pages:
+    needs: build
+    if: success()
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dashboard-live
+          path: _site
       - uses: actions/configure-pages@v5
         with:
-          # Turns Pages on via the API using the workflow's own pages:write
-          # token, so publishing needs no manual setup in repository settings.
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -88,11 +99,19 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
+  tiiny:
+    needs: build
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dashboard-live
+          path: _site
       - name: Package Tiiny mirror
         run: |
           cd _site
           zip -q ../dashboard-live.zip index.html
-
       - name: Publish Tiiny mirror
         env:
           TIINY_API_KEY: ${{ secrets.TIINY_API_KEY }}
