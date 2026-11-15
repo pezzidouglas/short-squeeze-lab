@@ -226,7 +226,7 @@ def main() -> int:
             "FINRA short interest/DTC are lagged 9 business days after settlement; original release vintages are unavailable, so subsequent revisions and exact holiday release lags can bias results. No current short metrics are applied to history.",
             "Odds tiers are a proxy, NOT the full live squeeze score: historical float/SI-density and flow are excluded. Borrow uses FINRA DTC; liquidity uses the same report short shares/volume; momentum uses trailing prices and published short-position changes. Today uses exactly that proxy too.",
             "Max DD is a synthetic realized-trade sequence risking 1% per trade, NOT a mark-to-market investable portfolio; overlapping positions, halts and liquidity constraints are not modelled. Wilson intervals assume independent trades, whereas names/signals are correlated.",
-            "Exploratory in-sample research, no independent out-of-sample validation; small positive averages are not evidence of a reliable edge. Paper trading only until validated.",
+            "Tier odds are in-sample. A simple fit-2022-24 / test-2025-26 check (scripts/oos_check.py, backtests/playbook_oos.json) has not validated any tier or rule tweak; small positive averages are not evidence of a reliable edge. Paper trading only.",
             "Past results do not predict future ones. Not financial advice.",
         ],
         "runtime_sec": round(time.time() - t0, 1),

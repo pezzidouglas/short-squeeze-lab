@@ -36,6 +36,7 @@ from squeezelab.sources import describe_sources  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "static", "index.html")
 ODDS = os.path.join(ROOT, "backtests", "playbook_odds.json")
+OOS = os.path.join(ROOT, "backtests", "playbook_oos.json")
 SI_CACHE = os.path.join(ROOT, "data", "cache", "playbook", "finra_si")
 MARKER = re.compile(
     r'(<script id="embedded-data" type="application/json">)(.*?)(</script>)',
@@ -153,7 +154,13 @@ def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -
     if odds:
         summary = {k: odds.get(k) for k in ("generated_at", "rule", "rule_text", "period", "universe", "tiers",
                                              "tier_labels", "combined", "by_year", "robustness", "data_coverage", "caveats")}
-    return {"calls": calls, "odds": summary, "si_settlement_date": si_date, "account_risk_pct": 0.25}
+    oos = None
+    if os.path.exists(OOS):
+        with open(OOS, encoding="utf-8") as fh:
+            raw = json.load(fh)
+        oos = {k: v for k, v in raw.items() if k != "results"}  # drop the 108-candidate grid
+    return {"calls": calls, "odds": summary, "oos": oos, "si_settlement_date": si_date, "account_risk_pct": 0.25,
+            "min_edge_pct": pb.MIN_EDGE_PCT, "min_trades": pb.MIN_TRADES}
 
 
 def main() -> int:
