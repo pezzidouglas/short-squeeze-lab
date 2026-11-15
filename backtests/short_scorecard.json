@@ -1,0 +1,4216 @@
+{
+ "generated_at": "2026-11-15T22:34:57+00:00",
+ "data_through": "2026-11-13",
+ "split": {
+  "fit": "2022-01 to 2024-12",
+  "test": "2025-01 to latest"
+ },
+ "universe": {
+  "tickers": 4864,
+  "avg_eligible_per_month": 2146,
+  "si_pct_coverage_pct": 77.8,
+  "rules": "US-listed operating companies (SEC ticker list), price >= $5, 20-day $ volume >= $5M, FINRA report <= 35 days old"
+ },
+ "costs": {
+  "per_side_bps": 12,
+  "borrow_tiers": "5%/yr (DTC<5 & SI%<10), 20% (DTC 5-10 or SI% 10-20), 50% (DTC>=10 or SI%>=20)",
+  "borrow_sensitivity": "x0.5, x1, x2 and zero",
+  "cash_interest": "none credited"
+ },
+ "pass_bar": "OOS (2025-latest) net total return > 0 after borrow, OOS Sharpe > 0.5, latest year not negative; hedged also needs OOS Sharpe above SPY",
+ "total_variants_tried": 68,
+ "families": [
+  {
+   "key": "short_basket",
+   "title": "Short the most-shorted stocks (monthly basket)",
+   "plain": "Each month, short the stocks with the highest days-to-cover (or short % of shares), equal weight. Optional filter: only names already falling (negative 12-month momentum or below the 200-day average).",
+   "variants_tried": 12,
+   "chosen_params": {
+    "signal": "si_pct",
+    "bucket": "quintile",
+    "filter": "below_200d"
+   },
+   "selection": "highest 2022-24 Sharpe",
+   "in_sample": {
+    "months": 36,
+    "cagr_pct": -13.2,
+    "total_pct": -34.7,
+    "avg_month_pct": -0.76,
+    "vol_pct": 31.6,
+    "sharpe": -0.29,
+    "max_dd_pct": -56.0,
+    "win_months_pct": 50.0,
+    "worst_month_pct": -18.4,
+    "by_year": {
+     "2022": 19.9,
+     "2023": -36.3,
+     "2024": -14.4
+    }
+   },
+   "out_of_sample": {
+    "months": 22,
+    "cagr_pct": -24.6,
+    "total_pct": -40.5,
+    "avg_month_pct": -2.19,
+    "vol_pct": 18.9,
+    "sharpe": -1.39,
+    "max_dd_pct": -51.0,
+    "win_months_pct": 41.0,
+    "worst_month_pct": -11.7,
+    "by_year": {
+     "2025": -24.0,
+     "2026": -21.7
+    }
+   },
+   "avg_names_short": 183.0,
+   "borrow_sensitivity": {
+    "borrow_x0.5": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.2,
+      "total_pct": -0.6,
+      "avg_month_pct": 0.39,
+      "vol_pct": 31.5,
+      "sharpe": 0.15,
+      "max_dd_pct": -37.5,
+      "win_months_pct": 53.0,
+      "worst_month_pct": -17.3,
+      "by_year": {
+       "2022": 36.4,
+       "2023": -26.4,
+       "2024": -1.1
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -12.5,
+      "total_pct": -21.8,
+      "avg_month_pct": -0.97,
+      "vol_pct": 19.0,
+      "sharpe": -0.61,
+      "max_dd_pct": -40.1,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -10.6,
+      "by_year": {
+       "2025": -12.4,
+       "2026": -10.7
+      }
+     }
+    },
+    "borrow_x1": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.2,
+      "total_pct": -34.7,
+      "avg_month_pct": -0.76,
+      "vol_pct": 31.6,
+      "sharpe": -0.29,
+      "max_dd_pct": -56.0,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -18.4,
+      "by_year": {
+       "2022": 19.9,
+       "2023": -36.3,
+       "2024": -14.4
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -24.6,
+      "total_pct": -40.5,
+      "avg_month_pct": -2.19,
+      "vol_pct": 18.9,
+      "sharpe": -1.39,
+      "max_dd_pct": -51.0,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -11.7,
+      "by_year": {
+       "2025": -24.0,
+       "2026": -21.7
+      }
+     }
+    },
+    "borrow_x2": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -34.7,
+      "total_pct": -72.2,
+      "avg_month_pct": -3.06,
+      "vol_pct": 31.9,
+      "sharpe": -1.15,
+      "max_dd_pct": -78.5,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -20.6,
+      "by_year": {
+       "2022": -7.7,
+       "2023": -52.7,
+       "2024": -36.3
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -44.4,
+      "total_pct": -65.9,
+      "avg_month_pct": -4.62,
+      "vol_pct": 18.8,
+      "sharpe": -2.95,
+      "max_dd_pct": -68.2,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -14.0,
+      "by_year": {
+       "2025": -43.1,
+       "2026": -40.0
+      }
+     }
+    },
+    "no_borrow_fee": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 14.6,
+      "total_pct": 50.3,
+      "avg_month_pct": 1.54,
+      "vol_pct": 31.4,
+      "sharpe": 0.59,
+      "max_dd_pct": -25.9,
+      "win_months_pct": 61.0,
+      "worst_month_pct": -16.2,
+      "by_year": {
+       "2022": 55.0,
+       "2023": -15.0,
+       "2024": 14.1
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 1.3,
+      "total_pct": 2.4,
+      "avg_month_pct": 0.25,
+      "vol_pct": 19.0,
+      "sharpe": 0.16,
+      "max_dd_pct": -27.5,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -9.4,
+      "by_year": {
+       "2025": 0.9,
+       "2026": 1.6
+      }
+     }
+    },
+    "flat_fee_what_if": {
+     "flat_1pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 13.4,
+       "total_pct": 45.9,
+       "avg_month_pct": 1.46,
+       "vol_pct": 31.4,
+       "sharpe": 0.56,
+       "max_dd_pct": -26.1,
+       "win_months_pct": 61.0,
+       "worst_month_pct": -16.3,
+       "by_year": {
+        "2022": 53.5,
+        "2023": -15.8,
+        "2024": 13.0
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 0.3,
+       "total_pct": 0.6,
+       "avg_month_pct": 0.17,
+       "vol_pct": 19.0,
+       "sharpe": 0.11,
+       "max_dd_pct": -28.4,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -9.5,
+       "by_year": {
+        "2025": -0.2,
+        "2026": 0.7
+       }
+      },
+      "would_pass": false
+     },
+     "flat_3pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 11.2,
+       "total_pct": 37.5,
+       "avg_month_pct": 1.29,
+       "vol_pct": 31.4,
+       "sharpe": 0.49,
+       "max_dd_pct": -26.4,
+       "win_months_pct": 61.0,
+       "worst_month_pct": -16.5,
+       "by_year": {
+        "2022": 50.5,
+        "2023": -17.5,
+        "2024": 10.8
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": -1.7,
+       "total_pct": -3.1,
+       "avg_month_pct": 0.0,
+       "vol_pct": 19.0,
+       "sharpe": 0.0,
+       "max_dd_pct": -30.1,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -9.6,
+       "by_year": {
+        "2025": -2.1,
+        "2026": -1.0
+       }
+      },
+      "would_pass": false
+     },
+     "flat_5pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 9.0,
+       "total_pct": 29.5,
+       "avg_month_pct": 1.12,
+       "vol_pct": 31.4,
+       "sharpe": 0.43,
+       "max_dd_pct": -26.8,
+       "win_months_pct": 61.0,
+       "worst_month_pct": -16.7,
+       "by_year": {
+        "2022": 47.6,
+        "2023": -19.2,
+        "2024": 8.6
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": -3.6,
+       "total_pct": -6.6,
+       "avg_month_pct": -0.16,
+       "vol_pct": 19.0,
+       "sharpe": -0.1,
+       "max_dd_pct": -31.8,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -9.8,
+       "by_year": {
+        "2025": -4.1,
+        "2026": -2.6
+       }
+      },
+      "would_pass": false
+     },
+     "flat_10pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 3.7,
+       "total_pct": 11.5,
+       "avg_month_pct": 0.71,
+       "vol_pct": 31.4,
+       "sharpe": 0.27,
+       "max_dd_pct": -30.8,
+       "win_months_pct": 53.0,
+       "worst_month_pct": -17.1,
+       "by_year": {
+        "2022": 40.6,
+        "2023": -23.2,
+        "2024": 3.3
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": -8.4,
+       "total_pct": -14.8,
+       "avg_month_pct": -0.58,
+       "vol_pct": 19.1,
+       "sharpe": -0.37,
+       "max_dd_pct": -36.3,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -10.2,
+       "by_year": {
+        "2025": -8.8,
+        "2026": -6.6
+       }
+      },
+      "would_pass": false
+     }
+    },
+    "avg_assumed_tier_fee_pct": 28.3
+   },
+   "checks": {
+    "oos_net_return_positive": false,
+    "oos_sharpe>0.5": false,
+    "latest_year_not_negative": false
+   },
+   "passed": false,
+   "variants_passing_if_peeked": 0,
+   "monthly_returns_pct": {
+    "2022-01-03": 13.3,
+    "2022-02-01": 0.34,
+    "2022-03-01": -3.9,
+    "2022-04-01": 16.88,
+    "2022-05-02": 1.98,
+    "2022-06-01": 6.76,
+    "2022-07-01": -13.43,
+    "2022-08-01": -0.27,
+    "2022-09-01": 7.23,
+    "2022-10-03": -10.87,
+    "2022-11-01": -1.8,
+    "2022-12-01": 6.46,
+    "2023-01-03": -17.66,
+    "2023-02-01": 4.93,
+    "2023-03-01": 5.59,
+    "2023-04-03": 1.32,
+    "2023-05-01": -2.05,
+    "2023-06-01": -10.08,
+    "2023-07-03": -12.36,
+    "2023-08-01": 5.76,
+    "2023-09-01": 9.35,
+    "2023-10-02": 10.09,
+    "2023-11-01": -14.11,
+    "2023-12-01": -18.42,
+    "2024-01-02": 5.9,
+    "2024-02-01": -7.4,
+    "2024-03-01": -1.56,
+    "2024-04-01": 10.99,
+    "2024-05-01": -9.11,
+    "2024-06-03": 4.18,
+    "2024-07-01": -11.99,
+    "2024-08-01": 5.24,
+    "2024-09-03": -3.7,
+    "2024-10-01": -3.25,
+    "2024-11-01": -8.48,
+    "2024-12-02": 6.83,
+    "2025-01-02": 0.48,
+    "2025-02-03": 6.8,
+    "2025-03-03": 7.44,
+    "2025-04-01": 0.62,
+    "2025-05-01": -6.72,
+    "2025-06-02": -7.1,
+    "2025-07-01": -4.46,
+    "2025-08-01": -10.54,
+    "2025-09-02": -5.68,
+    "2025-10-01": -0.93,
+    "2025-11-03": 1.65,
+    "2025-12-01": -6.88,
+    "2026-01-02": -3.71,
+    "2026-02-02": 4.37,
+    "2026-03-02": 1.53,
+    "2026-04-01": -11.72,
+    "2026-05-01": -6.81,
+    "2026-06-01": -6.67,
+    "2026-07-01": 0.47,
+    "2026-08-03": -4.95,
+    "2026-09-01": 5.48,
+    "2026-10-01": -0.75
+   },
+   "all_variants": [
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -34.0,
+      "total_pct": -71.3,
+      "avg_month_pct": -3.14,
+      "vol_pct": 25.2,
+      "sharpe": -1.5,
+      "max_dd_pct": -76.4,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -16.9,
+      "by_year": {
+       "2022": -10.3,
+       "2023": -45.7,
+       "2024": -41.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -42.6,
+      "total_pct": -63.8,
+      "avg_month_pct": -4.44,
+      "vol_pct": 13.3,
+      "sharpe": -4.0,
+      "max_dd_pct": -63.9,
+      "win_months_pct": 9.0,
+      "worst_month_pct": -11.2,
+      "by_year": {
+       "2025": -43.1,
+       "2026": -36.4
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -35.4,
+      "total_pct": -73.0,
+      "avg_month_pct": -3.25,
+      "vol_pct": 27.6,
+      "sharpe": -1.41,
+      "max_dd_pct": -76.2,
+      "win_months_pct": 31.0,
+      "worst_month_pct": -19.6,
+      "by_year": {
+       "2022": -15.2,
+       "2023": -46.8,
+       "2024": -40.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -43.0,
+      "total_pct": -64.3,
+      "avg_month_pct": -4.47,
+      "vol_pct": 15.6,
+      "sharpe": -3.43,
+      "max_dd_pct": -65.7,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -11.6,
+      "by_year": {
+       "2025": -44.7,
+       "2026": -35.4
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -31.8,
+      "total_pct": -68.3,
+      "avg_month_pct": -2.79,
+      "vol_pct": 28.8,
+      "sharpe": -1.16,
+      "max_dd_pct": -75.1,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -18.4,
+      "by_year": {
+       "2022": -7.7,
+       "2023": -46.6,
+       "2024": -35.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -40.7,
+      "total_pct": -61.6,
+      "avg_month_pct": -4.14,
+      "vol_pct": 16.8,
+      "sharpe": -2.95,
+      "max_dd_pct": -63.3,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -10.7,
+      "by_year": {
+       "2025": -39.9,
+       "2026": -36.1
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -27.6,
+      "total_pct": -62.0,
+      "avg_month_pct": -2.41,
+      "vol_pct": 24.2,
+      "sharpe": -1.19,
+      "max_dd_pct": -69.9,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -14.6,
+      "by_year": {
+       "2022": -1.5,
+       "2023": -39.8,
+       "2024": -35.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -36.1,
+      "total_pct": -56.0,
+      "avg_month_pct": -3.59,
+      "vol_pct": 13.3,
+      "sharpe": -3.23,
+      "max_dd_pct": -57.5,
+      "win_months_pct": 14.0,
+      "worst_month_pct": -10.0,
+      "by_year": {
+       "2025": -34.7,
+       "2026": -32.6
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -27.9,
+      "total_pct": -62.5,
+      "avg_month_pct": -2.4,
+      "vol_pct": 26.2,
+      "sharpe": -1.1,
+      "max_dd_pct": -68.6,
+      "win_months_pct": 44.0,
+      "worst_month_pct": -16.8,
+      "by_year": {
+       "2022": -6.5,
+       "2023": -40.3,
+       "2024": -32.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -36.8,
+      "total_pct": -56.9,
+      "avg_month_pct": -3.66,
+      "vol_pct": 14.9,
+      "sharpe": -2.96,
+      "max_dd_pct": -59.7,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -10.0,
+      "by_year": {
+       "2025": -35.6,
+       "2026": -33.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -25.6,
+      "total_pct": -58.8,
+      "avg_month_pct": -2.11,
+      "vol_pct": 27.5,
+      "sharpe": -0.92,
+      "max_dd_pct": -69.1,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -16.7,
+      "by_year": {
+       "2022": 2.1,
+       "2023": -41.7,
+       "2024": -30.8
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -35.1,
+      "total_pct": -54.8,
+      "avg_month_pct": -3.44,
+      "vol_pct": 15.8,
+      "sharpe": -2.61,
+      "max_dd_pct": -57.5,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -9.9,
+      "by_year": {
+       "2025": -31.7,
+       "2026": -33.8
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -24.1,
+      "total_pct": -56.3,
+      "avg_month_pct": -1.84,
+      "vol_pct": 32.0,
+      "sharpe": -0.69,
+      "max_dd_pct": -68.9,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -20.6,
+      "by_year": {
+       "2022": 12.6,
+       "2023": -41.6,
+       "2024": -33.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -32.6,
+      "total_pct": -51.5,
+      "avg_month_pct": -3.03,
+      "vol_pct": 21.9,
+      "sharpe": -1.66,
+      "max_dd_pct": -60.5,
+      "win_months_pct": 32.0,
+      "worst_month_pct": -13.9,
+      "by_year": {
+       "2025": -35.5,
+       "2026": -24.7
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -22.7,
+      "total_pct": -53.8,
+      "avg_month_pct": -1.67,
+      "vol_pct": 32.9,
+      "sharpe": -0.61,
+      "max_dd_pct": -64.7,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -20.8,
+      "by_year": {
+       "2022": 3.6,
+       "2023": -42.8,
+       "2024": -22.0
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -23.6,
+      "total_pct": -38.9,
+      "avg_month_pct": -2.06,
+      "vol_pct": 20.0,
+      "sharpe": -1.23,
+      "max_dd_pct": -53.2,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -12.1,
+      "by_year": {
+       "2025": -29.1,
+       "2026": -13.9
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -17.4,
+      "total_pct": -43.6,
+      "avg_month_pct": -1.08,
+      "vol_pct": 34.4,
+      "sharpe": -0.38,
+      "max_dd_pct": -61.4,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -20.9,
+      "by_year": {
+       "2022": 16.9,
+       "2023": -41.0,
+       "2024": -18.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -25.1,
+      "total_pct": -41.2,
+      "avg_month_pct": -2.17,
+      "vol_pct": 22.7,
+      "sharpe": -1.15,
+      "max_dd_pct": -53.7,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -14.8,
+      "by_year": {
+       "2025": -26.6,
+       "2026": -19.9
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -19.8,
+      "total_pct": -48.4,
+      "avg_month_pct": -1.48,
+      "vol_pct": 28.7,
+      "sharpe": -0.62,
+      "max_dd_pct": -63.1,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -18.5,
+      "by_year": {
+       "2022": 13.6,
+       "2023": -37.3,
+       "2024": -27.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -31.8,
+      "total_pct": -50.5,
+      "avg_month_pct": -3.01,
+      "vol_pct": 18.3,
+      "sharpe": -1.97,
+      "max_dd_pct": -57.6,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -11.8,
+      "by_year": {
+       "2025": -33.3,
+       "2026": -25.7
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -18.2,
+      "total_pct": -45.2,
+      "avg_month_pct": -1.28,
+      "vol_pct": 29.9,
+      "sharpe": -0.52,
+      "max_dd_pct": -58.1,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -18.6,
+      "by_year": {
+       "2022": 6.3,
+       "2023": -37.4,
+       "2024": -17.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -24.8,
+      "total_pct": -40.8,
+      "avg_month_pct": -2.23,
+      "vol_pct": 17.4,
+      "sharpe": -1.54,
+      "max_dd_pct": -52.7,
+      "win_months_pct": 32.0,
+      "worst_month_pct": -10.1,
+      "by_year": {
+       "2025": -29.3,
+       "2026": -16.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.2,
+      "total_pct": -34.7,
+      "avg_month_pct": -0.76,
+      "vol_pct": 31.6,
+      "sharpe": -0.29,
+      "max_dd_pct": -56.0,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -18.4,
+      "by_year": {
+       "2022": 19.9,
+       "2023": -36.3,
+       "2024": -14.4
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -24.6,
+      "total_pct": -40.5,
+      "avg_month_pct": -2.19,
+      "vol_pct": 18.9,
+      "sharpe": -1.39,
+      "max_dd_pct": -51.0,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -11.7,
+      "by_year": {
+       "2025": -24.0,
+       "2026": -21.7
+      }
+     }
+    }
+   ]
+  },
+  {
+   "key": "long_short",
+   "title": "Long least-shorted / short most-shorted",
+   "plain": "Each month, 50% of the account long the least-shorted stocks and 50% short the most-shorted ones (the classic days-to-cover spread).",
+   "variants_tried": 12,
+   "chosen_params": {
+    "signal": "si_pct",
+    "bucket": "quintile",
+    "filter": "below_200d"
+   },
+   "selection": "highest 2022-24 Sharpe",
+   "in_sample": {
+    "months": 36,
+    "cagr_pct": -3.5,
+    "total_pct": -10.1,
+    "avg_month_pct": -0.25,
+    "vol_pct": 10.3,
+    "sharpe": -0.29,
+    "max_dd_pct": -19.0,
+    "win_months_pct": 50.0,
+    "worst_month_pct": -6.9,
+    "by_year": {
+     "2022": 5.2,
+     "2023": -13.9,
+     "2024": -0.7
+    }
+   },
+   "out_of_sample": {
+    "months": 22,
+    "cagr_pct": -10.3,
+    "total_pct": -18.0,
+    "avg_month_pct": -0.88,
+    "vol_pct": 7.2,
+    "sharpe": -1.46,
+    "max_dd_pct": -23.6,
+    "win_months_pct": 36.0,
+    "worst_month_pct": -3.9,
+    "by_year": {
+     "2025": -10.2,
+     "2026": -8.8
+    }
+   },
+   "avg_names_short": 183.0,
+   "borrow_sensitivity": {
+    "borrow_x0.5": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 3.4,
+      "total_pct": 10.6,
+      "avg_month_pct": 0.32,
+      "vol_pct": 10.3,
+      "sharpe": 0.38,
+      "max_dd_pct": -9.0,
+      "win_months_pct": 53.0,
+      "worst_month_pct": -6.4,
+      "by_year": {
+       "2022": 12.3,
+       "2023": -7.6,
+       "2024": 6.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -3.4,
+      "total_pct": -6.2,
+      "avg_month_pct": -0.27,
+      "vol_pct": 7.3,
+      "sharpe": -0.45,
+      "max_dd_pct": -16.1,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -3.2,
+      "by_year": {
+       "2025": -3.6,
+       "2026": -2.7
+      }
+     }
+    },
+    "borrow_x1": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -3.5,
+      "total_pct": -10.1,
+      "avg_month_pct": -0.25,
+      "vol_pct": 10.3,
+      "sharpe": -0.29,
+      "max_dd_pct": -19.0,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -6.9,
+      "by_year": {
+       "2022": 5.2,
+       "2023": -13.9,
+       "2024": -0.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -10.3,
+      "total_pct": -18.0,
+      "avg_month_pct": -0.88,
+      "vol_pct": 7.2,
+      "sharpe": -1.46,
+      "max_dd_pct": -23.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -3.9,
+      "by_year": {
+       "2025": -10.2,
+       "2026": -8.8
+      }
+     }
+    },
+    "borrow_x2": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -16.0,
+      "total_pct": -40.8,
+      "avg_month_pct": -1.4,
+      "vol_pct": 10.4,
+      "sharpe": -1.62,
+      "max_dd_pct": -43.7,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -8.0,
+      "by_year": {
+       "2022": -7.7,
+       "2023": -25.4,
+       "2024": -14.0
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -22.7,
+      "total_pct": -37.6,
+      "avg_month_pct": -2.1,
+      "vol_pct": 7.2,
+      "sharpe": -3.5,
+      "max_dd_pct": -38.6,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -5.2,
+      "by_year": {
+       "2025": -22.1,
+       "2026": -19.9
+      }
+     }
+    },
+    "no_borrow_fee": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 10.8,
+      "total_pct": 35.9,
+      "avg_month_pct": 0.9,
+      "vol_pct": 10.3,
+      "sharpe": 1.05,
+      "max_dd_pct": -7.5,
+      "win_months_pct": 58.0,
+      "worst_month_pct": -5.8,
+      "by_year": {
+       "2022": 19.7,
+       "2023": -0.9,
+       "2024": 14.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 3.9,
+      "total_pct": 7.2,
+      "avg_month_pct": 0.34,
+      "vol_pct": 7.3,
+      "sharpe": 0.56,
+      "max_dd_pct": -8.8,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -2.6,
+      "by_year": {
+       "2025": 3.4,
+       "2026": 3.7
+      }
+     }
+    },
+    "flat_fee_what_if": {
+     "flat_1pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 10.2,
+       "total_pct": 33.9,
+       "avg_month_pct": 0.86,
+       "vol_pct": 10.3,
+       "sharpe": 1.0,
+       "max_dd_pct": -7.6,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -5.9,
+       "by_year": {
+        "2022": 19.1,
+        "2023": -1.4,
+        "2024": 13.9
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 3.4,
+       "total_pct": 6.3,
+       "avg_month_pct": 0.3,
+       "vol_pct": 7.3,
+       "sharpe": 0.49,
+       "max_dd_pct": -9.3,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -2.6,
+       "by_year": {
+        "2025": 2.9,
+        "2026": 3.3
+       }
+      },
+      "would_pass": false
+     },
+     "flat_3pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 9.1,
+       "total_pct": 29.9,
+       "avg_month_pct": 0.77,
+       "vol_pct": 10.3,
+       "sharpe": 0.9,
+       "max_dd_pct": -7.8,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -6.0,
+       "by_year": {
+        "2022": 18.0,
+        "2023": -2.3,
+        "2024": 12.8
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 2.3,
+       "total_pct": 4.3,
+       "avg_month_pct": 0.21,
+       "vol_pct": 7.3,
+       "sharpe": 0.35,
+       "max_dd_pct": -10.4,
+       "win_months_pct": 45.0,
+       "worst_month_pct": -2.7,
+       "by_year": {
+        "2025": 1.8,
+        "2026": 2.5
+       }
+      },
+      "would_pass": false
+     },
+     "flat_5pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 8.0,
+       "total_pct": 26.1,
+       "avg_month_pct": 0.69,
+       "vol_pct": 10.3,
+       "sharpe": 0.8,
+       "max_dd_pct": -7.9,
+       "win_months_pct": 56.0,
+       "worst_month_pct": -6.1,
+       "by_year": {
+        "2022": 16.8,
+        "2023": -3.3,
+        "2024": 11.7
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 1.3,
+       "total_pct": 2.4,
+       "avg_month_pct": 0.13,
+       "vol_pct": 7.3,
+       "sharpe": 0.22,
+       "max_dd_pct": -11.4,
+       "win_months_pct": 45.0,
+       "worst_month_pct": -2.8,
+       "by_year": {
+        "2025": 0.8,
+        "2026": 1.6
+       }
+      },
+      "would_pass": false
+     },
+     "flat_10pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 5.4,
+       "total_pct": 17.1,
+       "avg_month_pct": 0.48,
+       "vol_pct": 10.3,
+       "sharpe": 0.56,
+       "max_dd_pct": -8.3,
+       "win_months_pct": 56.0,
+       "worst_month_pct": -6.3,
+       "by_year": {
+        "2022": 14.0,
+        "2023": -5.7,
+        "2024": 8.9
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": -1.2,
+       "total_pct": -2.1,
+       "avg_month_pct": -0.08,
+       "vol_pct": 7.3,
+       "sharpe": -0.13,
+       "max_dd_pct": -14.0,
+       "win_months_pct": 41.0,
+       "worst_month_pct": -3.0,
+       "by_year": {
+        "2025": -1.7,
+        "2026": -0.5
+       }
+      },
+      "would_pass": false
+     }
+    },
+    "avg_assumed_tier_fee_pct": 28.3
+   },
+   "checks": {
+    "oos_net_return_positive": false,
+    "oos_sharpe>0.5": false,
+    "latest_year_not_negative": false
+   },
+   "passed": false,
+   "variants_passing_if_peeked": 0,
+   "monthly_returns_pct": {
+    "2022-01-03": 3.95,
+    "2022-02-01": -0.82,
+    "2022-03-01": 0.06,
+    "2022-04-01": 4.76,
+    "2022-05-02": 2.28,
+    "2022-06-01": -1.36,
+    "2022-07-01": -3.78,
+    "2022-08-01": -2.02,
+    "2022-09-01": -0.06,
+    "2022-10-03": -1.36,
+    "2022-11-01": 2.43,
+    "2022-12-01": 1.36,
+    "2023-01-03": -6.59,
+    "2023-02-01": 0.96,
+    "2023-03-01": 2.64,
+    "2023-04-03": 0.67,
+    "2023-05-01": -2.99,
+    "2023-06-01": -1.78,
+    "2023-07-03": -4.94,
+    "2023-08-01": 2.19,
+    "2023-09-01": 1.89,
+    "2023-10-02": 3.78,
+    "2023-11-01": -3.08,
+    "2023-12-01": -6.92,
+    "2024-01-02": 3.13,
+    "2024-02-01": -1.64,
+    "2024-03-01": 1.59,
+    "2024-04-01": 3.51,
+    "2024-05-01": -2.7,
+    "2024-06-03": 1.24,
+    "2024-07-01": -4.02,
+    "2024-08-01": 3.04,
+    "2024-09-03": -0.57,
+    "2024-10-01": -2.45,
+    "2024-11-01": -1.82,
+    "2024-12-02": 0.34,
+    "2025-01-02": 0.5,
+    "2025-02-03": 3.14,
+    "2025-03-03": 1.58,
+    "2025-04-01": -0.22,
+    "2025-05-01": -1.1,
+    "2025-06-02": -2.69,
+    "2025-07-01": -2.44,
+    "2025-08-01": -3.89,
+    "2025-09-02": -1.94,
+    "2025-10-01": -1.27,
+    "2025-11-03": 0.8,
+    "2025-12-01": -2.9,
+    "2026-01-02": -1.03,
+    "2026-02-02": 2.56,
+    "2026-03-02": -1.47,
+    "2026-04-01": -2.86,
+    "2026-05-01": -3.83,
+    "2026-06-01": -3.51,
+    "2026-07-01": 1.11,
+    "2026-08-03": -1.73,
+    "2026-09-01": 0.27,
+    "2026-10-01": 1.58
+   },
+   "all_variants": [
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -24.0,
+      "total_pct": -56.2,
+      "avg_month_pct": -2.25,
+      "vol_pct": 6.6,
+      "sharpe": -4.08,
+      "max_dd_pct": -55.4,
+      "win_months_pct": 17.0,
+      "worst_month_pct": -7.6,
+      "by_year": {
+       "2022": -21.3,
+       "2023": -23.9,
+       "2024": -26.8
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -37.9,
+      "total_pct": -58.3,
+      "avg_month_pct": -3.86,
+      "vol_pct": 9.1,
+      "sharpe": -5.07,
+      "max_dd_pct": -56.0,
+      "win_months_pct": 5.0,
+      "worst_month_pct": -9.1,
+      "by_year": {
+       "2025": -37.5,
+       "2026": -33.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -22.9,
+      "total_pct": -54.2,
+      "avg_month_pct": -2.12,
+      "vol_pct": 7.9,
+      "sharpe": -3.22,
+      "max_dd_pct": -54.4,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": -18.4,
+       "2023": -24.1,
+       "2024": -26.1
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -38.1,
+      "total_pct": -58.5,
+      "avg_month_pct": -3.88,
+      "vol_pct": 9.9,
+      "sharpe": -4.72,
+      "max_dd_pct": -56.0,
+      "win_months_pct": 9.0,
+      "worst_month_pct": -9.4,
+      "by_year": {
+       "2025": -38.3,
+       "2026": -32.7
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -22.5,
+      "total_pct": -53.4,
+      "avg_month_pct": -2.07,
+      "vol_pct": 8.1,
+      "sharpe": -3.08,
+      "max_dd_pct": -53.1,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -7.7,
+      "by_year": {
+       "2022": -20.1,
+       "2023": -24.1,
+       "2024": -23.1
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -36.8,
+      "total_pct": -56.9,
+      "avg_month_pct": -3.71,
+      "vol_pct": 9.8,
+      "sharpe": -4.55,
+      "max_dd_pct": -54.5,
+      "win_months_pct": 5.0,
+      "worst_month_pct": -10.3,
+      "by_year": {
+       "2025": -35.7,
+       "2026": -33.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -15.7,
+      "total_pct": -40.1,
+      "avg_month_pct": -1.4,
+      "vol_pct": 5.0,
+      "sharpe": -3.37,
+      "max_dd_pct": -39.6,
+      "win_months_pct": 19.0,
+      "worst_month_pct": -5.2,
+      "by_year": {
+       "2022": -11.9,
+       "2023": -16.6,
+       "2024": -18.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -25.0,
+      "total_pct": -41.0,
+      "avg_month_pct": -2.35,
+      "vol_pct": 7.3,
+      "sharpe": -3.88,
+      "max_dd_pct": -39.2,
+      "win_months_pct": 9.0,
+      "worst_month_pct": -6.6,
+      "by_year": {
+       "2025": -22.8,
+       "2026": -23.5
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -14.3,
+      "total_pct": -37.0,
+      "avg_month_pct": -1.26,
+      "vol_pct": 6.4,
+      "sharpe": -2.36,
+      "max_dd_pct": -38.3,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -5.7,
+      "by_year": {
+       "2022": -9.8,
+       "2023": -16.4,
+       "2024": -16.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -25.4,
+      "total_pct": -41.5,
+      "avg_month_pct": -2.38,
+      "vol_pct": 7.8,
+      "sharpe": -3.66,
+      "max_dd_pct": -39.8,
+      "win_months_pct": 14.0,
+      "worst_month_pct": -7.4,
+      "by_year": {
+       "2025": -23.2,
+       "2026": -23.8
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -14.2,
+      "total_pct": -36.9,
+      "avg_month_pct": -1.25,
+      "vol_pct": 6.6,
+      "sharpe": -2.3,
+      "max_dd_pct": -38.4,
+      "win_months_pct": 31.0,
+      "worst_month_pct": -5.7,
+      "by_year": {
+       "2022": -10.1,
+       "2023": -17.5,
+       "2024": -15.0
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -24.3,
+      "total_pct": -40.0,
+      "avg_month_pct": -2.27,
+      "vol_pct": 7.9,
+      "sharpe": -3.43,
+      "max_dd_pct": -38.1,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -7.7,
+      "by_year": {
+       "2025": -20.9,
+       "2026": -24.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -10.9,
+      "total_pct": -29.3,
+      "avg_month_pct": -0.9,
+      "vol_pct": 11.6,
+      "sharpe": -0.93,
+      "max_dd_pct": -35.3,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -8.8,
+      "by_year": {
+       "2022": 1.4,
+       "2023": -19.4,
+       "2024": -13.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -17.0,
+      "total_pct": -28.9,
+      "avg_month_pct": -1.5,
+      "vol_pct": 9.1,
+      "sharpe": -1.98,
+      "max_dd_pct": -33.7,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -5.6,
+      "by_year": {
+       "2025": -18.4,
+       "2026": -12.9
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -9.4,
+      "total_pct": -25.7,
+      "avg_month_pct": -0.76,
+      "vol_pct": 12.0,
+      "sharpe": -0.76,
+      "max_dd_pct": -31.0,
+      "win_months_pct": 44.0,
+      "worst_month_pct": -8.9,
+      "by_year": {
+       "2022": -0.9,
+       "2023": -19.8,
+       "2024": -6.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -11.8,
+      "total_pct": -20.6,
+      "avg_month_pct": -1.02,
+      "vol_pct": 7.8,
+      "sharpe": -1.55,
+      "max_dd_pct": -27.8,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -5.5,
+      "by_year": {
+       "2025": -14.6,
+       "2026": -7.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.9,
+      "total_pct": -19.2,
+      "avg_month_pct": -0.52,
+      "vol_pct": 12.9,
+      "sharpe": -0.49,
+      "max_dd_pct": -27.7,
+      "win_months_pct": 53.0,
+      "worst_month_pct": -9.0,
+      "by_year": {
+       "2022": 3.5,
+       "2023": -18.6,
+       "2024": -4.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -12.5,
+      "total_pct": -21.8,
+      "avg_month_pct": -1.07,
+      "vol_pct": 9.5,
+      "sharpe": -1.36,
+      "max_dd_pct": -27.9,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -5.4,
+      "by_year": {
+       "2025": -13.1,
+       "2026": -10.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.4,
+      "total_pct": -20.7,
+      "avg_month_pct": -0.61,
+      "vol_pct": 8.8,
+      "sharpe": -0.84,
+      "max_dd_pct": -26.4,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -6.9,
+      "by_year": {
+       "2022": 2.2,
+       "2023": -15.0,
+       "2024": -8.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -14.6,
+      "total_pct": -25.2,
+      "avg_month_pct": -1.29,
+      "vol_pct": 7.2,
+      "sharpe": -2.15,
+      "max_dd_pct": -29.5,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -4.0,
+      "by_year": {
+       "2025": -15.8,
+       "2026": -11.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -5.6,
+      "total_pct": -15.9,
+      "avg_month_pct": -0.44,
+      "vol_pct": 9.6,
+      "sharpe": -0.55,
+      "max_dd_pct": -21.1,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -7.0,
+      "by_year": {
+       "2022": 1.4,
+       "2023": -14.7,
+       "2024": -2.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -10.5,
+      "total_pct": -18.4,
+      "avg_month_pct": -0.9,
+      "vol_pct": 6.4,
+      "sharpe": -1.69,
+      "max_dd_pct": -24.9,
+      "win_months_pct": 32.0,
+      "worst_month_pct": -3.7,
+      "by_year": {
+       "2025": -13.3,
+       "2026": -5.9
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -3.5,
+      "total_pct": -10.1,
+      "avg_month_pct": -0.25,
+      "vol_pct": 10.3,
+      "sharpe": -0.29,
+      "max_dd_pct": -19.0,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -6.9,
+      "by_year": {
+       "2022": 5.2,
+       "2023": -13.9,
+       "2024": -0.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -10.3,
+      "total_pct": -18.0,
+      "avg_month_pct": -0.88,
+      "vol_pct": 7.2,
+      "sharpe": -1.46,
+      "max_dd_pct": -23.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -3.9,
+      "by_year": {
+       "2025": -10.2,
+       "2026": -8.8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "key": "hedged",
+   "title": "Short most-shorted basket, hedged with SPY",
+   "plain": "Each month, 50% short the most-shorted basket and 50% long SPY, so a rising market does not sink the shorts.",
+   "variants_tried": 12,
+   "chosen_params": {
+    "signal": "si_pct",
+    "bucket": "quintile",
+    "filter": "below_200d"
+   },
+   "selection": "highest 2022-24 Sharpe",
+   "in_sample": {
+    "months": 36,
+    "cagr_pct": -0.1,
+    "total_pct": -0.3,
+    "avg_month_pct": 0.04,
+    "vol_pct": 10.6,
+    "sharpe": 0.04,
+    "max_dd_pct": -12.6,
+    "win_months_pct": 50.0,
+    "worst_month_pct": -7.2,
+    "by_year": {
+     "2022": 2.5,
+     "2023": -7.8,
+     "2024": 5.6
+    }
+   },
+   "out_of_sample": {
+    "months": 22,
+    "cagr_pct": -5.4,
+    "total_pct": -9.6,
+    "avg_month_pct": -0.44,
+    "vol_pct": 6.7,
+    "sharpe": -0.8,
+    "max_dd_pct": -16.2,
+    "win_months_pct": 41.0,
+    "worst_month_pct": -4.4,
+    "by_year": {
+     "2025": -4.3,
+     "2026": -5.5
+    }
+   },
+   "avg_names_short": 183.0,
+   "borrow_sensitivity": {
+    "borrow_x0.5": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 7.0,
+      "total_pct": 22.6,
+      "avg_month_pct": 0.61,
+      "vol_pct": 10.6,
+      "sharpe": 0.69,
+      "max_dd_pct": -8.6,
+      "win_months_pct": 53.0,
+      "worst_month_pct": -6.7,
+      "by_year": {
+       "2022": 9.3,
+       "2023": -1.1,
+       "2024": 13.3
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 1.8,
+      "total_pct": 3.4,
+      "avg_month_pct": 0.17,
+      "vol_pct": 6.7,
+      "sharpe": 0.3,
+      "max_dd_pct": -7.9,
+      "win_months_pct": 45.0,
+      "worst_month_pct": -3.7,
+      "by_year": {
+       "2025": 2.6,
+       "2026": 0.7
+      }
+     }
+    },
+    "borrow_x1": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.1,
+      "total_pct": -0.3,
+      "avg_month_pct": 0.04,
+      "vol_pct": 10.6,
+      "sharpe": 0.04,
+      "max_dd_pct": -12.6,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -7.2,
+      "by_year": {
+       "2022": 2.5,
+       "2023": -7.8,
+       "2024": 5.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -5.4,
+      "total_pct": -9.6,
+      "avg_month_pct": -0.44,
+      "vol_pct": 6.7,
+      "sharpe": -0.8,
+      "max_dd_pct": -16.2,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -4.4,
+      "by_year": {
+       "2025": -4.3,
+       "2026": -5.5
+      }
+     }
+    },
+    "borrow_x2": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.0,
+      "total_pct": -34.3,
+      "avg_month_pct": -1.11,
+      "vol_pct": 10.6,
+      "sharpe": -1.25,
+      "max_dd_pct": -37.0,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -8.3,
+      "by_year": {
+       "2022": -10.1,
+       "2023": -20.0,
+       "2024": -8.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -18.4,
+      "total_pct": -31.1,
+      "avg_month_pct": -1.66,
+      "vol_pct": 6.7,
+      "sharpe": -2.98,
+      "max_dd_pct": -32.2,
+      "win_months_pct": 14.0,
+      "worst_month_pct": -5.7,
+      "by_year": {
+       "2025": -16.9,
+       "2026": -17.0
+      }
+     }
+    },
+    "no_borrow_fee": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 14.6,
+      "total_pct": 50.5,
+      "avg_month_pct": 1.19,
+      "vol_pct": 10.6,
+      "sharpe": 1.35,
+      "max_dd_pct": -7.4,
+      "win_months_pct": 58.0,
+      "worst_month_pct": -6.1,
+      "by_year": {
+       "2022": 16.6,
+       "2023": 6.1,
+       "2024": 21.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 9.5,
+      "total_pct": 18.1,
+      "avg_month_pct": 0.78,
+      "vol_pct": 6.7,
+      "sharpe": 1.4,
+      "max_dd_pct": -3.4,
+      "win_months_pct": 73.0,
+      "worst_month_pct": -3.1,
+      "by_year": {
+       "2025": 10.0,
+       "2026": 7.4
+      }
+     }
+    },
+    "flat_fee_what_if": {
+     "flat_1pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 14.0,
+       "total_pct": 48.3,
+       "avg_month_pct": 1.15,
+       "vol_pct": 10.6,
+       "sharpe": 1.3,
+       "max_dd_pct": -7.5,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -6.2,
+       "by_year": {
+        "2022": 16.0,
+        "2023": 5.6,
+        "2024": 21.0
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 9.0,
+       "total_pct": 17.0,
+       "avg_month_pct": 0.74,
+       "vol_pct": 6.7,
+       "sharpe": 1.32,
+       "max_dd_pct": -3.4,
+       "win_months_pct": 73.0,
+       "worst_month_pct": -3.1,
+       "by_year": {
+        "2025": 9.5,
+        "2026": 6.9
+       }
+      },
+      "would_pass": false
+     },
+     "flat_3pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 12.9,
+       "total_pct": 44.0,
+       "avg_month_pct": 1.06,
+       "vol_pct": 10.6,
+       "sharpe": 1.2,
+       "max_dd_pct": -7.7,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -6.2,
+       "by_year": {
+        "2022": 14.9,
+        "2023": 4.6,
+        "2024": 19.8
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 7.9,
+       "total_pct": 14.9,
+       "avg_month_pct": 0.65,
+       "vol_pct": 6.7,
+       "sharpe": 1.17,
+       "max_dd_pct": -3.7,
+       "win_months_pct": 64.0,
+       "worst_month_pct": -3.2,
+       "by_year": {
+        "2025": 8.4,
+        "2026": 6.1
+       }
+      },
+      "would_pass": false
+     },
+     "flat_5pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 11.8,
+       "total_pct": 39.8,
+       "avg_month_pct": 0.98,
+       "vol_pct": 10.6,
+       "sharpe": 1.11,
+       "max_dd_pct": -7.9,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -6.3,
+       "by_year": {
+        "2022": 13.8,
+        "2023": 3.5,
+        "2024": 18.6
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 6.8,
+       "total_pct": 12.9,
+       "avg_month_pct": 0.57,
+       "vol_pct": 6.7,
+       "sharpe": 1.02,
+       "max_dd_pct": -4.0,
+       "win_months_pct": 64.0,
+       "worst_month_pct": -3.3,
+       "by_year": {
+        "2025": 7.3,
+        "2026": 5.2
+       }
+      },
+      "would_pass": false
+     },
+     "flat_10pct": {
+      "is": {
+       "months": 36,
+       "cagr_pct": 9.1,
+       "total_pct": 29.7,
+       "avg_month_pct": 0.77,
+       "vol_pct": 10.6,
+       "sharpe": 0.87,
+       "max_dd_pct": -8.3,
+       "win_months_pct": 58.0,
+       "worst_month_pct": -6.6,
+       "by_year": {
+        "2022": 11.0,
+        "2023": 1.0,
+        "2024": 15.7
+       }
+      },
+      "oos": {
+       "months": 22,
+       "cagr_pct": 4.2,
+       "total_pct": 7.8,
+       "avg_month_pct": 0.36,
+       "vol_pct": 6.7,
+       "sharpe": 0.65,
+       "max_dd_pct": -5.6,
+       "win_months_pct": 50.0,
+       "worst_month_pct": -3.5,
+       "by_year": {
+        "2025": 4.7,
+        "2026": 3.0
+       }
+      },
+      "would_pass": false
+     }
+    },
+    "avg_assumed_tier_fee_pct": 28.3
+   },
+   "checks": {
+    "oos_net_return_positive": false,
+    "oos_sharpe>0.5": false,
+    "latest_year_not_negative": false,
+    "oos_sharpe_above_spy": false
+   },
+   "passed": false,
+   "variants_passing_if_peeked": 0,
+   "monthly_returns_pct": {
+    "2022-01-03": 3.96,
+    "2022-02-01": -1.56,
+    "2022-03-01": 0.31,
+    "2022-04-01": 3.89,
+    "2022-05-02": 1.36,
+    "2022-06-01": -1.07,
+    "2022-07-01": -2.39,
+    "2022-08-01": -2.12,
+    "2022-09-01": -0.24,
+    "2022-10-03": -1.41,
+    "2022-11-01": 1.49,
+    "2022-12-01": 0.46,
+    "2023-01-03": -6.12,
+    "2023-02-01": 1.25,
+    "2023-03-01": 4.69,
+    "2023-04-03": 1.47,
+    "2023-05-01": -0.71,
+    "2023-06-01": -1.87,
+    "2023-07-03": -4.67,
+    "2023-08-01": 2.54,
+    "2023-09-01": 1.91,
+    "2023-10-02": 4.18,
+    "2023-11-01": -2.69,
+    "2023-12-01": -7.2,
+    "2024-01-02": 4.27,
+    "2024-02-01": -1.19,
+    "2024-03-01": 0.84,
+    "2024-04-01": 3.35,
+    "2024-05-01": -1.8,
+    "2024-06-03": 3.83,
+    "2024-07-01": -5.36,
+    "2024-08-01": 3.34,
+    "2024-09-03": -0.54,
+    "2024-10-01": -1.81,
+    "2024-11-01": -1.47,
+    "2024-12-02": 2.45,
+    "2025-01-02": 0.52,
+    "2025-02-03": 3.69,
+    "2025-03-03": 0.61,
+    "2025-04-01": 0.57,
+    "2025-05-01": -0.92,
+    "2025-06-02": -0.96,
+    "2025-07-01": -1.42,
+    "2025-08-01": -4.38,
+    "2025-09-02": -0.68,
+    "2025-10-01": 1.23,
+    "2025-11-03": 0.33,
+    "2025-12-01": -2.78,
+    "2026-01-02": -1.57,
+    "2026-02-02": 1.4,
+    "2026-03-02": -0.93,
+    "2026-04-01": -0.71,
+    "2026-05-01": -1.04,
+    "2026-06-01": -3.89,
+    "2026-07-01": 0.53,
+    "2026-08-03": -1.64,
+    "2026-09-01": 3.02,
+    "2026-10-01": -0.7
+   },
+   "all_variants": [
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.2,
+      "total_pct": -34.7,
+      "avg_month_pct": -1.15,
+      "vol_pct": 7.7,
+      "sharpe": -1.79,
+      "max_dd_pct": -36.8,
+      "win_months_pct": 31.0,
+      "worst_month_pct": -6.8,
+      "by_year": {
+       "2022": -12.1,
+       "2023": -15.4,
+       "2024": -12.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -17.4,
+      "total_pct": -29.6,
+      "avg_month_pct": -1.57,
+      "vol_pct": 6.0,
+      "sharpe": -3.15,
+      "max_dd_pct": -29.1,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -5.9,
+      "by_year": {
+       "2025": -17.3,
+       "2026": -15.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.1,
+      "total_pct": -34.4,
+      "avg_month_pct": -1.13,
+      "vol_pct": 9.1,
+      "sharpe": -1.49,
+      "max_dd_pct": -35.5,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -7.8,
+      "by_year": {
+       "2022": -12.3,
+       "2023": -15.6,
+       "2024": -11.4
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -17.6,
+      "total_pct": -29.9,
+      "avg_month_pct": -1.58,
+      "vol_pct": 6.6,
+      "sharpe": -2.9,
+      "max_dd_pct": -30.0,
+      "win_months_pct": 14.0,
+      "worst_month_pct": -4.4,
+      "by_year": {
+       "2025": -18.2,
+       "2026": -14.3
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -11.5,
+      "total_pct": -30.8,
+      "avg_month_pct": -0.98,
+      "vol_pct": 9.7,
+      "sharpe": -1.21,
+      "max_dd_pct": -34.1,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -7.2,
+      "by_year": {
+       "2022": -10.7,
+       "2023": -15.7,
+       "2024": -8.0
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -16.0,
+      "total_pct": -27.3,
+      "avg_month_pct": -1.42,
+      "vol_pct": 7.0,
+      "sharpe": -2.42,
+      "max_dd_pct": -28.0,
+      "win_months_pct": 23.0,
+      "worst_month_pct": -5.9,
+      "by_year": {
+       "2025": -14.9,
+       "2026": -14.6
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -9.3,
+      "total_pct": -25.3,
+      "avg_month_pct": -0.79,
+      "vol_pct": 7.0,
+      "sharpe": -1.34,
+      "max_dd_pct": -27.4,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -5.7,
+      "by_year": {
+       "2022": -7.9,
+       "2023": -11.2,
+       "2024": -8.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -13.0,
+      "total_pct": -22.6,
+      "avg_month_pct": -1.14,
+      "vol_pct": 5.8,
+      "sharpe": -2.35,
+      "max_dd_pct": -22.7,
+      "win_months_pct": 23.0,
+      "worst_month_pct": -5.2,
+      "by_year": {
+       "2025": -11.5,
+       "2026": -12.5
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -8.5,
+      "total_pct": -23.4,
+      "avg_month_pct": -0.71,
+      "vol_pct": 8.4,
+      "sharpe": -1.02,
+      "max_dd_pct": -25.5,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -6.4,
+      "by_year": {
+       "2022": -7.9,
+       "2023": -11.1,
+       "2024": -6.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -13.4,
+      "total_pct": -23.2,
+      "avg_month_pct": -1.18,
+      "vol_pct": 5.9,
+      "sharpe": -2.42,
+      "max_dd_pct": -24.0,
+      "win_months_pct": 18.0,
+      "worst_month_pct": -4.1,
+      "by_year": {
+       "2025": -12.0,
+       "2026": -12.8
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "dtc",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.7,
+      "total_pct": -21.5,
+      "avg_month_pct": -0.64,
+      "vol_pct": 8.7,
+      "sharpe": -0.88,
+      "max_dd_pct": -25.9,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -6.3,
+      "by_year": {
+       "2022": -6.1,
+       "2023": -12.2,
+       "2024": -4.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -12.3,
+      "total_pct": -21.4,
+      "avg_month_pct": -1.07,
+      "vol_pct": 6.4,
+      "sharpe": -2.01,
+      "max_dd_pct": -22.0,
+      "win_months_pct": 23.0,
+      "worst_month_pct": -4.7,
+      "by_year": {
+       "2025": -9.4,
+       "2026": -13.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.4,
+      "total_pct": -18.1,
+      "avg_month_pct": -0.5,
+      "vol_pct": 10.8,
+      "sharpe": -0.56,
+      "max_dd_pct": -24.1,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -8.3,
+      "by_year": {
+       "2022": -0.9,
+       "2023": -11.6,
+       "2024": -6.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -10.2,
+      "total_pct": -17.8,
+      "avg_month_pct": -0.87,
+      "vol_pct": 7.5,
+      "sharpe": -1.39,
+      "max_dd_pct": -24.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -5.0,
+      "by_year": {
+       "2025": -11.4,
+       "2026": -7.2
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -4.7,
+      "total_pct": -13.4,
+      "avg_month_pct": -0.34,
+      "vol_pct": 11.5,
+      "sharpe": -0.36,
+      "max_dd_pct": -19.1,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -8.4,
+      "by_year": {
+       "2022": -2.4,
+       "2023": -12.1,
+       "2024": 0.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -4.7,
+      "total_pct": -8.4,
+      "avg_month_pct": -0.38,
+      "vol_pct": 7.5,
+      "sharpe": -0.6,
+      "max_dd_pct": -19.0,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -5.2,
+      "by_year": {
+       "2025": -7.4,
+       "2026": -1.1
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "decile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -2.2,
+      "total_pct": -6.5,
+      "avg_month_pct": -0.12,
+      "vol_pct": 12.3,
+      "sharpe": -0.12,
+      "max_dd_pct": -15.6,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -8.4,
+      "by_year": {
+       "2022": 1.2,
+       "2023": -10.7,
+       "2024": 3.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -5.4,
+      "total_pct": -9.7,
+      "avg_month_pct": -0.43,
+      "vol_pct": 8.2,
+      "sharpe": -0.63,
+      "max_dd_pct": -18.2,
+      "win_months_pct": 45.0,
+      "worst_month_pct": -5.1,
+      "by_year": {
+       "2025": -5.8,
+       "2026": -4.1
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "none"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -4.2,
+      "total_pct": -12.0,
+      "avg_month_pct": -0.32,
+      "vol_pct": 9.0,
+      "sharpe": -0.43,
+      "max_dd_pct": -17.9,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -7.2,
+      "by_year": {
+       "2022": -0.5,
+       "2023": -9.0,
+       "2024": -2.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -9.9,
+      "total_pct": -17.4,
+      "avg_month_pct": -0.85,
+      "vol_pct": 6.0,
+      "sharpe": -1.7,
+      "max_dd_pct": -21.9,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -4.4,
+      "by_year": {
+       "2025": -10.2,
+       "2026": -8.0
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "neg_mom12_1"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -2.3,
+      "total_pct": -6.6,
+      "avg_month_pct": -0.15,
+      "vol_pct": 9.9,
+      "sharpe": -0.18,
+      "max_dd_pct": -13.4,
+      "win_months_pct": 44.0,
+      "worst_month_pct": -7.3,
+      "by_year": {
+       "2022": -1.2,
+       "2023": -8.6,
+       "2024": 3.4
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -5.6,
+      "total_pct": -10.1,
+      "avg_month_pct": -0.46,
+      "vol_pct": 6.7,
+      "sharpe": -0.83,
+      "max_dd_pct": -18.0,
+      "win_months_pct": 32.0,
+      "worst_month_pct": -4.2,
+      "by_year": {
+       "2025": -7.6,
+       "2026": -2.7
+      }
+     }
+    },
+    {
+     "params": {
+      "signal": "si_pct",
+      "bucket": "quintile",
+      "filter": "below_200d"
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.1,
+      "total_pct": -0.3,
+      "avg_month_pct": 0.04,
+      "vol_pct": 10.6,
+      "sharpe": 0.04,
+      "max_dd_pct": -12.6,
+      "win_months_pct": 50.0,
+      "worst_month_pct": -7.2,
+      "by_year": {
+       "2022": 2.5,
+       "2023": -7.8,
+       "2024": 5.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -5.4,
+      "total_pct": -9.6,
+      "avg_month_pct": -0.44,
+      "vol_pct": 6.7,
+      "sharpe": -0.8,
+      "max_dd_pct": -16.2,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -4.4,
+      "by_year": {
+       "2025": -4.3,
+       "2026": -5.5
+      }
+     }
+    }
+   ]
+  },
+  {
+   "key": "failed_squeeze",
+   "title": "Short the failed squeeze",
+   "plain": "Short a heavily shorted stock after it spikes to a new 60-day high and then breaks down: closes 15-25% below the peak and under its 20-day average. Stop above entry, time exit.",
+   "variants_tried": 32,
+   "chosen_params": {
+    "rise": 0.3,
+    "drop": 0.25,
+    "min_dtc": 5,
+    "stop_atr": 2.0,
+    "hold": 20
+   },
+   "selection": "highest 2022-24 Sharpe (>= 50 in-sample trades)",
+   "in_sample": {
+    "months": 36,
+    "cagr_pct": -0.1,
+    "total_pct": -0.3,
+    "avg_month_pct": 0.13,
+    "vol_pct": 18.9,
+    "sharpe": 0.08,
+    "max_dd_pct": -31.2,
+    "win_months_pct": 39.0,
+    "worst_month_pct": -7.5,
+    "by_year": {
+     "2022": 17.1,
+     "2023": 16.0,
+     "2024": -26.6
+    }
+   },
+   "out_of_sample": {
+    "months": 23,
+    "cagr_pct": -18.6,
+    "total_pct": -32.6,
+    "avg_month_pct": -1.61,
+    "vol_pct": 15.6,
+    "sharpe": -1.24,
+    "max_dd_pct": -36.4,
+    "win_months_pct": 35.0,
+    "worst_month_pct": -10.6,
+    "by_year": {
+     "2025": -3.8,
+     "2026": -29.9
+    }
+   },
+   "trades_in_sample": {
+    "trades": 170,
+    "win_rate_pct": 43.5,
+    "avg_pct": 0.57,
+    "median_pct": -2.41,
+    "worst_pct": -53.8,
+    "avg_hold_days": 20.6
+   },
+   "trades_out_of_sample": {
+    "trades": 140,
+    "win_rate_pct": 38.6,
+    "avg_pct": -3.06,
+    "median_pct": -9.99,
+    "worst_pct": -50.0,
+    "avg_hold_days": 20.1
+   },
+   "borrow_sensitivity": {
+    "borrow_x0.5": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 3.9,
+      "total_pct": 12.1,
+      "avg_month_pct": 0.45,
+      "vol_pct": 19.1,
+      "sharpe": 0.29,
+      "max_dd_pct": -27.4,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -6.6,
+      "by_year": {
+       "2022": 21.8,
+       "2023": 18.9,
+       "2024": -22.6
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -14.4,
+      "total_pct": -25.8,
+      "avg_month_pct": -1.19,
+      "vol_pct": 15.8,
+      "sharpe": -0.9,
+      "max_dd_pct": -31.0,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -10.1,
+      "by_year": {
+       "2025": 0.7,
+       "2026": -26.2
+      }
+     }
+    },
+    "borrow_x1": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.1,
+      "total_pct": -0.3,
+      "avg_month_pct": 0.13,
+      "vol_pct": 18.9,
+      "sharpe": 0.08,
+      "max_dd_pct": -31.2,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": 17.1,
+       "2023": 16.0,
+       "2024": -26.6
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -18.6,
+      "total_pct": -32.6,
+      "avg_month_pct": -1.61,
+      "vol_pct": 15.6,
+      "sharpe": -1.24,
+      "max_dd_pct": -36.4,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -10.6,
+      "by_year": {
+       "2025": -3.8,
+       "2026": -29.9
+      }
+     }
+    },
+    "borrow_x2": {
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.7,
+      "total_pct": -21.4,
+      "avg_month_pct": -0.53,
+      "vol_pct": 18.6,
+      "sharpe": -0.34,
+      "max_dd_pct": -38.3,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -9.5,
+      "by_year": {
+       "2022": 8.1,
+       "2023": 10.3,
+       "2024": -34.0
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -26.5,
+      "total_pct": -44.6,
+      "avg_month_pct": -2.44,
+      "vol_pct": 15.2,
+      "sharpe": -1.93,
+      "max_dd_pct": -45.9,
+      "win_months_pct": 26.0,
+      "worst_month_pct": -11.4,
+      "by_year": {
+       "2025": -12.2,
+       "2026": -36.9
+      }
+     }
+    },
+    "no_borrow_fee": {
+     "is": {
+      "months": 36,
+      "cagr_pct": 8.0,
+      "total_pct": 26.0,
+      "avg_month_pct": 0.78,
+      "vol_pct": 19.4,
+      "sharpe": 0.48,
+      "max_dd_pct": -23.4,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -5.6,
+      "by_year": {
+       "2022": 26.6,
+       "2023": 21.9,
+       "2024": -18.4
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -10.0,
+      "total_pct": -18.2,
+      "avg_month_pct": -0.77,
+      "vol_pct": 16.1,
+      "sharpe": -0.57,
+      "max_dd_pct": -26.1,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -9.7,
+      "by_year": {
+       "2025": 5.3,
+       "2026": -22.4
+      }
+     }
+    }
+   },
+   "checks": {
+    "oos_net_return_positive": false,
+    "oos_sharpe>0.5": false,
+    "latest_year_not_negative": false
+   },
+   "passed": false,
+   "variants_passing_if_peeked": 1,
+   "portfolio_note": "10 equal slots of 10% each; P&L booked in the exit month",
+   "all_variants": [
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -15.8,
+      "total_pct": -40.2,
+      "avg_month_pct": -1.24,
+      "vol_pct": 20.8,
+      "sharpe": -0.72,
+      "max_dd_pct": -45.5,
+      "win_months_pct": 44.0,
+      "worst_month_pct": -14.3,
+      "by_year": {
+       "2022": -18.5,
+       "2023": -14.8,
+       "2024": -13.9
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -38.7,
+      "total_pct": -60.9,
+      "avg_month_pct": -3.66,
+      "vol_pct": 27.7,
+      "sharpe": -1.58,
+      "max_dd_pct": -63.9,
+      "win_months_pct": 30.0,
+      "worst_month_pct": -26.9,
+      "by_year": {
+       "2025": -53.6,
+       "2026": -15.6
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -20.8,
+      "total_pct": -50.3,
+      "avg_month_pct": -1.7,
+      "vol_pct": 23.2,
+      "sharpe": -0.88,
+      "max_dd_pct": -54.8,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -16.3,
+      "by_year": {
+       "2022": -15.3,
+       "2023": -22.6,
+       "2024": -24.2
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -47.7,
+      "total_pct": -71.1,
+      "avg_month_pct": -4.83,
+      "vol_pct": 30.8,
+      "sharpe": -1.88,
+      "max_dd_pct": -72.9,
+      "win_months_pct": 26.0,
+      "worst_month_pct": -30.1,
+      "by_year": {
+       "2025": -44.3,
+       "2026": -48.1
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -19.5,
+      "total_pct": -47.8,
+      "avg_month_pct": -1.55,
+      "vol_pct": 23.9,
+      "sharpe": -0.78,
+      "max_dd_pct": -55.0,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -15.4,
+      "by_year": {
+       "2022": -11.2,
+       "2023": -25.6,
+       "2024": -20.9
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -44.6,
+      "total_pct": -67.7,
+      "avg_month_pct": -4.45,
+      "vol_pct": 28.0,
+      "sharpe": -1.91,
+      "max_dd_pct": -67.1,
+      "win_months_pct": 30.0,
+      "worst_month_pct": -26.4,
+      "by_year": {
+       "2025": -55.7,
+       "2026": -27.1
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -19.1,
+      "total_pct": -47.1,
+      "avg_month_pct": -1.33,
+      "vol_pct": 31.0,
+      "sharpe": -0.52,
+      "max_dd_pct": -52.2,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -28.9,
+      "by_year": {
+       "2022": 0.6,
+       "2023": -25.6,
+       "2024": -29.3
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -49.9,
+      "total_pct": -73.4,
+      "avg_month_pct": -5.32,
+      "vol_pct": 25.4,
+      "sharpe": -2.51,
+      "max_dd_pct": -76.8,
+      "win_months_pct": 17.0,
+      "worst_month_pct": -20.9,
+      "by_year": {
+       "2025": -52.0,
+       "2026": -44.7
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -14.3,
+      "total_pct": -37.2,
+      "avg_month_pct": -1.24,
+      "vol_pct": 10.4,
+      "sharpe": -1.42,
+      "max_dd_pct": -38.8,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -6.8,
+      "by_year": {
+       "2022": -14.0,
+       "2023": -8.6,
+       "2024": -20.0
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -26.7,
+      "total_pct": -44.8,
+      "avg_month_pct": -2.35,
+      "vol_pct": 21.1,
+      "sharpe": -1.34,
+      "max_dd_pct": -50.1,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -24.0,
+      "by_year": {
+       "2025": -33.0,
+       "2026": -17.6
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -20.0,
+      "total_pct": -48.8,
+      "avg_month_pct": -1.74,
+      "vol_pct": 16.2,
+      "sharpe": -1.28,
+      "max_dd_pct": -51.3,
+      "win_months_pct": 25.0,
+      "worst_month_pct": -9.4,
+      "by_year": {
+       "2022": -12.2,
+       "2023": -12.7,
+       "2024": -33.2
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -38.6,
+      "total_pct": -60.8,
+      "avg_month_pct": -3.79,
+      "vol_pct": 20.8,
+      "sharpe": -2.18,
+      "max_dd_pct": -62.1,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -25.7,
+      "by_year": {
+       "2025": -38.4,
+       "2026": -36.2
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -16.2,
+      "total_pct": -41.2,
+      "avg_month_pct": -1.39,
+      "vol_pct": 13.5,
+      "sharpe": -1.23,
+      "max_dd_pct": -45.2,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -14.2,
+      "by_year": {
+       "2022": -10.3,
+       "2023": -12.8,
+       "2024": -24.9
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -26.1,
+      "total_pct": -44.0,
+      "avg_month_pct": -2.29,
+      "vol_pct": 21.3,
+      "sharpe": -1.29,
+      "max_dd_pct": -47.1,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -23.8,
+      "by_year": {
+       "2025": -37.2,
+       "2026": -10.8
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -18.3,
+      "total_pct": -45.4,
+      "avg_month_pct": -1.45,
+      "vol_pct": 23.3,
+      "sharpe": -0.75,
+      "max_dd_pct": -53.5,
+      "win_months_pct": 31.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": 5.4,
+       "2023": -13.4,
+       "2024": -40.1
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -42.7,
+      "total_pct": -65.6,
+      "avg_month_pct": -4.28,
+      "vol_pct": 23.6,
+      "sharpe": -2.18,
+      "max_dd_pct": -68.0,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -25.6,
+      "by_year": {
+       "2025": -41.5,
+       "2026": -41.2
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -3.4,
+      "total_pct": -9.8,
+      "avg_month_pct": -0.22,
+      "vol_pct": 12.4,
+      "sharpe": -0.22,
+      "max_dd_pct": -26.6,
+      "win_months_pct": 47.0,
+      "worst_month_pct": -12.9,
+      "by_year": {
+       "2022": 3.5,
+       "2023": 11.4,
+       "2024": -21.8
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -15.5,
+      "total_pct": -27.6,
+      "avg_month_pct": -1.36,
+      "vol_pct": 9.6,
+      "sharpe": -1.69,
+      "max_dd_pct": -29.4,
+      "win_months_pct": 30.0,
+      "worst_month_pct": -5.8,
+      "by_year": {
+       "2025": -10.4,
+       "2026": -19.2
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.1,
+      "total_pct": -0.3,
+      "avg_month_pct": 0.13,
+      "vol_pct": 18.9,
+      "sharpe": 0.08,
+      "max_dd_pct": -31.2,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": 17.1,
+       "2023": 16.0,
+       "2024": -26.6
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -18.6,
+      "total_pct": -32.6,
+      "avg_month_pct": -1.61,
+      "vol_pct": 15.6,
+      "sharpe": -1.24,
+      "max_dd_pct": -36.4,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -10.6,
+      "by_year": {
+       "2025": -3.8,
+       "2026": -29.9
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -8.2,
+      "total_pct": -22.5,
+      "avg_month_pct": -0.6,
+      "vol_pct": 15.9,
+      "sharpe": -0.45,
+      "max_dd_pct": -36.0,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -14.3,
+      "by_year": {
+       "2022": 8.7,
+       "2023": 1.8,
+       "2024": -30.0
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -23.4,
+      "total_pct": -40.0,
+      "avg_month_pct": -2.13,
+      "vol_pct": 12.1,
+      "sharpe": -2.11,
+      "max_dd_pct": -34.1,
+      "win_months_pct": 26.0,
+      "worst_month_pct": -11.8,
+      "by_year": {
+       "2025": -24.1,
+       "2026": -20.9
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.3,
+      "total_pct": -20.2,
+      "avg_month_pct": -0.44,
+      "vol_pct": 21.5,
+      "sharpe": -0.25,
+      "max_dd_pct": -38.7,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": 11.0,
+       "2023": 10.6,
+       "2024": -35.1
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -23.5,
+      "total_pct": -40.2,
+      "avg_month_pct": -2.05,
+      "vol_pct": 19.8,
+      "sharpe": -1.25,
+      "max_dd_pct": -42.6,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -11.8,
+      "by_year": {
+       "2025": -23.2,
+       "2026": -22.0
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.0,
+      "total_pct": -19.6,
+      "avg_month_pct": -0.58,
+      "vol_pct": 8.0,
+      "sharpe": -0.87,
+      "max_dd_pct": -20.5,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -5.9,
+      "by_year": {
+       "2022": -13.3,
+       "2023": 8.3,
+       "2024": -14.4
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -6.6,
+      "total_pct": -12.3,
+      "avg_month_pct": -0.54,
+      "vol_pct": 8.8,
+      "sharpe": -0.73,
+      "max_dd_pct": -16.2,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -9.7,
+      "by_year": {
+       "2025": -1.3,
+       "2026": -11.1
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -7.9,
+      "total_pct": -21.8,
+      "avg_month_pct": -0.6,
+      "vol_pct": 13.8,
+      "sharpe": -0.53,
+      "max_dd_pct": -25.0,
+      "win_months_pct": 31.0,
+      "worst_month_pct": -10.2,
+      "by_year": {
+       "2022": -11.8,
+       "2023": 12.9,
+       "2024": -21.5
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -8.9,
+      "total_pct": -16.4,
+      "avg_month_pct": -0.74,
+      "vol_pct": 9.0,
+      "sharpe": -0.99,
+      "max_dd_pct": -19.6,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -9.3,
+      "by_year": {
+       "2025": -1.1,
+       "2026": -15.4
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -12.8,
+      "total_pct": -33.8,
+      "avg_month_pct": -1.1,
+      "vol_pct": 9.8,
+      "sharpe": -1.35,
+      "max_dd_pct": -35.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -13.4,
+      "by_year": {
+       "2022": -9.7,
+       "2023": -3.6,
+       "2024": -23.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -7.2,
+      "total_pct": -12.7,
+      "avg_month_pct": -0.59,
+      "vol_pct": 8.0,
+      "sharpe": -0.89,
+      "max_dd_pct": -14.0,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -6.6,
+      "by_year": {
+       "2025": -5.5,
+       "2026": -7.7
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.3,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -13.5,
+      "total_pct": -35.2,
+      "avg_month_pct": -1.09,
+      "vol_pct": 16.1,
+      "sharpe": -0.82,
+      "max_dd_pct": -40.0,
+      "win_months_pct": 33.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": -8.2,
+       "2023": 4.3,
+       "2024": -32.4
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -6.6,
+      "total_pct": -12.3,
+      "avg_month_pct": -0.54,
+      "vol_pct": 9.3,
+      "sharpe": -0.69,
+      "max_dd_pct": -18.6,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2025": -3.1,
+       "2026": -9.5
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -8.4,
+      "total_pct": -23.2,
+      "avg_month_pct": -0.67,
+      "vol_pct": 12.2,
+      "sharpe": -0.66,
+      "max_dd_pct": -29.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -9.1,
+      "by_year": {
+       "2022": -7.4,
+       "2023": -3.0,
+       "2024": -14.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -7.3,
+      "total_pct": -13.0,
+      "avg_month_pct": -0.59,
+      "vol_pct": 10.8,
+      "sharpe": -0.65,
+      "max_dd_pct": -23.4,
+      "win_months_pct": 45.0,
+      "worst_month_pct": -9.9,
+      "by_year": {
+       "2025": -17.8,
+       "2026": 5.7
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.0,
+      "total_pct": -17.1,
+      "avg_month_pct": -0.42,
+      "vol_pct": 16.1,
+      "sharpe": -0.31,
+      "max_dd_pct": -27.7,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -8.7,
+      "by_year": {
+       "2022": -3.0,
+       "2023": -0.8,
+       "2024": -13.8
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -14.0,
+      "total_pct": -24.1,
+      "avg_month_pct": -1.19,
+      "vol_pct": 11.4,
+      "sharpe": -1.26,
+      "max_dd_pct": -30.1,
+      "win_months_pct": 23.0,
+      "worst_month_pct": -8.5,
+      "by_year": {
+       "2025": -16.8,
+       "2026": -8.8
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.7,
+      "total_pct": -18.8,
+      "avg_month_pct": -0.5,
+      "vol_pct": 13.8,
+      "sharpe": -0.43,
+      "max_dd_pct": -31.5,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -15.8,
+      "by_year": {
+       "2022": 8.6,
+       "2023": -5.9,
+       "2024": -20.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -17.2,
+      "total_pct": -29.3,
+      "avg_month_pct": -1.5,
+      "vol_pct": 12.7,
+      "sharpe": -1.41,
+      "max_dd_pct": -33.2,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2025": -28.6,
+       "2026": -1.0
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -0.9,
+      "total_pct": -2.7,
+      "avg_month_pct": 0.1,
+      "vol_pct": 21.2,
+      "sharpe": 0.06,
+      "max_dd_pct": -32.4,
+      "win_months_pct": 42.0,
+      "worst_month_pct": -17.0,
+      "by_year": {
+       "2022": 20.7,
+       "2023": 0.2,
+       "2024": -19.5
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -21.3,
+      "total_pct": -36.7,
+      "avg_month_pct": -1.85,
+      "vol_pct": 17.0,
+      "sharpe": -1.3,
+      "max_dd_pct": -43.7,
+      "win_months_pct": 35.0,
+      "worst_month_pct": -12.7,
+      "by_year": {
+       "2025": -30.9,
+       "2026": -8.4
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -10.5,
+      "total_pct": -28.4,
+      "avg_month_pct": -0.89,
+      "vol_pct": 9.3,
+      "sharpe": -1.15,
+      "max_dd_pct": -29.0,
+      "win_months_pct": 19.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": -14.0,
+       "2023": -4.5,
+       "2024": -12.7
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 3.6,
+      "total_pct": 6.7,
+      "avg_month_pct": 0.3,
+      "vol_pct": 4.2,
+      "sharpe": 0.86,
+      "max_dd_pct": -2.9,
+      "win_months_pct": 45.0,
+      "worst_month_pct": -2.6,
+      "by_year": {
+       "2025": 3.6,
+       "2026": 2.9
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -11.9,
+      "total_pct": -31.5,
+      "avg_month_pct": -1.01,
+      "vol_pct": 9.8,
+      "sharpe": -1.23,
+      "max_dd_pct": -31.5,
+      "win_months_pct": 19.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": -13.3,
+       "2023": -4.2,
+       "2024": -17.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -3.3,
+      "total_pct": -5.9,
+      "avg_month_pct": -0.27,
+      "vol_pct": 4.4,
+      "sharpe": -0.73,
+      "max_dd_pct": -6.2,
+      "win_months_pct": 23.0,
+      "worst_month_pct": -3.5,
+      "by_year": {
+       "2025": -4.2,
+       "2026": -1.9
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -12.6,
+      "total_pct": -33.2,
+      "avg_month_pct": -1.07,
+      "vol_pct": 9.6,
+      "sharpe": -1.34,
+      "max_dd_pct": -34.1,
+      "win_months_pct": 19.0,
+      "worst_month_pct": -13.4,
+      "by_year": {
+       "2022": -6.7,
+       "2023": -10.5,
+       "2024": -20.0
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 0.4,
+      "total_pct": 0.8,
+      "avg_month_pct": 0.05,
+      "vol_pct": 5.1,
+      "sharpe": 0.11,
+      "max_dd_pct": -3.6,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -4.2,
+      "by_year": {
+       "2025": -2.8,
+       "2026": 3.8
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.15,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -14.2,
+      "total_pct": -36.8,
+      "avg_month_pct": -1.19,
+      "vol_pct": 12.9,
+      "sharpe": -1.11,
+      "max_dd_pct": -36.8,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": -2.7,
+       "2023": -9.2,
+       "2024": -28.4
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -4.6,
+      "total_pct": -8.6,
+      "avg_month_pct": -0.38,
+      "vol_pct": 4.2,
+      "sharpe": -1.09,
+      "max_dd_pct": -8.5,
+      "win_months_pct": 26.0,
+      "worst_month_pct": -3.5,
+      "by_year": {
+       "2025": -9.7,
+       "2026": 1.2
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -3.3,
+      "total_pct": -9.5,
+      "avg_month_pct": -0.24,
+      "vol_pct": 9.3,
+      "sharpe": -0.31,
+      "max_dd_pct": -17.7,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -7.5,
+      "by_year": {
+       "2022": -4.1,
+       "2023": 9.6,
+       "2024": -13.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -2.9,
+      "total_pct": -5.2,
+      "avg_month_pct": -0.22,
+      "vol_pct": 7.7,
+      "sharpe": -0.34,
+      "max_dd_pct": -15.9,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -3.2,
+      "by_year": {
+       "2025": -0.1,
+       "2026": -5.1
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": 0.3,
+      "total_pct": 0.9,
+      "avg_month_pct": 0.09,
+      "vol_pct": 12.6,
+      "sharpe": 0.08,
+      "max_dd_pct": -17.7,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -5.4,
+      "by_year": {
+       "2022": 4.5,
+       "2023": 12.1,
+       "2024": -13.9
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -7.4,
+      "total_pct": -13.2,
+      "avg_month_pct": -0.61,
+      "vol_pct": 9.1,
+      "sharpe": -0.81,
+      "max_dd_pct": -19.1,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -4.8,
+      "by_year": {
+       "2025": -1.7,
+       "2026": -11.7
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.4,
+      "total_pct": -18.0,
+      "avg_month_pct": -0.5,
+      "vol_pct": 10.7,
+      "sharpe": -0.57,
+      "max_dd_pct": -26.5,
+      "win_months_pct": 36.0,
+      "worst_month_pct": -14.3,
+      "by_year": {
+       "2022": 2.1,
+       "2023": -0.2,
+       "2024": -19.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -10.0,
+      "total_pct": -17.6,
+      "avg_month_pct": -0.83,
+      "vol_pct": 10.7,
+      "sharpe": -0.93,
+      "max_dd_pct": -20.1,
+      "win_months_pct": 32.0,
+      "worst_month_pct": -8.9,
+      "by_year": {
+       "2025": -12.0,
+       "2026": -6.4
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 5,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -1.3,
+      "total_pct": -3.8,
+      "avg_month_pct": 0.0,
+      "vol_pct": 16.6,
+      "sharpe": 0.0,
+      "max_dd_pct": -26.9,
+      "win_months_pct": 39.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": 13.1,
+       "2023": 7.0,
+       "2024": -20.5
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -9.3,
+      "total_pct": -17.1,
+      "avg_month_pct": -0.76,
+      "vol_pct": 11.9,
+      "sharpe": -0.76,
+      "max_dd_pct": -21.3,
+      "win_months_pct": 43.0,
+      "worst_month_pct": -8.1,
+      "by_year": {
+       "2025": -13.9,
+       "2026": -3.8
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -4.8,
+      "total_pct": -13.7,
+      "avg_month_pct": -0.39,
+      "vol_pct": 6.8,
+      "sharpe": -0.68,
+      "max_dd_pct": -14.4,
+      "win_months_pct": 22.0,
+      "worst_month_pct": -3.6,
+      "by_year": {
+       "2022": -8.1,
+       "2023": 3.7,
+       "2024": -9.5
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 2.7,
+      "total_pct": 5.0,
+      "avg_month_pct": 0.24,
+      "vol_pct": 6.5,
+      "sharpe": 0.44,
+      "max_dd_pct": -7.3,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -7.0,
+      "by_year": {
+       "2025": 6.3,
+       "2026": -1.3
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 2.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -6.4,
+      "total_pct": -18.0,
+      "avg_month_pct": -0.52,
+      "vol_pct": 8.8,
+      "sharpe": -0.71,
+      "max_dd_pct": -19.3,
+      "win_months_pct": 19.0,
+      "worst_month_pct": -5.4,
+      "by_year": {
+       "2022": -7.3,
+       "2023": 4.7,
+       "2024": -15.6
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": -2.1,
+      "total_pct": -3.7,
+      "avg_month_pct": -0.16,
+      "vol_pct": 5.9,
+      "sharpe": -0.32,
+      "max_dd_pct": -8.1,
+      "win_months_pct": 27.0,
+      "worst_month_pct": -6.6,
+      "by_year": {
+       "2025": 3.4,
+       "2026": -6.9
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 10
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -8.6,
+      "total_pct": -23.6,
+      "avg_month_pct": -0.71,
+      "vol_pct": 8.8,
+      "sharpe": -0.97,
+      "max_dd_pct": -24.7,
+      "win_months_pct": 14.0,
+      "worst_month_pct": -13.4,
+      "by_year": {
+       "2022": -3.3,
+       "2023": -6.8,
+       "2024": -15.2
+      }
+     },
+     "oos": {
+      "months": 22,
+      "cagr_pct": 1.8,
+      "total_pct": 3.3,
+      "avg_month_pct": 0.16,
+      "vol_pct": 6.1,
+      "sharpe": 0.32,
+      "max_dd_pct": -4.8,
+      "win_months_pct": 41.0,
+      "worst_month_pct": -4.5,
+      "by_year": {
+       "2025": 1.9,
+       "2026": 1.4
+      }
+     }
+    },
+    {
+     "params": {
+      "rise": 0.6,
+      "drop": 0.25,
+      "min_dtc": 8,
+      "stop_atr": 4.0,
+      "hold": 20
+     },
+     "is": {
+      "months": 36,
+      "cagr_pct": -11.1,
+      "total_pct": -29.8,
+      "avg_month_pct": -0.91,
+      "vol_pct": 12.8,
+      "sharpe": -0.85,
+      "max_dd_pct": -30.3,
+      "win_months_pct": 17.0,
+      "worst_month_pct": -15.5,
+      "by_year": {
+       "2022": -0.9,
+       "2023": -3.4,
+       "2024": -26.6
+      }
+     },
+     "oos": {
+      "months": 23,
+      "cagr_pct": -0.2,
+      "total_pct": -0.3,
+      "avg_month_pct": -0.01,
+      "vol_pct": 4.3,
+      "sharpe": -0.02,
+      "max_dd_pct": -4.5,
+      "win_months_pct": 26.0,
+      "worst_month_pct": -2.7,
+      "by_year": {
+       "2025": 0.6,
+       "2026": -0.8
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "passing": [],
+ "spy": {
+  "in_sample": {
+   "months": 36,
+   "cagr_pct": 8.9,
+   "total_pct": 29.3,
+   "avg_month_pct": 0.83,
+   "vol_pct": 17.0,
+   "sharpe": 0.59,
+   "max_dd_pct": -19.7,
+   "win_months_pct": 61.0,
+   "worst_month_pct": -9.1,
+   "by_year": {
+    "2022": -18.0,
+    "2023": 24.7,
+    "2024": 26.4
+   }
+  },
+  "out_of_sample": {
+   "months": 22,
+   "cagr_pct": 16.1,
+   "total_pct": 31.4,
+   "avg_month_pct": 1.3,
+   "vol_pct": 11.7,
+   "sharpe": 1.34,
+   "max_dd_pct": -6.2,
+   "win_months_pct": 73.0,
+   "worst_month_pct": -6.2,
+   "by_year": {
+    "2025": 17.7,
+    "2026": 11.6
+   }
+  }
+ },
+ "short_list": [],
+ "laggard_basket": {
+  "params": {
+   "signal": "si_pct",
+   "bucket": "quintile",
+   "filter": "below_200d"
+  },
+  "in_sample": {
+   "months": 36,
+   "basket_total_pct": -52.1,
+   "spy_total_pct": 29.3,
+   "months_basket_lagged_spy_pct": 58.0,
+   "by_year": {
+    "2022": {
+     "basket_pct": -42.5,
+     "spy_pct": -18.0
+    },
+    "2023": {
+     "basket_pct": 2.1,
+     "spy_pct": 24.7
+    },
+    "2024": {
+     "basket_pct": -18.5,
+     "spy_pct": 26.4
+    }
+   }
+  },
+  "out_of_sample": {
+   "months": 22,
+   "basket_total_pct": -10.1,
+   "spy_total_pct": 31.4,
+   "months_basket_lagged_spy_pct": 73.0,
+   "by_year": {
+    "2025": {
+     "basket_pct": -5.3,
+     "spy_pct": 17.7
+    },
+    "2026": {
+     "basket_pct": -5.0,
+     "spy_pct": 11.6
+    }
+   }
+  },
+  "current_count": 211,
+  "as_of_signal_date": "2026-10-30",
+  "current_top": [
+   {
+    "ticker": "WOLF",
+    "close": 21.98,
+    "dtc": 4.25,
+    "si_pct": 51.7,
+    "pct_vs_200d": -27.5,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "FRNM",
+    "close": 12.48,
+    "dtc": 5.58,
+    "si_pct": 50.3,
+    "pct_vs_200d": -0.3,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "ONDS",
+    "close": 6.32,
+    "dtc": 4.57,
+    "si_pct": 44.5,
+    "pct_vs_200d": -30.1,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "SHOE",
+    "close": 14.66,
+    "dtc": 10.41,
+    "si_pct": 36.4,
+    "pct_vs_200d": -8.3,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "CAPR",
+    "close": 6.38,
+    "dtc": 6.58,
+    "si_pct": 34.2,
+    "pct_vs_200d": -69.1,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "TRIP",
+    "close": 9.22,
+    "dtc": 13.24,
+    "si_pct": 32.8,
+    "pct_vs_200d": -16.3,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "FCEL",
+    "close": 11.22,
+    "dtc": 3.23,
+    "si_pct": 32.3,
+    "pct_vs_200d": -24.9,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "JACK",
+    "close": 13.02,
+    "dtc": 12.46,
+    "si_pct": 32.2,
+    "pct_vs_200d": -10.8,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "NNE",
+    "close": 11.65,
+    "dtc": 7.77,
+    "si_pct": 32.1,
+    "pct_vs_200d": -46.3,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "NTLA",
+    "close": 12.47,
+    "dtc": 6.45,
+    "si_pct": 31.7,
+    "pct_vs_200d": -4.7,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "QUBT",
+    "close": 6.6,
+    "dtc": 9.47,
+    "si_pct": 30.9,
+    "pct_vs_200d": -24.5,
+    "borrow_tier_pct": 50
+   },
+   {
+    "ticker": "GRPN",
+    "close": 15.75,
+    "dtc": 15.45,
+    "si_pct": 30.9,
+    "pct_vs_200d": -10.8,
+    "borrow_tier_pct": 50
+   }
+  ]
+ },
+ "verdict": "no short strategy passed",
+ "runtime_sec": 86.5
+}

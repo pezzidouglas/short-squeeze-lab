@@ -38,6 +38,7 @@ TARGET = os.path.join(ROOT, "static", "index.html")
 ODDS = os.path.join(ROOT, "backtests", "playbook_odds.json")
 OOS = os.path.join(ROOT, "backtests", "playbook_oos.json")
 SCORECARD = os.path.join(ROOT, "backtests", "strategy_scorecard.json")
+SHORTCARD = os.path.join(ROOT, "backtests", "short_scorecard.json")
 SI_CACHE = os.path.join(ROOT, "data", "cache", "playbook", "finra_si")
 MARKER = re.compile(
     r'(<script id="embedded-data" type="application/json">)(.*?)(</script>)',
@@ -178,7 +179,13 @@ def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -
             except Exception as exc:  # noqa: BLE001 - no signals beats invented ones
                 print("strategy signals failed:", exc)
                 strategies["signals_error"] = str(exc)
-    return {"calls": calls, "odds": summary, "oos": oos, "strategies": strategies, "si_settlement_date": si_date, "account_risk_pct": 0.25,
+    short = None
+    if os.path.exists(SHORTCARD):
+        with open(SHORTCARD, encoding="utf-8") as fh:
+            sc = json.load(fh)
+        short = {k: v for k, v in sc.items()}
+        short["families"] = [{k: v for k, v in f.items() if k not in ("all_variants",)} for f in sc.get("families", [])]
+    return {"calls": calls, "odds": summary, "oos": oos, "strategies": strategies, "short": short, "si_settlement_date": si_date, "account_risk_pct": 0.25,
             "min_edge_pct": pb.MIN_EDGE_PCT, "min_trades": pb.MIN_TRADES}
 
 
