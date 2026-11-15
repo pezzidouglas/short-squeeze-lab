@@ -1,0 +1,3242 @@
+{
+ "generated_at": "2026-11-15T21:29:09+00:00",
+ "split": {
+  "fit": "entries 2022-01-14 to 2024-12-31",
+  "test": "entries 2025-01-01 to 2026-11-12"
+ },
+ "candidates": 108,
+ "bar": {
+  "min_trades": 100,
+  "min_expectancy_pct": 0.5
+ },
+ "current_watch_tier": {
+  "group": "watch",
+  "stop_atr": 2.0,
+  "reward_risk": 2.0,
+  "max_hold": 15,
+  "in_sample": {
+   "trades": 873,
+   "win_rate_pct": 47.0,
+   "win_rate_ci95": [
+    43.7,
+    50.3
+   ],
+   "expectancy_pct": 0.95,
+   "expectancy_r": 0.101,
+   "profit_factor": 1.25
+  },
+  "out_of_sample": {
+   "trades": 1293,
+   "win_rate_pct": 41.5,
+   "win_rate_ci95": [
+    38.9,
+    44.2
+   ],
+   "expectancy_pct": -0.02,
+   "expectancy_r": -0.004,
+   "profit_factor": 0.99
+  },
+  "out_of_sample_robustness": {
+   "expectancy_ci95_cluster_bootstrap": [
+    -0.67,
+    0.66
+   ],
+   "by_year": {
+    "2025": {
+     "trades": 740,
+     "win_rate_pct": 42.8,
+     "expectancy_pct": 0.16
+    },
+    "2026": {
+     "trades": 553,
+     "win_rate_pct": 39.8,
+     "expectancy_pct": -0.28
+    }
+   }
+  }
+ },
+ "all_breakouts": {
+  "group": "all",
+  "stop_atr": 2.0,
+  "reward_risk": 2.0,
+  "max_hold": 15,
+  "in_sample": {
+   "trades": 4768,
+   "win_rate_pct": 42.6,
+   "win_rate_ci95": [
+    41.2,
+    44.0
+   ],
+   "expectancy_pct": -0.12,
+   "expectancy_r": -0.003,
+   "profit_factor": 0.98
+  },
+  "out_of_sample": {
+   "trades": 5255,
+   "win_rate_pct": 41.1,
+   "win_rate_ci95": [
+    39.8,
+    42.4
+   ],
+   "expectancy_pct": 0.03,
+   "expectancy_r": -0.004,
+   "profit_factor": 1.0
+  },
+  "out_of_sample_robustness": {
+   "expectancy_ci95_cluster_bootstrap": [
+    -0.36,
+    0.41
+   ],
+   "by_year": {
+    "2025": {
+     "trades": 2713,
+     "win_rate_pct": 43.3,
+     "expectancy_pct": 0.7
+    },
+    "2026": {
+     "trades": 2542,
+     "win_rate_pct": 38.7,
+     "expectancy_pct": -0.69
+    }
+   }
+  }
+ },
+ "best_in_sample": {
+  "group": "watch",
+  "stop_atr": 3.0,
+  "reward_risk": 3.0,
+  "max_hold": 20,
+  "in_sample": {
+   "trades": 794,
+   "win_rate_pct": 51.8,
+   "win_rate_ci95": [
+    48.3,
+    55.2
+   ],
+   "expectancy_pct": 2.11,
+   "expectancy_r": 0.155,
+   "profit_factor": 1.47
+  },
+  "out_of_sample": {
+   "trades": 1163,
+   "win_rate_pct": 45.1,
+   "win_rate_ci95": [
+    42.2,
+    47.9
+   ],
+   "expectancy_pct": 0.7,
+   "expectancy_r": 0.052,
+   "profit_factor": 1.12
+  },
+  "out_of_sample_robustness": {
+   "expectancy_ci95_cluster_bootstrap": [
+    -0.25,
+    1.67
+   ],
+   "by_year": {
+    "2025": {
+     "trades": 671,
+     "win_rate_pct": 49.3,
+     "expectancy_pct": 1.81
+    },
+    "2026": {
+     "trades": 492,
+     "win_rate_pct": 39.2,
+     "expectancy_pct": -0.82
+    }
+   }
+  }
+ },
+ "in_sample_passers": 25,
+ "passers_both_periods": 3,
+ "share_of_is_passers_that_held_up_pct": 12.0,
+ "adoption_checks": {
+  "oos_trades_ok": true,
+  "oos_avg_meets_bar": true,
+  "oos_ci_excludes_zero": false,
+  "latest_year_not_losing": false
+ },
+ "adopted": false,
+ "decision": "keep every name on Skip; the best 2022-2024 rule failed: its 2025-26 95% range includes zero, it lost money in 2026",
+ "results": [
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 43.6,
+    "win_rate_ci95": [
+     42.2,
+     45.0
+    ],
+    "expectancy_pct": -0.03,
+    "expectancy_r": -0.009,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     39.3,
+     42.0
+    ],
+    "expectancy_pct": -0.41,
+    "expectancy_r": -0.063,
+    "profit_factor": 0.9
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 43.0,
+    "win_rate_ci95": [
+     41.4,
+     44.6
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.025,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     39.0,
+     42.2
+    ],
+    "expectancy_pct": -0.37,
+    "expectancy_r": -0.06,
+    "profit_factor": 0.91
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 45.9,
+    "win_rate_ci95": [
+     42.7,
+     49.2
+    ],
+    "expectancy_pct": 0.44,
+    "expectancy_r": 0.045,
+    "profit_factor": 1.14
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 40.1,
+    "win_rate_ci95": [
+     37.4,
+     42.8
+    ],
+    "expectancy_pct": -0.56,
+    "expectancy_r": -0.085,
+    "profit_factor": 0.85
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 45.1,
+    "win_rate_ci95": [
+     39.3,
+     51.0
+    ],
+    "expectancy_pct": -0.23,
+    "expectancy_r": 0.02,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 42.7,
+    "win_rate_ci95": [
+     38.3,
+     47.2
+    ],
+    "expectancy_pct": -0.34,
+    "expectancy_r": -0.026,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 42.3,
+    "win_rate_ci95": [
+     40.9,
+     43.7
+    ],
+    "expectancy_pct": -0.08,
+    "expectancy_r": -0.014,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 39.9,
+    "win_rate_ci95": [
+     38.6,
+     41.3
+    ],
+    "expectancy_pct": -0.4,
+    "expectancy_r": -0.059,
+    "profit_factor": 0.91
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 41.5,
+    "win_rate_ci95": [
+     39.9,
+     43.1
+    ],
+    "expectancy_pct": -0.2,
+    "expectancy_r": -0.032,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 39.7,
+    "win_rate_ci95": [
+     38.1,
+     41.4
+    ],
+    "expectancy_pct": -0.36,
+    "expectancy_r": -0.058,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 45.0,
+    "win_rate_ci95": [
+     41.7,
+     48.3
+    ],
+    "expectancy_pct": 0.5,
+    "expectancy_r": 0.052,
+    "profit_factor": 1.15
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 39.8,
+    "win_rate_ci95": [
+     37.2,
+     42.5
+    ],
+    "expectancy_pct": -0.53,
+    "expectancy_r": -0.077,
+    "profit_factor": 0.87
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 43.6,
+    "win_rate_ci95": [
+     37.8,
+     49.5
+    ],
+    "expectancy_pct": -0.37,
+    "expectancy_r": 0.011,
+    "profit_factor": 0.91
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 41.6,
+    "win_rate_ci95": [
+     37.2,
+     46.1
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.016,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4753,
+    "win_rate_pct": 40.8,
+    "win_rate_ci95": [
+     39.4,
+     42.2
+    ],
+    "expectancy_pct": -0.14,
+    "expectancy_r": -0.024,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5235,
+    "win_rate_pct": 39.2,
+    "win_rate_ci95": [
+     37.9,
+     40.5
+    ],
+    "expectancy_pct": -0.41,
+    "expectancy_r": -0.06,
+    "profit_factor": 0.91
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3614,
+    "win_rate_pct": 40.1,
+    "win_rate_ci95": [
+     38.5,
+     41.7
+    ],
+    "expectancy_pct": -0.25,
+    "expectancy_r": -0.041,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3487,
+    "win_rate_pct": 38.9,
+    "win_rate_ci95": [
+     37.3,
+     40.5
+    ],
+    "expectancy_pct": -0.36,
+    "expectancy_r": -0.059,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 869,
+    "win_rate_pct": 43.2,
+    "win_rate_ci95": [
+     39.9,
+     46.5
+    ],
+    "expectancy_pct": 0.36,
+    "expectancy_r": 0.033,
+    "profit_factor": 1.1
+   },
+   "out_of_sample": {
+    "trades": 1284,
+    "win_rate_pct": 38.8,
+    "win_rate_ci95": [
+     36.2,
+     41.5
+    ],
+    "expectancy_pct": -0.58,
+    "expectancy_r": -0.084,
+    "profit_factor": 0.86
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 270,
+    "win_rate_pct": 42.2,
+    "win_rate_ci95": [
+     36.5,
+     48.2
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": 0.023,
+    "profit_factor": 0.93
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 42.5,
+    "win_rate_ci95": [
+     38.0,
+     47.0
+    ],
+    "expectancy_pct": -0.24,
+    "expectancy_r": -0.004,
+    "profit_factor": 0.95
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 41.5,
+    "win_rate_ci95": [
+     40.1,
+     42.9
+    ],
+    "expectancy_pct": -0.05,
+    "expectancy_r": -0.009,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 37.9,
+    "win_rate_ci95": [
+     36.6,
+     39.2
+    ],
+    "expectancy_pct": -0.36,
+    "expectancy_r": -0.06,
+    "profit_factor": 0.91
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     39.0,
+     42.2
+    ],
+    "expectancy_pct": -0.19,
+    "expectancy_r": -0.031,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 38.0,
+    "win_rate_ci95": [
+     36.4,
+     39.6
+    ],
+    "expectancy_pct": -0.33,
+    "expectancy_r": -0.055,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 44.7,
+    "win_rate_ci95": [
+     41.4,
+     48.0
+    ],
+    "expectancy_pct": 0.6,
+    "expectancy_r": 0.07,
+    "profit_factor": 1.19
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 37.6,
+    "win_rate_ci95": [
+     35.0,
+     40.3
+    ],
+    "expectancy_pct": -0.46,
+    "expectancy_r": -0.08,
+    "profit_factor": 0.88
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 42.9,
+    "win_rate_ci95": [
+     37.1,
+     48.8
+    ],
+    "expectancy_pct": -0.25,
+    "expectancy_r": 0.029,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 38.6,
+    "win_rate_ci95": [
+     34.3,
+     43.1
+    ],
+    "expectancy_pct": -0.37,
+    "expectancy_r": -0.046,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 38.8,
+    "win_rate_ci95": [
+     37.4,
+     40.1
+    ],
+    "expectancy_pct": -0.09,
+    "expectancy_r": -0.015,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 36.4,
+    "win_rate_ci95": [
+     35.1,
+     37.7
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.048,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 37.8,
+    "win_rate_ci95": [
+     36.2,
+     39.4
+    ],
+    "expectancy_pct": -0.25,
+    "expectancy_r": -0.04,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 36.2,
+    "win_rate_ci95": [
+     34.7,
+     37.9
+    ],
+    "expectancy_pct": -0.28,
+    "expectancy_r": -0.047,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 42.3,
+    "win_rate_ci95": [
+     39.0,
+     45.6
+    ],
+    "expectancy_pct": 0.67,
+    "expectancy_r": 0.081,
+    "profit_factor": 1.19
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 36.6,
+    "win_rate_ci95": [
+     34.0,
+     39.2
+    ],
+    "expectancy_pct": -0.4,
+    "expectancy_r": -0.063,
+    "profit_factor": 0.91
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 40.3,
+    "win_rate_ci95": [
+     34.6,
+     46.2
+    ],
+    "expectancy_pct": -0.43,
+    "expectancy_r": 0.013,
+    "profit_factor": 0.91
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 37.1,
+    "win_rate_ci95": [
+     32.8,
+     41.6
+    ],
+    "expectancy_pct": -0.17,
+    "expectancy_r": -0.015,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4741,
+    "win_rate_pct": 36.4,
+    "win_rate_ci95": [
+     35.0,
+     37.8
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.018,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5214,
+    "win_rate_pct": 35.1,
+    "win_rate_ci95": [
+     33.8,
+     36.4
+    ],
+    "expectancy_pct": -0.27,
+    "expectancy_r": -0.045,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3607,
+    "win_rate_pct": 35.5,
+    "win_rate_ci95": [
+     33.9,
+     37.1
+    ],
+    "expectancy_pct": -0.29,
+    "expectancy_r": -0.044,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3473,
+    "win_rate_pct": 34.9,
+    "win_rate_ci95": [
+     33.4,
+     36.5
+    ],
+    "expectancy_pct": -0.22,
+    "expectancy_r": -0.038,
+    "profit_factor": 0.95
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 867,
+    "win_rate_pct": 39.8,
+    "win_rate_ci95": [
+     36.6,
+     43.1
+    ],
+    "expectancy_pct": 0.63,
+    "expectancy_r": 0.079,
+    "profit_factor": 1.17
+   },
+   "out_of_sample": {
+    "trades": 1277,
+    "win_rate_pct": 34.7,
+    "win_rate_ci95": [
+     32.1,
+     37.3
+    ],
+    "expectancy_pct": -0.46,
+    "expectancy_r": -0.079,
+    "profit_factor": 0.9
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 267,
+    "win_rate_pct": 37.5,
+    "win_rate_ci95": [
+     31.9,
+     43.4
+    ],
+    "expectancy_pct": -0.41,
+    "expectancy_r": 0.016,
+    "profit_factor": 0.92
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 37.5,
+    "win_rate_ci95": [
+     33.2,
+     42.0
+    ],
+    "expectancy_pct": -0.15,
+    "expectancy_r": -0.006,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4751,
+    "win_rate_pct": 40.0,
+    "win_rate_ci95": [
+     38.6,
+     41.4
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.01,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5227,
+    "win_rate_pct": 36.6,
+    "win_rate_ci95": [
+     35.3,
+     37.9
+    ],
+    "expectancy_pct": -0.24,
+    "expectancy_r": -0.049,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3613,
+    "win_rate_pct": 39.1,
+    "win_rate_ci95": [
+     37.6,
+     40.7
+    ],
+    "expectancy_pct": -0.25,
+    "expectancy_r": -0.035,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3479,
+    "win_rate_pct": 36.5,
+    "win_rate_ci95": [
+     34.9,
+     38.1
+    ],
+    "expectancy_pct": -0.26,
+    "expectancy_r": -0.05,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 867,
+    "win_rate_pct": 43.5,
+    "win_rate_ci95": [
+     40.2,
+     46.8
+    ],
+    "expectancy_pct": 0.64,
+    "expectancy_r": 0.067,
+    "profit_factor": 1.2
+   },
+   "out_of_sample": {
+    "trades": 1286,
+    "win_rate_pct": 36.5,
+    "win_rate_ci95": [
+     33.9,
+     39.1
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.057,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 271,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     34.9,
+     46.5
+    ],
+    "expectancy_pct": -0.49,
+    "expectancy_r": 0.071,
+    "profit_factor": 0.89
+   },
+   "out_of_sample": {
+    "trades": 462,
+    "win_rate_pct": 37.7,
+    "win_rate_ci95": [
+     33.4,
+     42.2
+    ],
+    "expectancy_pct": 0.05,
+    "expectancy_r": -0.017,
+    "profit_factor": 1.01
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4743,
+    "win_rate_pct": 36.2,
+    "win_rate_ci95": [
+     34.8,
+     37.5
+    ],
+    "expectancy_pct": -0.09,
+    "expectancy_r": -0.01,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 5216,
+    "win_rate_pct": 34.2,
+    "win_rate_ci95": [
+     32.9,
+     35.5
+    ],
+    "expectancy_pct": -0.08,
+    "expectancy_r": -0.025,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3610,
+    "win_rate_pct": 35.3,
+    "win_rate_ci95": [
+     33.7,
+     36.9
+    ],
+    "expectancy_pct": -0.23,
+    "expectancy_r": -0.032,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3474,
+    "win_rate_pct": 34.0,
+    "win_rate_ci95": [
+     32.4,
+     35.6
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.033,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 863,
+    "win_rate_pct": 39.4,
+    "win_rate_ci95": [
+     36.2,
+     42.7
+    ],
+    "expectancy_pct": 0.7,
+    "expectancy_r": 0.062,
+    "profit_factor": 1.19
+   },
+   "out_of_sample": {
+    "trades": 1281,
+    "win_rate_pct": 34.8,
+    "win_rate_ci95": [
+     32.3,
+     37.5
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.025,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 270,
+    "win_rate_pct": 37.4,
+    "win_rate_ci95": [
+     31.9,
+     43.3
+    ],
+    "expectancy_pct": -0.73,
+    "expectancy_r": 0.048,
+    "profit_factor": 0.85
+   },
+   "out_of_sample": {
+    "trades": 461,
+    "win_rate_pct": 34.3,
+    "win_rate_ci95": [
+     30.1,
+     38.7
+    ],
+    "expectancy_pct": 0.37,
+    "expectancy_r": 0.033,
+    "profit_factor": 1.07
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4704,
+    "win_rate_pct": 33.0,
+    "win_rate_ci95": [
+     31.7,
+     34.4
+    ],
+    "expectancy_pct": -0.15,
+    "expectancy_r": -0.016,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5143,
+    "win_rate_pct": 31.6,
+    "win_rate_ci95": [
+     30.3,
+     32.8
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.032,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3591,
+    "win_rate_pct": 32.1,
+    "win_rate_ci95": [
+     30.6,
+     33.7
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.041,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3435,
+    "win_rate_pct": 31.4,
+    "win_rate_ci95": [
+     29.9,
+     33.0
+    ],
+    "expectancy_pct": -0.07,
+    "expectancy_r": -0.026,
+    "profit_factor": 0.99
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 851,
+    "win_rate_pct": 36.4,
+    "win_rate_ci95": [
+     33.3,
+     39.7
+    ],
+    "expectancy_pct": 0.61,
+    "expectancy_r": 0.062,
+    "profit_factor": 1.16
+   },
+   "out_of_sample": {
+    "trades": 1255,
+    "win_rate_pct": 31.4,
+    "win_rate_ci95": [
+     28.9,
+     34.0
+    ],
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.064,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 1.5,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 262,
+    "win_rate_pct": 34.4,
+    "win_rate_ci95": [
+     28.9,
+     40.3
+    ],
+    "expectancy_pct": -0.45,
+    "expectancy_r": 0.079,
+    "profit_factor": 0.91
+   },
+   "out_of_sample": {
+    "trades": 453,
+    "win_rate_pct": 32.9,
+    "win_rate_ci95": [
+     28.7,
+     37.3
+    ],
+    "expectancy_pct": 0.17,
+    "expectancy_r": 0.015,
+    "profit_factor": 1.03
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 46.1,
+    "win_rate_ci95": [
+     44.6,
+     47.5
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.006,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 43.3,
+    "win_rate_ci95": [
+     42.0,
+     44.7
+    ],
+    "expectancy_pct": -0.31,
+    "expectancy_r": -0.04,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 45.4,
+    "win_rate_ci95": [
+     43.8,
+     47.0
+    ],
+    "expectancy_pct": -0.24,
+    "expectancy_r": -0.025,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 43.2,
+    "win_rate_ci95": [
+     41.6,
+     44.8
+    ],
+    "expectancy_pct": -0.31,
+    "expectancy_r": -0.041,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 48.3,
+    "win_rate_ci95": [
+     45.0,
+     51.7
+    ],
+    "expectancy_pct": 0.64,
+    "expectancy_r": 0.062,
+    "profit_factor": 1.19
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 43.2,
+    "win_rate_ci95": [
+     40.6,
+     45.9
+    ],
+    "expectancy_pct": -0.26,
+    "expectancy_r": -0.043,
+    "profit_factor": 0.94
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 47.3,
+    "win_rate_ci95": [
+     41.4,
+     53.2
+    ],
+    "expectancy_pct": -0.56,
+    "expectancy_r": 0.027,
+    "profit_factor": 0.88
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 44.4,
+    "win_rate_ci95": [
+     39.9,
+     48.9
+    ],
+    "expectancy_pct": -0.43,
+    "expectancy_r": -0.021,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 44.7,
+    "win_rate_ci95": [
+     43.3,
+     46.1
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.005,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 43.0,
+    "win_rate_ci95": [
+     41.6,
+     44.3
+    ],
+    "expectancy_pct": -0.18,
+    "expectancy_r": -0.021,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 43.7,
+    "win_rate_ci95": [
+     42.1,
+     45.3
+    ],
+    "expectancy_pct": -0.29,
+    "expectancy_r": -0.03,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 42.9,
+    "win_rate_ci95": [
+     41.3,
+     44.6
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.021,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 48.9,
+    "win_rate_ci95": [
+     45.6,
+     52.2
+    ],
+    "expectancy_pct": 0.85,
+    "expectancy_r": 0.097,
+    "profit_factor": 1.23
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 42.8,
+    "win_rate_ci95": [
+     40.2,
+     45.6
+    ],
+    "expectancy_pct": -0.31,
+    "expectancy_r": -0.034,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 44.3,
+    "win_rate_ci95": [
+     38.5,
+     50.3
+    ],
+    "expectancy_pct": -0.91,
+    "expectancy_r": -0.004,
+    "profit_factor": 0.83
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 43.8,
+    "win_rate_ci95": [
+     39.3,
+     48.3
+    ],
+    "expectancy_pct": -0.19,
+    "expectancy_r": 0.013,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4733,
+    "win_rate_pct": 42.7,
+    "win_rate_ci95": [
+     41.3,
+     44.1
+    ],
+    "expectancy_pct": -0.2,
+    "expectancy_r": -0.013,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 5194,
+    "win_rate_pct": 42.2,
+    "win_rate_ci95": [
+     40.9,
+     43.6
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.014,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3602,
+    "win_rate_pct": 41.8,
+    "win_rate_ci95": [
+     40.2,
+     43.4
+    ],
+    "expectancy_pct": -0.38,
+    "expectancy_r": -0.037,
+    "profit_factor": 0.93
+   },
+   "out_of_sample": {
+    "trades": 3462,
+    "win_rate_pct": 42.0,
+    "win_rate_ci95": [
+     40.4,
+     43.7
+    ],
+    "expectancy_pct": -0.02,
+    "expectancy_r": -0.01,
+    "profit_factor": 1.0
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 865,
+    "win_rate_pct": 46.8,
+    "win_rate_ci95": [
+     43.5,
+     50.2
+    ],
+    "expectancy_pct": 0.84,
+    "expectancy_r": 0.092,
+    "profit_factor": 1.21
+   },
+   "out_of_sample": {
+    "trades": 1270,
+    "win_rate_pct": 41.2,
+    "win_rate_ci95": [
+     38.5,
+     43.9
+    ],
+    "expectancy_pct": -0.35,
+    "expectancy_r": -0.046,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 266,
+    "win_rate_pct": 41.7,
+    "win_rate_ci95": [
+     36.0,
+     47.7
+    ],
+    "expectancy_pct": -1.09,
+    "expectancy_r": -0.024,
+    "profit_factor": 0.81
+   },
+   "out_of_sample": {
+    "trades": 462,
+    "win_rate_pct": 46.5,
+    "win_rate_ci95": [
+     42.0,
+     51.1
+    ],
+    "expectancy_pct": 0.02,
+    "expectancy_r": 0.042,
+    "profit_factor": 1.0
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 44.8,
+    "win_rate_ci95": [
+     43.4,
+     46.3
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.004,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 42.1,
+    "win_rate_ci95": [
+     40.8,
+     43.5
+    ],
+    "expectancy_pct": -0.2,
+    "expectancy_r": -0.032,
+    "profit_factor": 0.96
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 44.2,
+    "win_rate_ci95": [
+     42.6,
+     45.9
+    ],
+    "expectancy_pct": -0.26,
+    "expectancy_r": -0.025,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 41.9,
+    "win_rate_ci95": [
+     40.2,
+     43.5
+    ],
+    "expectancy_pct": -0.26,
+    "expectancy_r": -0.039,
+    "profit_factor": 0.95
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 47.3,
+    "win_rate_ci95": [
+     44.0,
+     50.6
+    ],
+    "expectancy_pct": 0.73,
+    "expectancy_r": 0.071,
+    "profit_factor": 1.21
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 42.5,
+    "win_rate_ci95": [
+     39.8,
+     45.2
+    ],
+    "expectancy_pct": -0.07,
+    "expectancy_r": -0.024,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 45.1,
+    "win_rate_ci95": [
+     39.3,
+     51.0
+    ],
+    "expectancy_pct": -0.97,
+    "expectancy_r": 0.03,
+    "profit_factor": 0.81
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 43.3,
+    "win_rate_ci95": [
+     38.9,
+     47.9
+    ],
+    "expectancy_pct": -0.09,
+    "expectancy_r": -0.002,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4768,
+    "win_rate_pct": 42.6,
+    "win_rate_ci95": [
+     41.2,
+     44.0
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.003,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 5255,
+    "win_rate_pct": 41.1,
+    "win_rate_ci95": [
+     39.8,
+     42.4
+    ],
+    "expectancy_pct": 0.03,
+    "expectancy_r": -0.004,
+    "profit_factor": 1.0
+   },
+   "out_of_sample_robustness": {
+    "expectancy_ci95_cluster_bootstrap": [
+     -0.36,
+     0.41
+    ],
+    "by_year": {
+     "2025": {
+      "trades": 2713,
+      "win_rate_pct": 43.3,
+      "expectancy_pct": 0.7
+     },
+     "2026": {
+      "trades": 2542,
+      "win_rate_pct": 38.7,
+      "expectancy_pct": -0.69
+     }
+    }
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3622,
+    "win_rate_pct": 41.6,
+    "win_rate_ci95": [
+     40.0,
+     43.2
+    ],
+    "expectancy_pct": -0.28,
+    "expectancy_r": -0.028,
+    "profit_factor": 0.94
+   },
+   "out_of_sample": {
+    "trades": 3498,
+    "win_rate_pct": 40.9,
+    "win_rate_ci95": [
+     39.3,
+     42.5
+    ],
+    "expectancy_pct": 0.01,
+    "expectancy_r": -0.011,
+    "profit_factor": 1.0
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 873,
+    "win_rate_pct": 47.0,
+    "win_rate_ci95": [
+     43.7,
+     50.3
+    ],
+    "expectancy_pct": 0.95,
+    "expectancy_r": 0.101,
+    "profit_factor": 1.25
+   },
+   "out_of_sample": {
+    "trades": 1293,
+    "win_rate_pct": 41.5,
+    "win_rate_ci95": [
+     38.9,
+     44.2
+    ],
+    "expectancy_pct": -0.02,
+    "expectancy_r": -0.004,
+    "profit_factor": 0.99
+   },
+   "out_of_sample_robustness": {
+    "expectancy_ci95_cluster_bootstrap": [
+     -0.67,
+     0.66
+    ],
+    "by_year": {
+     "2025": {
+      "trades": 740,
+      "win_rate_pct": 42.8,
+      "expectancy_pct": 0.16
+     },
+     "2026": {
+      "trades": 553,
+      "win_rate_pct": 39.8,
+      "expectancy_pct": -0.28
+     }
+    }
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 273,
+    "win_rate_pct": 41.8,
+    "win_rate_ci95": [
+     36.1,
+     47.7
+    ],
+    "expectancy_pct": -1.37,
+    "expectancy_r": -0.009,
+    "profit_factor": 0.76
+   },
+   "out_of_sample": {
+    "trades": 464,
+    "win_rate_pct": 41.4,
+    "win_rate_ci95": [
+     37.0,
+     45.9
+    ],
+    "expectancy_pct": 0.3,
+    "expectancy_r": 0.051,
+    "profit_factor": 1.05
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4723,
+    "win_rate_pct": 39.9,
+    "win_rate_ci95": [
+     38.5,
+     41.3
+    ],
+    "expectancy_pct": -0.22,
+    "expectancy_r": -0.014,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 5167,
+    "win_rate_pct": 39.5,
+    "win_rate_ci95": [
+     38.2,
+     40.8
+    ],
+    "expectancy_pct": 0.12,
+    "expectancy_r": 0.004,
+    "profit_factor": 1.02
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3597,
+    "win_rate_pct": 38.9,
+    "win_rate_ci95": [
+     37.3,
+     40.5
+    ],
+    "expectancy_pct": -0.4,
+    "expectancy_r": -0.04,
+    "profit_factor": 0.93
+   },
+   "out_of_sample": {
+    "trades": 3449,
+    "win_rate_pct": 39.3,
+    "win_rate_ci95": [
+     37.7,
+     41.0
+    ],
+    "expectancy_pct": 0.17,
+    "expectancy_r": 0.006,
+    "profit_factor": 1.03
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 861,
+    "win_rate_pct": 44.5,
+    "win_rate_ci95": [
+     41.2,
+     47.8
+    ],
+    "expectancy_pct": 0.98,
+    "expectancy_r": 0.103,
+    "profit_factor": 1.23
+   },
+   "out_of_sample": {
+    "trades": 1262,
+    "win_rate_pct": 38.6,
+    "win_rate_ci95": [
+     35.9,
+     41.3
+    ],
+    "expectancy_pct": -0.16,
+    "expectancy_r": -0.028,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 265,
+    "win_rate_pct": 37.7,
+    "win_rate_ci95": [
+     32.1,
+     43.7
+    ],
+    "expectancy_pct": -1.68,
+    "expectancy_r": -0.05,
+    "profit_factor": 0.74
+   },
+   "out_of_sample": {
+    "trades": 456,
+    "win_rate_pct": 43.4,
+    "win_rate_ci95": [
+     38.9,
+     48.0
+    ],
+    "expectancy_pct": 0.5,
+    "expectancy_r": 0.075,
+    "profit_factor": 1.08
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4716,
+    "win_rate_pct": 44.4,
+    "win_rate_ci95": [
+     43.0,
+     45.8
+    ],
+    "expectancy_pct": -0.03,
+    "expectancy_r": 0.004,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 5167,
+    "win_rate_pct": 41.5,
+    "win_rate_ci95": [
+     40.2,
+     42.9
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.028,
+    "profit_factor": 0.97
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3587,
+    "win_rate_pct": 43.9,
+    "win_rate_ci95": [
+     42.2,
+     45.5
+    ],
+    "expectancy_pct": -0.19,
+    "expectancy_r": -0.018,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 3441,
+    "win_rate_pct": 41.3,
+    "win_rate_ci95": [
+     39.7,
+     43.0
+    ],
+    "expectancy_pct": -0.17,
+    "expectancy_r": -0.035,
+    "profit_factor": 0.96
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 859,
+    "win_rate_pct": 46.9,
+    "win_rate_ci95": [
+     43.6,
+     50.3
+    ],
+    "expectancy_pct": 1.04,
+    "expectancy_r": 0.09,
+    "profit_factor": 1.31
+   },
+   "out_of_sample": {
+    "trades": 1270,
+    "win_rate_pct": 41.5,
+    "win_rate_ci95": [
+     38.8,
+     44.2
+    ],
+    "expectancy_pct": -0.04,
+    "expectancy_r": -0.024,
+    "profit_factor": 0.99
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 270,
+    "win_rate_pct": 44.1,
+    "win_rate_ci95": [
+     38.3,
+     50.0
+    ],
+    "expectancy_pct": -1.32,
+    "expectancy_r": 0.017,
+    "profit_factor": 0.75
+   },
+   "out_of_sample": {
+    "trades": 456,
+    "win_rate_pct": 43.2,
+    "win_rate_ci95": [
+     38.7,
+     47.8
+    ],
+    "expectancy_pct": 0.02,
+    "expectancy_r": 0.007,
+    "profit_factor": 1.0
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4688,
+    "win_rate_pct": 41.6,
+    "win_rate_ci95": [
+     40.2,
+     43.1
+    ],
+    "expectancy_pct": 0.04,
+    "expectancy_r": 0.012,
+    "profit_factor": 1.01
+   },
+   "out_of_sample": {
+    "trades": 5117,
+    "win_rate_pct": 40.0,
+    "win_rate_ci95": [
+     38.7,
+     41.3
+    ],
+    "expectancy_pct": 0.17,
+    "expectancy_r": 0.005,
+    "profit_factor": 1.03
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3575,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     39.0,
+     42.2
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.011,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 3408,
+    "win_rate_pct": 39.8,
+    "win_rate_ci95": [
+     38.2,
+     41.5
+    ],
+    "expectancy_pct": 0.07,
+    "expectancy_r": -0.009,
+    "profit_factor": 1.01
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 847,
+    "win_rate_pct": 46.4,
+    "win_rate_ci95": [
+     43.1,
+     49.8
+    ],
+    "expectancy_pct": 1.21,
+    "expectancy_r": 0.114,
+    "profit_factor": 1.32
+   },
+   "out_of_sample": {
+    "trades": 1258,
+    "win_rate_pct": 40.3,
+    "win_rate_ci95": [
+     37.6,
+     43.0
+    ],
+    "expectancy_pct": 0.28,
+    "expectancy_r": 0.019,
+    "profit_factor": 1.06
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 266,
+    "win_rate_pct": 40.2,
+    "win_rate_ci95": [
+     34.5,
+     46.2
+    ],
+    "expectancy_pct": -1.38,
+    "expectancy_r": 0.007,
+    "profit_factor": 0.77
+   },
+   "out_of_sample": {
+    "trades": 451,
+    "win_rate_pct": 40.4,
+    "win_rate_ci95": [
+     35.9,
+     44.9
+    ],
+    "expectancy_pct": 0.68,
+    "expectancy_r": 0.075,
+    "profit_factor": 1.11
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4629,
+    "win_rate_pct": 38.6,
+    "win_rate_ci95": [
+     37.2,
+     40.0
+    ],
+    "expectancy_pct": -0.03,
+    "expectancy_r": 0.007,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 4993,
+    "win_rate_pct": 37.4,
+    "win_rate_ci95": [
+     36.1,
+     38.7
+    ],
+    "expectancy_pct": 0.66,
+    "expectancy_r": 0.029,
+    "profit_factor": 1.12
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3541,
+    "win_rate_pct": 37.6,
+    "win_rate_ci95": [
+     36.1,
+     39.3
+    ],
+    "expectancy_pct": -0.26,
+    "expectancy_r": -0.021,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3337,
+    "win_rate_pct": 37.1,
+    "win_rate_ci95": [
+     35.5,
+     38.8
+    ],
+    "expectancy_pct": 0.89,
+    "expectancy_r": 0.037,
+    "profit_factor": 1.15
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 833,
+    "win_rate_pct": 43.3,
+    "win_rate_ci95": [
+     40.0,
+     46.7
+    ],
+    "expectancy_pct": 1.34,
+    "expectancy_r": 0.131,
+    "profit_factor": 1.32
+   },
+   "out_of_sample": {
+    "trades": 1217,
+    "win_rate_pct": 37.1,
+    "win_rate_ci95": [
+     34.4,
+     39.8
+    ],
+    "expectancy_pct": 0.13,
+    "expectancy_r": -0.008,
+    "profit_factor": 1.02
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 2.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 255,
+    "win_rate_pct": 36.1,
+    "win_rate_ci95": [
+     30.4,
+     42.1
+    ],
+    "expectancy_pct": -1.37,
+    "expectancy_r": -0.003,
+    "profit_factor": 0.79
+   },
+   "out_of_sample": {
+    "trades": 439,
+    "win_rate_pct": 40.5,
+    "win_rate_ci95": [
+     36.1,
+     45.2
+    ],
+    "expectancy_pct": 0.38,
+    "expectancy_r": 0.067,
+    "profit_factor": 1.06
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4688,
+    "win_rate_pct": 48.6,
+    "win_rate_ci95": [
+     47.2,
+     50.1
+    ],
+    "expectancy_pct": 0.07,
+    "expectancy_r": 0.014,
+    "profit_factor": 1.02
+   },
+   "out_of_sample": {
+    "trades": 5122,
+    "win_rate_pct": 46.2,
+    "win_rate_ci95": [
+     44.9,
+     47.6
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.011,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3564,
+    "win_rate_pct": 47.9,
+    "win_rate_ci95": [
+     46.3,
+     49.5
+    ],
+    "expectancy_pct": -0.21,
+    "expectancy_r": -0.006,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3400,
+    "win_rate_pct": 46.0,
+    "win_rate_ci95": [
+     44.3,
+     47.7
+    ],
+    "expectancy_pct": -0.11,
+    "expectancy_r": -0.014,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 856,
+    "win_rate_pct": 51.3,
+    "win_rate_ci95": [
+     47.9,
+     54.6
+    ],
+    "expectancy_pct": 1.14,
+    "expectancy_r": 0.08,
+    "profit_factor": 1.35
+   },
+   "out_of_sample": {
+    "trades": 1269,
+    "win_rate_pct": 46.7,
+    "win_rate_ci95": [
+     44.0,
+     49.5
+    ],
+    "expectancy_pct": 0.03,
+    "expectancy_r": 0.001,
+    "profit_factor": 1.01
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 268,
+    "win_rate_pct": 50.0,
+    "win_rate_ci95": [
+     44.1,
+     55.9
+    ],
+    "expectancy_pct": 0.36,
+    "expectancy_r": 0.07,
+    "profit_factor": 1.07
+   },
+   "out_of_sample": {
+    "trades": 453,
+    "win_rate_pct": 46.6,
+    "win_rate_ci95": [
+     42.0,
+     51.2
+    ],
+    "expectancy_pct": -0.45,
+    "expectancy_r": -0.022,
+    "profit_factor": 0.93
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4647,
+    "win_rate_pct": 47.9,
+    "win_rate_ci95": [
+     46.5,
+     49.3
+    ],
+    "expectancy_pct": 0.03,
+    "expectancy_r": 0.015,
+    "profit_factor": 1.01
+   },
+   "out_of_sample": {
+    "trades": 5070,
+    "win_rate_pct": 46.9,
+    "win_rate_ci95": [
+     45.5,
+     48.2
+    ],
+    "expectancy_pct": 0.24,
+    "expectancy_r": 0.016,
+    "profit_factor": 1.04
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3542,
+    "win_rate_pct": 46.8,
+    "win_rate_ci95": [
+     45.2,
+     48.5
+    ],
+    "expectancy_pct": -0.21,
+    "expectancy_r": -0.004,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 3372,
+    "win_rate_pct": 46.6,
+    "win_rate_ci95": [
+     44.9,
+     48.3
+    ],
+    "expectancy_pct": 0.23,
+    "expectancy_r": 0.009,
+    "profit_factor": 1.04
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 840,
+    "win_rate_pct": 52.7,
+    "win_rate_ci95": [
+     49.4,
+     56.1
+    ],
+    "expectancy_pct": 1.35,
+    "expectancy_r": 0.096,
+    "profit_factor": 1.34
+   },
+   "out_of_sample": {
+    "trades": 1248,
+    "win_rate_pct": 48.0,
+    "win_rate_ci95": [
+     45.2,
+     50.8
+    ],
+    "expectancy_pct": 0.35,
+    "expectancy_r": 0.033,
+    "profit_factor": 1.07
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 265,
+    "win_rate_pct": 46.8,
+    "win_rate_ci95": [
+     40.9,
+     52.8
+    ],
+    "expectancy_pct": -0.82,
+    "expectancy_r": 0.012,
+    "profit_factor": 0.87
+   },
+   "out_of_sample": {
+    "trades": 450,
+    "win_rate_pct": 45.6,
+    "win_rate_ci95": [
+     41.0,
+     50.2
+    ],
+    "expectancy_pct": 0.04,
+    "expectancy_r": 0.022,
+    "profit_factor": 1.01
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4582,
+    "win_rate_pct": 46.7,
+    "win_rate_ci95": [
+     45.2,
+     48.1
+    ],
+    "expectancy_pct": -0.05,
+    "expectancy_r": 0.009,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 4938,
+    "win_rate_pct": 46.2,
+    "win_rate_ci95": [
+     44.8,
+     47.5
+    ],
+    "expectancy_pct": 0.29,
+    "expectancy_r": 0.02,
+    "profit_factor": 1.05
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3504,
+    "win_rate_pct": 45.5,
+    "win_rate_ci95": [
+     43.9,
+     47.2
+    ],
+    "expectancy_pct": -0.32,
+    "expectancy_r": -0.012,
+    "profit_factor": 0.95
+   },
+   "out_of_sample": {
+    "trades": 3303,
+    "win_rate_pct": 45.7,
+    "win_rate_ci95": [
+     44.1,
+     47.4
+    ],
+    "expectancy_pct": 0.32,
+    "expectancy_r": 0.014,
+    "profit_factor": 1.05
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 823,
+    "win_rate_pct": 52.0,
+    "win_rate_ci95": [
+     48.6,
+     55.4
+    ],
+    "expectancy_pct": 1.29,
+    "expectancy_r": 0.101,
+    "profit_factor": 1.29
+   },
+   "out_of_sample": {
+    "trades": 1200,
+    "win_rate_pct": 46.4,
+    "win_rate_ci95": [
+     43.6,
+     49.2
+    ],
+    "expectancy_pct": 0.23,
+    "expectancy_r": 0.028,
+    "profit_factor": 1.04
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 1.5,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 255,
+    "win_rate_pct": 45.1,
+    "win_rate_ci95": [
+     39.1,
+     51.2
+    ],
+    "expectancy_pct": -0.69,
+    "expectancy_r": 0.014,
+    "profit_factor": 0.9
+   },
+   "out_of_sample": {
+    "trades": 435,
+    "win_rate_pct": 48.5,
+    "win_rate_ci95": [
+     43.8,
+     53.2
+    ],
+    "expectancy_pct": 0.18,
+    "expectancy_r": 0.042,
+    "profit_factor": 1.03
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4655,
+    "win_rate_pct": 48.4,
+    "win_rate_ci95": [
+     46.9,
+     49.8
+    ],
+    "expectancy_pct": 0.16,
+    "expectancy_r": 0.019,
+    "profit_factor": 1.04
+   },
+   "out_of_sample": {
+    "trades": 5064,
+    "win_rate_pct": 45.8,
+    "win_rate_ci95": [
+     44.5,
+     47.2
+    ],
+    "expectancy_pct": -0.03,
+    "expectancy_r": -0.008,
+    "profit_factor": 0.99
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3540,
+    "win_rate_pct": 47.7,
+    "win_rate_ci95": [
+     46.0,
+     49.3
+    ],
+    "expectancy_pct": -0.15,
+    "expectancy_r": -0.002,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 3365,
+    "win_rate_pct": 45.7,
+    "win_rate_ci95": [
+     44.0,
+     47.4
+    ],
+    "expectancy_pct": -0.04,
+    "expectancy_r": -0.011,
+    "profit_factor": 0.99
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 848,
+    "win_rate_pct": 51.1,
+    "win_rate_ci95": [
+     47.7,
+     54.4
+    ],
+    "expectancy_pct": 1.54,
+    "expectancy_r": 0.099,
+    "profit_factor": 1.48
+   },
+   "out_of_sample": {
+    "trades": 1253,
+    "win_rate_pct": 46.0,
+    "win_rate_ci95": [
+     43.3,
+     48.8
+    ],
+    "expectancy_pct": 0.08,
+    "expectancy_r": 0.001,
+    "profit_factor": 1.02
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 267,
+    "win_rate_pct": 49.1,
+    "win_rate_ci95": [
+     43.1,
+     55.0
+    ],
+    "expectancy_pct": -0.09,
+    "expectancy_r": 0.048,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 446,
+    "win_rate_pct": 46.4,
+    "win_rate_ci95": [
+     41.8,
+     51.1
+    ],
+    "expectancy_pct": -0.23,
+    "expectancy_r": -0.01,
+    "profit_factor": 0.96
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4595,
+    "win_rate_pct": 47.4,
+    "win_rate_ci95": [
+     45.9,
+     48.8
+    ],
+    "expectancy_pct": 0.19,
+    "expectancy_r": 0.025,
+    "profit_factor": 1.04
+   },
+   "out_of_sample": {
+    "trades": 4977,
+    "win_rate_pct": 46.2,
+    "win_rate_ci95": [
+     44.8,
+     47.6
+    ],
+    "expectancy_pct": 0.34,
+    "expectancy_r": 0.021,
+    "profit_factor": 1.06
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3510,
+    "win_rate_pct": 46.2,
+    "win_rate_ci95": [
+     44.5,
+     47.8
+    ],
+    "expectancy_pct": -0.12,
+    "expectancy_r": 0.004,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 3312,
+    "win_rate_pct": 45.9,
+    "win_rate_ci95": [
+     44.2,
+     47.6
+    ],
+    "expectancy_pct": 0.28,
+    "expectancy_r": 0.012,
+    "profit_factor": 1.05
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 824,
+    "win_rate_pct": 53.0,
+    "win_rate_ci95": [
+     49.6,
+     56.4
+    ],
+    "expectancy_pct": 1.78,
+    "expectancy_r": 0.118,
+    "profit_factor": 1.46
+   },
+   "out_of_sample": {
+    "trades": 1225,
+    "win_rate_pct": 47.3,
+    "win_rate_ci95": [
+     44.5,
+     50.1
+    ],
+    "expectancy_pct": 0.53,
+    "expectancy_r": 0.042,
+    "profit_factor": 1.1
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 261,
+    "win_rate_pct": 45.6,
+    "win_rate_ci95": [
+     39.7,
+     51.7
+    ],
+    "expectancy_pct": -0.8,
+    "expectancy_r": 0.012,
+    "profit_factor": 0.87
+   },
+   "out_of_sample": {
+    "trades": 440,
+    "win_rate_pct": 45.0,
+    "win_rate_ci95": [
+     40.4,
+     49.7
+    ],
+    "expectancy_pct": 0.24,
+    "expectancy_r": 0.031,
+    "profit_factor": 1.04
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4519,
+    "win_rate_pct": 45.9,
+    "win_rate_ci95": [
+     44.4,
+     47.4
+    ],
+    "expectancy_pct": 0.12,
+    "expectancy_r": 0.022,
+    "profit_factor": 1.02
+   },
+   "out_of_sample": {
+    "trades": 4825,
+    "win_rate_pct": 44.9,
+    "win_rate_ci95": [
+     43.5,
+     46.3
+    ],
+    "expectancy_pct": 0.82,
+    "expectancy_r": 0.039,
+    "profit_factor": 1.13
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3464,
+    "win_rate_pct": 44.7,
+    "win_rate_ci95": [
+     43.0,
+     46.3
+    ],
+    "expectancy_pct": -0.25,
+    "expectancy_r": -0.005,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 3227,
+    "win_rate_pct": 44.5,
+    "win_rate_ci95": [
+     42.8,
+     46.2
+    ],
+    "expectancy_pct": 1.08,
+    "expectancy_r": 0.04,
+    "profit_factor": 1.17
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 806,
+    "win_rate_pct": 52.0,
+    "win_rate_ci95": [
+     48.5,
+     55.4
+    ],
+    "expectancy_pct": 1.91,
+    "expectancy_r": 0.14,
+    "profit_factor": 1.43
+   },
+   "out_of_sample": {
+    "trades": 1174,
+    "win_rate_pct": 45.3,
+    "win_rate_ci95": [
+     42.5,
+     48.2
+    ],
+    "expectancy_pct": 0.41,
+    "expectancy_r": 0.037,
+    "profit_factor": 1.07
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 2.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 249,
+    "win_rate_pct": 43.4,
+    "win_rate_ci95": [
+     37.4,
+     49.6
+    ],
+    "expectancy_pct": -0.48,
+    "expectancy_r": 0.024,
+    "profit_factor": 0.93
+   },
+   "out_of_sample": {
+    "trades": 424,
+    "win_rate_pct": 46.9,
+    "win_rate_ci95": [
+     42.2,
+     51.7
+    ],
+    "expectancy_pct": -0.01,
+    "expectancy_r": 0.035,
+    "profit_factor": 1.0
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 4640,
+    "win_rate_pct": 48.2,
+    "win_rate_ci95": [
+     46.8,
+     49.7
+    ],
+    "expectancy_pct": 0.21,
+    "expectancy_r": 0.02,
+    "profit_factor": 1.05
+   },
+   "out_of_sample": {
+    "trades": 5044,
+    "win_rate_pct": 45.7,
+    "win_rate_ci95": [
+     44.3,
+     47.0
+    ],
+    "expectancy_pct": -0.05,
+    "expectancy_r": -0.008,
+    "profit_factor": 0.99
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 3530,
+    "win_rate_pct": 47.5,
+    "win_rate_ci95": [
+     45.9,
+     49.2
+    ],
+    "expectancy_pct": -0.13,
+    "expectancy_r": -0.003,
+    "profit_factor": 0.97
+   },
+   "out_of_sample": {
+    "trades": 3353,
+    "win_rate_pct": 45.4,
+    "win_rate_ci95": [
+     43.7,
+     47.1
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": -0.013,
+    "profit_factor": 0.98
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 844,
+    "win_rate_pct": 50.8,
+    "win_rate_ci95": [
+     47.5,
+     54.2
+    ],
+    "expectancy_pct": 1.54,
+    "expectancy_r": 0.099,
+    "profit_factor": 1.47
+   },
+   "out_of_sample": {
+    "trades": 1247,
+    "win_rate_pct": 46.0,
+    "win_rate_ci95": [
+     43.3,
+     48.8
+    ],
+    "expectancy_pct": 0.24,
+    "expectancy_r": 0.008,
+    "profit_factor": 1.06
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 10,
+   "in_sample": {
+    "trades": 266,
+    "win_rate_pct": 49.2,
+    "win_rate_ci95": [
+     43.3,
+     55.2
+    ],
+    "expectancy_pct": 0.48,
+    "expectancy_r": 0.069,
+    "profit_factor": 1.09
+   },
+   "out_of_sample": {
+    "trades": 444,
+    "win_rate_pct": 46.4,
+    "win_rate_ci95": [
+     41.8,
+     51.0
+    ],
+    "expectancy_pct": -0.5,
+    "expectancy_r": -0.016,
+    "profit_factor": 0.92
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 4571,
+    "win_rate_pct": 47.2,
+    "win_rate_ci95": [
+     45.8,
+     48.7
+    ],
+    "expectancy_pct": 0.27,
+    "expectancy_r": 0.029,
+    "profit_factor": 1.05
+   },
+   "out_of_sample": {
+    "trades": 4940,
+    "win_rate_pct": 45.7,
+    "win_rate_ci95": [
+     44.3,
+     47.1
+    ],
+    "expectancy_pct": 0.32,
+    "expectancy_r": 0.02,
+    "profit_factor": 1.06
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 3496,
+    "win_rate_pct": 45.9,
+    "win_rate_ci95": [
+     44.3,
+     47.6
+    ],
+    "expectancy_pct": -0.07,
+    "expectancy_r": 0.006,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 3290,
+    "win_rate_pct": 45.4,
+    "win_rate_ci95": [
+     43.7,
+     47.1
+    ],
+    "expectancy_pct": 0.26,
+    "expectancy_r": 0.01,
+    "profit_factor": 1.04
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 817,
+    "win_rate_pct": 53.0,
+    "win_rate_ci95": [
+     49.6,
+     56.4
+    ],
+    "expectancy_pct": 1.87,
+    "expectancy_r": 0.124,
+    "profit_factor": 1.48
+   },
+   "out_of_sample": {
+    "trades": 1216,
+    "win_rate_pct": 47.2,
+    "win_rate_ci95": [
+     44.4,
+     50.0
+    ],
+    "expectancy_pct": 0.72,
+    "expectancy_r": 0.052,
+    "profit_factor": 1.14
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 15,
+   "in_sample": {
+    "trades": 258,
+    "win_rate_pct": 46.1,
+    "win_rate_ci95": [
+     40.1,
+     52.2
+    ],
+    "expectancy_pct": -0.24,
+    "expectancy_r": 0.033,
+    "profit_factor": 0.96
+   },
+   "out_of_sample": {
+    "trades": 434,
+    "win_rate_pct": 44.0,
+    "win_rate_ci95": [
+     39.4,
+     48.7
+    ],
+    "expectancy_pct": -0.31,
+    "expectancy_r": 0.009,
+    "profit_factor": 0.95
+   }
+  },
+  {
+   "group": "all",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 4485,
+    "win_rate_pct": 45.4,
+    "win_rate_ci95": [
+     44.0,
+     46.9
+    ],
+    "expectancy_pct": 0.28,
+    "expectancy_r": 0.031,
+    "profit_factor": 1.05
+   },
+   "out_of_sample": {
+    "trades": 4783,
+    "win_rate_pct": 44.3,
+    "win_rate_ci95": [
+     42.9,
+     45.8
+    ],
+    "expectancy_pct": 0.81,
+    "expectancy_r": 0.038,
+    "profit_factor": 1.13
+   }
+  },
+  {
+   "group": "high+elevated",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 3445,
+    "win_rate_pct": 44.1,
+    "win_rate_ci95": [
+     42.5,
+     45.8
+    ],
+    "expectancy_pct": -0.11,
+    "expectancy_r": 0.0,
+    "profit_factor": 0.98
+   },
+   "out_of_sample": {
+    "trades": 3203,
+    "win_rate_pct": 43.8,
+    "win_rate_ci95": [
+     42.1,
+     45.6
+    ],
+    "expectancy_pct": 0.98,
+    "expectancy_r": 0.034,
+    "profit_factor": 1.15
+   }
+  },
+  {
+   "group": "watch",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 794,
+    "win_rate_pct": 51.8,
+    "win_rate_ci95": [
+     48.3,
+     55.2
+    ],
+    "expectancy_pct": 2.11,
+    "expectancy_r": 0.155,
+    "profit_factor": 1.47
+   },
+   "out_of_sample": {
+    "trades": 1163,
+    "win_rate_pct": 45.1,
+    "win_rate_ci95": [
+     42.2,
+     47.9
+    ],
+    "expectancy_pct": 0.7,
+    "expectancy_r": 0.052,
+    "profit_factor": 1.12
+   },
+   "out_of_sample_robustness": {
+    "expectancy_ci95_cluster_bootstrap": [
+     -0.25,
+     1.67
+    ],
+    "by_year": {
+     "2025": {
+      "trades": 671,
+      "win_rate_pct": 49.3,
+      "expectancy_pct": 1.81
+     },
+     "2026": {
+      "trades": 492,
+      "win_rate_pct": 39.2,
+      "expectancy_pct": -0.82
+     }
+    }
+   }
+  },
+  {
+   "group": "low",
+   "stop_atr": 3.0,
+   "reward_risk": 3.0,
+   "max_hold": 20,
+   "in_sample": {
+    "trades": 246,
+    "win_rate_pct": 43.1,
+    "win_rate_ci95": [
+     37.1,
+     49.3
+    ],
+    "expectancy_pct": -0.1,
+    "expectancy_r": 0.051,
+    "profit_factor": 0.99
+   },
+   "out_of_sample": {
+    "trades": 417,
+    "win_rate_pct": 46.3,
+    "win_rate_ci95": [
+     41.6,
+     51.1
+    ],
+    "expectancy_pct": -0.19,
+    "expectancy_r": 0.032,
+    "profit_factor": 0.97
+   }
+  }
+ ],
+ "note": "The CI and latest-year checks were added after first seeing the by-year split, which makes them stricter, not looser; the pre-set bar alone (>=100 trades, >=+0.5%/trade) would have passed the best candidate. Signals are the ledger's (one position per ticker under the primary rule); exit variants re-simulated independently. Same survivorship and FINRA-vintage caveats as the main backtest."
+}
