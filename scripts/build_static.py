@@ -25,6 +25,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from squeezelab import playbook as pb  # noqa: E402
 from squeezelab.backtest import SqueezeBacktester, StrategyParams, compare_strategies  # noqa: E402
 from squeezelab.config import SETTINGS, WEIGHT_PRESETS  # noqa: E402
 from squeezelab.consolidate import coverage_matrix, disagreement_report  # noqa: E402
@@ -34,6 +35,8 @@ from squeezelab.sources import describe_sources  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "static", "index.html")
+ODDS = os.path.join(ROOT, "backtests", "playbook_odds.json")
+SI_CACHE = os.path.join(ROOT, "data", "cache", "playbook", "finra_si")
 MARKER = re.compile(
     r'(<script id="embedded-data" type="application/json">)(.*?)(</script>)',
     re.DOTALL,
@@ -68,8 +71,11 @@ def build_payload(universe: int, period: str) -> dict:
             "period": period,
         }
 
+    playbook_payload = build_playbook(service, rows, prices)
+
     return {
         "generated_at": result.generated_at,
+        "playbook": playbook_payload,
         "presets": {name: {"weights": weights} for name, weights in WEIGHT_PRESETS.items()},
         "scan": {
             "ok": True,
@@ -91,6 +97,63 @@ def build_payload(universe: int, period: str) -> dict:
         "backtest": backtest_payload,
         "strategies": strategies_payload,
     }
+
+
+def latest_finra_si(tickers: list[str]) -> tuple[dict[str, dict], str | None]:
+    """Newest FINRA short interest that was public by today (same lag as the backtest)."""
+    try:
+        import pandas as pd
+
+        dates = pb.finra_settlement_dates("2025-01-01")
+        today = pd.Timestamp.today().normalize()
+        usable = [d for d in dates if pd.Timestamp(d) + pd.offsets.BDay(pb.SI_PUBLICATION_LAG_BDAYS) <= today]
+        if not usable:
+            return {}, None
+        day = usable[-1]
+        rows = pb.finra_si_for_date(day, SI_CACHE)
+        want = {t.upper() for t in tickers}
+        out = {}
+        for r in rows:
+            sym = str(r.get("symbolCode", "")).upper().replace(".", "-").replace("/", "-")
+            if sym in want:
+                out[sym] = {
+                    "shares_short": r.get("currentShortPositionQuantity"),
+                    "si_adv": r.get("averageDailyVolumeQuantity"),
+                    "shares_short_prior": r.get("previousShortPositionQuantity"),
+                    "short_ratio": r.get("daysToCoverQuantity"),
+                }
+        return out, day
+    except Exception as exc:  # noqa: BLE001 - fall back to the scan's own short data
+        print("FINRA point-in-time short interest unavailable:", exc)
+        return {}, None
+
+
+def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -> dict | None:
+    """Today's action/levels per name plus the cached backtest odds."""
+    odds = None
+    if os.path.exists(ODDS):
+        with open(ODDS, encoding="utf-8") as fh:
+            odds = json.load(fh)
+    tickers = [str(r["ticker"]).upper() for r in rows]
+    si_map, si_date = latest_finra_si(tickers)
+    calls = []
+    for row in rows:
+        t = str(row["ticker"]).upper()
+        # Match the dividend/split-adjusted backtest bars. The latest close is
+        # still today's quote; adjusted history makes ATR internally consistent.
+        try:
+            import yfinance as yf
+            bars = yf.Ticker(t).history(period="2y", interval="1d", auto_adjust=True).reset_index()
+        except Exception:
+            bars = None  # never silently replace prices with synthetic data
+        calls.append(pb.todays_call(t, bars, row, odds, si=si_map.get(t)))
+        calls[-1]["short_data"] = f"FINRA {si_date}" if t in si_map else "scan (Yahoo)"
+    calls = pb.rank_calls(calls)
+    summary = None
+    if odds:
+        summary = {k: odds.get(k) for k in ("generated_at", "rule", "rule_text", "period", "universe", "tiers",
+                                             "tier_labels", "combined", "by_year", "robustness", "data_coverage", "caveats")}
+    return {"calls": calls, "odds": summary, "si_settlement_date": si_date, "account_risk_pct": 0.25}
 
 
 def main() -> int:

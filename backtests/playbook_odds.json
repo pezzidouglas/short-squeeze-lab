@@ -1,0 +1,784 @@
+{
+ "generated_at": "2026-11-15T20:38:18+00:00",
+ "rule": {
+  "lookback": 20,
+  "volume_mult": 2.0,
+  "atr_period": 14,
+  "stop_atr": 2.0,
+  "reward_risk": 2.0,
+  "max_hold": 15,
+  "min_price": 1.0,
+  "min_dollar_volume": 2000000.0,
+  "cost_bps": 12.0
+ },
+ "rule_text": [
+  "Trigger: daily close above the prior 20-session high on volume >= 2x the prior 20-session average (price >= $1, 20-day avg $ volume >= $2M).",
+  "Entry: next session's open. Stop: entry - 2 x ATR(14). Target: entry + 2 x stop distance (2:1). Time exit: close of session 15.",
+  "Costs 12 bps per side; gaps through the stop fill at the open; if a bar hits stop and target, the stop is assumed first."
+ ],
+ "period": {
+  "from": "2022-01-14",
+  "to": "2026-11-13"
+ },
+ "universe": {
+  "selected": 2425,
+  "with_prices": 1953,
+  "missing_prices": 472,
+  "traded": 1693,
+  "rule": "exchange-listed symbols with FINRA days-to-cover >= 5 and avg daily volume >= 500k on any of 2022-01-14, 2022-07-15, 2023-01-13, 2023-07-14, 2024-01-12, 2024-07-15, 2025-01-15, 2025-07-15, 2026-01-15, 2026-07-15; tradable only from the first date they qualified"
+ },
+ "tiers": {
+  "high": {
+   "trades": 2753,
+   "tickers": 909,
+   "win_rate_pct": 40.4,
+   "win_rate_ci95": [
+    38.6,
+    42.2
+   ],
+   "avg_win_pct": 13.89,
+   "avg_loss_pct": -9.79,
+   "expectancy_pct": -0.22,
+   "median_ret_pct": -4.98,
+   "expectancy_r": -0.02,
+   "profit_factor": 0.96,
+   "max_drawdown_pct_at_1pct_risk": -75.5,
+   "avg_bars": 9.1,
+   "exits": {
+    "stop": 1350,
+    "time": 891,
+    "target": 512
+   }
+  },
+  "elevated": {
+   "trades": 4367,
+   "tickers": 1408,
+   "win_rate_pct": 41.8,
+   "win_rate_ci95": [
+    40.3,
+    43.3
+   ],
+   "avg_win_pct": 11.19,
+   "avg_loss_pct": -8.19,
+   "expectancy_pct": -0.09,
+   "median_ret_pct": -3.46,
+   "expectancy_r": -0.019,
+   "profit_factor": 0.98,
+   "max_drawdown_pct_at_1pct_risk": -79.3,
+   "avg_bars": 9.6,
+   "exits": {
+    "target": 746,
+    "stop": 2043,
+    "time": 1578
+   }
+  },
+  "watch": {
+   "trades": 2166,
+   "tickers": 908,
+   "win_rate_pct": 43.7,
+   "win_rate_ci95": [
+    41.6,
+    45.8
+   ],
+   "avg_win_pct": 10.94,
+   "avg_loss_pct": -7.84,
+   "expectancy_pct": 0.37,
+   "median_ret_pct": -2.2,
+   "expectancy_r": 0.038,
+   "profit_factor": 1.08,
+   "max_drawdown_pct_at_1pct_risk": -46.8,
+   "avg_bars": 9.7,
+   "exits": {
+    "target": 407,
+    "time": 792,
+    "stop": 967
+   }
+  },
+  "low": {
+   "trades": 737,
+   "tickers": 370,
+   "win_rate_pct": 41.5,
+   "win_rate_ci95": [
+    38.0,
+    45.1
+   ],
+   "avg_win_pct": 13.44,
+   "avg_loss_pct": -10.09,
+   "expectancy_pct": -0.32,
+   "median_ret_pct": -2.3,
+   "expectancy_r": 0.028,
+   "profit_factor": 0.95,
+   "max_drawdown_pct_at_1pct_risk": -26.1,
+   "avg_bars": 9.2,
+   "exits": {
+    "time": 239,
+    "stop": 348,
+    "target": 150
+   }
+  }
+ },
+ "tier_labels": {
+  "high": "High (proxy 80+)",
+  "elevated": "Elevated (proxy 60-80)",
+  "watch": "Watch (proxy 40-60)",
+  "low": "Low (proxy <40)"
+ },
+ "combined": {
+  "high+elevated": {
+   "trades": 7120,
+   "tickers": 1573,
+   "win_rate_pct": 41.2,
+   "win_rate_ci95": [
+    40.1,
+    42.4
+   ],
+   "avg_win_pct": 12.21,
+   "avg_loss_pct": -8.81,
+   "expectancy_pct": -0.14,
+   "median_ret_pct": -3.87,
+   "expectancy_r": -0.02,
+   "profit_factor": 0.97,
+   "max_drawdown_pct_at_1pct_risk": -94.9,
+   "avg_bars": 9.4,
+   "exits": {
+    "stop": 3393,
+    "target": 1258,
+    "time": 2469
+   }
+  },
+  "all breakouts (no score filter)": {
+   "trades": 10023,
+   "tickers": 1693,
+   "win_rate_pct": 41.8,
+   "win_rate_ci95": [
+    40.8,
+    42.8
+   ],
+   "avg_win_pct": 12.02,
+   "avg_loss_pct": -8.71,
+   "expectancy_pct": -0.04,
+   "median_ret_pct": -3.44,
+   "expectancy_r": -0.004,
+   "profit_factor": 0.99,
+   "max_drawdown_pct_at_1pct_risk": -93.9,
+   "avg_bars": 9.5,
+   "exits": {
+    "stop": 4708,
+    "target": 1815,
+    "time": 3500
+   }
+  }
+ },
+ "by_year": {
+  "high": {
+   "2022": {
+    "trades": 329,
+    "tickers": 236,
+    "win_rate_pct": 38.9,
+    "win_rate_ci95": [
+     33.8,
+     44.3
+    ],
+    "avg_win_pct": 13.2,
+    "avg_loss_pct": -10.84,
+    "expectancy_pct": -1.49,
+    "median_ret_pct": -6.0,
+    "expectancy_r": -0.124,
+    "profit_factor": 0.78,
+    "max_drawdown_pct_at_1pct_risk": -39.7,
+    "avg_bars": 9.6,
+    "exits": {
+     "stop": 168,
+     "time": 118,
+     "target": 43
+    }
+   },
+   "2023": {
+    "trades": 569,
+    "tickers": 349,
+    "win_rate_pct": 39.7,
+    "win_rate_ci95": [
+     35.8,
+     43.8
+    ],
+    "avg_win_pct": 11.55,
+    "avg_loss_pct": -8.83,
+    "expectancy_pct": -0.74,
+    "median_ret_pct": -3.69,
+    "expectancy_r": -0.085,
+    "profit_factor": 0.86,
+    "max_drawdown_pct_at_1pct_risk": -68.3,
+    "avg_bars": 9.9,
+    "exits": {
+     "stop": 273,
+     "time": 217,
+     "target": 79
+    }
+   },
+   "2024": {
+    "trades": 649,
+    "tickers": 401,
+    "win_rate_pct": 39.9,
+    "win_rate_ci95": [
+     36.2,
+     43.7
+    ],
+    "avg_win_pct": 14.68,
+    "avg_loss_pct": -10.07,
+    "expectancy_pct": -0.19,
+    "median_ret_pct": -5.53,
+    "expectancy_r": -0.001,
+    "profit_factor": 0.97,
+    "max_drawdown_pct_at_1pct_risk": -35.4,
+    "avg_bars": 8.3,
+    "exits": {
+     "time": 172,
+     "target": 139,
+     "stop": 338
+    }
+   },
+   "2025": {
+    "trades": 562,
+    "tickers": 370,
+    "win_rate_pct": 45.6,
+    "win_rate_ci95": [
+     41.5,
+     49.7
+    ],
+    "avg_win_pct": 15.8,
+    "avg_loss_pct": -10.0,
+    "expectancy_pct": 1.75,
+    "median_ret_pct": -2.9,
+    "expectancy_r": 0.14,
+    "profit_factor": 1.32,
+    "max_drawdown_pct_at_1pct_risk": -27.8,
+    "avg_bars": 9.0,
+    "exits": {
+     "time": 179,
+     "stop": 251,
+     "target": 132
+    }
+   },
+   "2026": {
+    "trades": 644,
+    "tickers": 443,
+    "win_rate_pct": 37.7,
+    "win_rate_ci95": [
+     34.1,
+     41.5
+    ],
+    "avg_win_pct": 13.59,
+    "avg_loss_pct": -9.65,
+    "expectancy_pct": -0.88,
+    "median_ret_pct": -6.18,
+    "expectancy_r": -0.068,
+    "profit_factor": 0.85,
+    "max_drawdown_pct_at_1pct_risk": -45.2,
+    "avg_bars": 8.9,
+    "exits": {
+     "time": 205,
+     "stop": 320,
+     "target": 119
+    }
+   }
+  },
+  "elevated": {
+   "2022": {
+    "trades": 302,
+    "tickers": 232,
+    "win_rate_pct": 47.0,
+    "win_rate_ci95": [
+     41.5,
+     52.7
+    ],
+    "avg_win_pct": 10.22,
+    "avg_loss_pct": -9.54,
+    "expectancy_pct": -0.25,
+    "median_ret_pct": -1.49,
+    "expectancy_r": -0.039,
+    "profit_factor": 0.95,
+    "max_drawdown_pct_at_1pct_risk": -33.5,
+    "avg_bars": 10.2,
+    "exits": {
+     "time": 126,
+     "stop": 136,
+     "target": 40
+    }
+   },
+   "2023": {
+    "trades": 772,
+    "tickers": 493,
+    "win_rate_pct": 40.5,
+    "win_rate_ci95": [
+     37.1,
+     44.0
+    ],
+    "avg_win_pct": 10.38,
+    "avg_loss_pct": -7.39,
+    "expectancy_pct": -0.19,
+    "median_ret_pct": -3.18,
+    "expectancy_r": -0.046,
+    "profit_factor": 0.96,
+    "max_drawdown_pct_at_1pct_risk": -77.8,
+    "avg_bars": 10.3,
+    "exits": {
+     "target": 117,
+     "stop": 350,
+     "time": 305
+    }
+   },
+   "2024": {
+    "trades": 1001,
+    "tickers": 645,
+    "win_rate_pct": 43.8,
+    "win_rate_ci95": [
+     40.7,
+     46.8
+    ],
+    "avg_win_pct": 10.27,
+    "avg_loss_pct": -7.6,
+    "expectancy_pct": 0.22,
+    "median_ret_pct": -1.91,
+    "expectancy_r": 0.035,
+    "profit_factor": 1.05,
+    "max_drawdown_pct_at_1pct_risk": -45.8,
+    "avg_bars": 9.5,
+    "exits": {
+     "stop": 448,
+     "target": 198,
+     "time": 355
+    }
+   },
+   "2025": {
+    "trades": 1127,
+    "tickers": 710,
+    "win_rate_pct": 42.9,
+    "win_rate_ci95": [
+     40.0,
+     45.8
+    ],
+    "avg_win_pct": 12.38,
+    "avg_loss_pct": -8.53,
+    "expectancy_pct": 0.43,
+    "median_ret_pct": -3.45,
+    "expectancy_r": 0.002,
+    "profit_factor": 1.09,
+    "max_drawdown_pct_at_1pct_risk": -56.3,
+    "avg_bars": 9.5,
+    "exits": {
+     "target": 198,
+     "time": 401,
+     "stop": 528
+    }
+   },
+   "2026": {
+    "trades": 1165,
+    "tickers": 805,
+    "win_rate_pct": 38.5,
+    "win_rate_ci95": [
+     35.8,
+     41.4
+    ],
+    "avg_win_pct": 11.69,
+    "avg_loss_pct": -8.55,
+    "expectancy_pct": -0.75,
+    "median_ret_pct": -4.57,
+    "expectancy_r": -0.064,
+    "profit_factor": 0.86,
+    "max_drawdown_pct_at_1pct_risk": -61.8,
+    "avg_bars": 9.3,
+    "exits": {
+     "stop": 581,
+     "target": 193,
+     "time": 391
+    }
+   }
+  },
+  "watch": {
+   "2022": {
+    "trades": 60,
+    "tickers": 48,
+    "win_rate_pct": 53.3,
+    "win_rate_ci95": [
+     40.9,
+     65.4
+    ],
+    "avg_win_pct": 10.97,
+    "avg_loss_pct": -10.34,
+    "expectancy_pct": 1.02,
+    "median_ret_pct": 0.63,
+    "expectancy_r": 0.148,
+    "profit_factor": 1.21,
+    "max_drawdown_pct_at_1pct_risk": -14.2,
+    "avg_bars": 10.9,
+    "exits": {
+     "stop": 23,
+     "time": 27,
+     "target": 10
+    }
+   },
+   "2023": {
+    "trades": 244,
+    "tickers": 190,
+    "win_rate_pct": 51.6,
+    "win_rate_ci95": [
+     45.4,
+     57.8
+    ],
+    "avg_win_pct": 10.76,
+    "avg_loss_pct": -7.24,
+    "expectancy_pct": 2.05,
+    "median_ret_pct": 0.43,
+    "expectancy_r": 0.259,
+    "profit_factor": 1.59,
+    "max_drawdown_pct_at_1pct_risk": -14.0,
+    "avg_bars": 10.4,
+    "exits": {
+     "target": 54,
+     "time": 102,
+     "stop": 88
+    }
+   },
+   "2024": {
+    "trades": 569,
+    "tickers": 389,
+    "win_rate_pct": 44.3,
+    "win_rate_ci95": [
+     40.3,
+     48.4
+    ],
+    "avg_win_pct": 9.67,
+    "avg_loss_pct": -6.85,
+    "expectancy_pct": 0.47,
+    "median_ret_pct": -1.65,
+    "expectancy_r": 0.028,
+    "profit_factor": 1.12,
+    "max_drawdown_pct_at_1pct_risk": -28.6,
+    "avg_bars": 9.8,
+    "exits": {
+     "target": 99,
+     "stop": 244,
+     "time": 226
+    }
+   },
+   "2025": {
+    "trades": 740,
+    "tickers": 498,
+    "win_rate_pct": 42.8,
+    "win_rate_ci95": [
+     39.3,
+     46.4
+    ],
+    "avg_win_pct": 11.41,
+    "avg_loss_pct": -8.26,
+    "expectancy_pct": 0.16,
+    "median_ret_pct": -3.23,
+    "expectancy_r": 0.006,
+    "profit_factor": 1.03,
+    "max_drawdown_pct_at_1pct_risk": -43.4,
+    "avg_bars": 9.5,
+    "exits": {
+     "time": 257,
+     "stop": 345,
+     "target": 138
+    }
+   },
+   "2026": {
+    "trades": 553,
+    "tickers": 411,
+    "win_rate_pct": 39.8,
+    "win_rate_ci95": [
+     35.8,
+     43.9
+    ],
+    "avg_win_pct": 11.81,
+    "avg_loss_pct": -8.26,
+    "expectancy_pct": -0.28,
+    "median_ret_pct": -3.94,
+    "expectancy_r": -0.018,
+    "profit_factor": 0.94,
+    "max_drawdown_pct_at_1pct_risk": -36.4,
+    "avg_bars": 9.5,
+    "exits": {
+     "time": 180,
+     "target": 106,
+     "stop": 267
+    }
+   }
+  },
+  "low": {
+   "2022": {
+    "trades": 7,
+    "tickers": 5,
+    "win_rate_pct": 42.9,
+    "win_rate_ci95": [
+     15.8,
+     75.0
+    ],
+    "avg_win_pct": 11.94,
+    "avg_loss_pct": -10.4,
+    "expectancy_pct": -0.83,
+    "median_ret_pct": -2.83,
+    "expectancy_r": -0.075,
+    "profit_factor": 0.86,
+    "max_drawdown_pct_at_1pct_risk": -4.1,
+    "avg_bars": 9.6,
+    "exits": {
+     "stop": 4,
+     "target": 1,
+     "time": 2
+    }
+   },
+   "2023": {
+    "trades": 70,
+    "tickers": 59,
+    "win_rate_pct": 42.9,
+    "win_rate_ci95": [
+     31.9,
+     54.5
+    ],
+    "avg_win_pct": 10.42,
+    "avg_loss_pct": -9.99,
+    "expectancy_pct": -1.24,
+    "median_ret_pct": -3.4,
+    "expectancy_r": -0.04,
+    "profit_factor": 0.78,
+    "max_drawdown_pct_at_1pct_risk": -10.6,
+    "avg_bars": 9.9,
+    "exits": {
+     "time": 24,
+     "stop": 35,
+     "target": 11
+    }
+   },
+   "2024": {
+    "trades": 196,
+    "tickers": 135,
+    "win_rate_pct": 41.3,
+    "win_rate_ci95": [
+     34.7,
+     48.3
+    ],
+    "avg_win_pct": 10.74,
+    "avg_loss_pct": -10.02,
+    "expectancy_pct": -1.44,
+    "median_ret_pct": -3.04,
+    "expectancy_r": 0.004,
+    "profit_factor": 0.75,
+    "max_drawdown_pct_at_1pct_risk": -17.8,
+    "avg_bars": 9.2,
+    "exits": {
+     "stop": 92,
+     "time": 69,
+     "target": 35
+    }
+   },
+   "2025": {
+    "trades": 284,
+    "tickers": 178,
+    "win_rate_pct": 41.9,
+    "win_rate_ci95": [
+     36.3,
+     47.7
+    ],
+    "avg_win_pct": 16.57,
+    "avg_loss_pct": -10.09,
+    "expectancy_pct": 1.08,
+    "median_ret_pct": -1.7,
+    "expectancy_r": 0.093,
+    "profit_factor": 1.18,
+    "max_drawdown_pct_at_1pct_risk": -26.1,
+    "avg_bars": 8.7,
+    "exits": {
+     "stop": 130,
+     "target": 67,
+     "time": 87
+    }
+   },
+   "2026": {
+    "trades": 180,
+    "tickers": 141,
+    "win_rate_pct": 40.6,
+    "win_rate_ci95": [
+     33.7,
+     47.9
+    ],
+    "avg_win_pct": 12.65,
+    "avg_loss_pct": -10.2,
+    "expectancy_pct": -0.93,
+    "median_ret_pct": -2.77,
+    "expectancy_r": -0.016,
+    "profit_factor": 0.85,
+    "max_drawdown_pct_at_1pct_risk": -16.8,
+    "avg_bars": 9.6,
+    "exits": {
+     "stop": 87,
+     "time": 57,
+     "target": 36
+    }
+   }
+  }
+ },
+ "robustness": [
+  {
+   "variant": "hold 5d",
+   "high+elevated": {
+    "trades": 7602,
+    "win_rate_pct": 43.8,
+    "expectancy_pct": -0.37,
+    "expectancy_r": -0.048
+   },
+   "watch": {
+    "trades": 2290,
+    "win_rate_pct": 45.9,
+    "expectancy_pct": -0.06,
+    "expectancy_r": -0.019
+   },
+   "low": {
+    "trades": 776,
+    "win_rate_pct": 44.2,
+    "expectancy_pct": -0.3,
+    "expectancy_r": -0.03
+   }
+  },
+  {
+   "variant": "hold 10d",
+   "high+elevated": {
+    "trades": 7259,
+    "win_rate_pct": 43.1,
+    "expectancy_pct": -0.23,
+    "expectancy_r": -0.029
+   },
+   "watch": {
+    "trades": 2206,
+    "win_rate_pct": 44.3,
+    "expectancy_pct": 0.21,
+    "expectancy_r": 0.011
+   },
+   "low": {
+    "trades": 753,
+    "win_rate_pct": 44.5,
+    "expectancy_pct": -0.28,
+    "expectancy_r": 0.026
+   }
+  },
+  {
+   "variant": "hold 20d",
+   "high+elevated": {
+    "trades": 7059,
+    "win_rate_pct": 39.1,
+    "expectancy_pct": -0.12,
+    "expectancy_r": -0.018
+   },
+   "watch": {
+    "trades": 2131,
+    "win_rate_pct": 41.0,
+    "expectancy_pct": 0.33,
+    "expectancy_r": 0.027
+   },
+   "low": {
+    "trades": 724,
+    "win_rate_pct": 41.2,
+    "expectancy_pct": -0.34,
+    "expectancy_r": 0.025
+   }
+  },
+  {
+   "variant": "target 1.5R",
+   "high+elevated": {
+    "trades": 7233,
+    "win_rate_pct": 43.6,
+    "expectancy_pct": -0.14,
+    "expectancy_r": -0.018
+   },
+   "watch": {
+    "trades": 2209,
+    "win_rate_pct": 45.3,
+    "expectancy_pct": 0.18,
+    "expectancy_r": 0.02
+   },
+   "low": {
+    "trades": 748,
+    "win_rate_pct": 44.3,
+    "expectancy_pct": -0.41,
+    "expectancy_r": 0.013
+   }
+  },
+  {
+   "variant": "target 3R",
+   "high+elevated": {
+    "trades": 7004,
+    "win_rate_pct": 40.2,
+    "expectancy_pct": -0.03,
+    "expectancy_r": -0.01
+   },
+   "watch": {
+    "trades": 2116,
+    "win_rate_pct": 42.8,
+    "expectancy_pct": 0.69,
+    "expectancy_r": 0.059
+   },
+   "low": {
+    "trades": 725,
+    "win_rate_pct": 40.1,
+    "expectancy_pct": -0.1,
+    "expectancy_r": 0.049
+   }
+  },
+  {
+   "variant": "stop 1.5 ATR",
+   "high+elevated": {
+    "trades": 7372,
+    "win_rate_pct": 37.1,
+    "expectancy_pct": -0.23,
+    "expectancy_r": -0.038
+   },
+   "watch": {
+    "trades": 2249,
+    "win_rate_pct": 38.7,
+    "expectancy_pct": -0.01,
+    "expectancy_r": -0.012
+   },
+   "low": {
+    "trades": 769,
+    "win_rate_pct": 37.6,
+    "expectancy_pct": -0.4,
+    "expectancy_r": -0.022
+   }
+  },
+  {
+   "variant": "stop 3 ATR",
+   "high+elevated": {
+    "trades": 6849,
+    "win_rate_pct": 46.1,
+    "expectancy_pct": 0.09,
+    "expectancy_r": 0.008
+   },
+   "watch": {
+    "trades": 2064,
+    "win_rate_pct": 49.5,
+    "expectancy_pct": 1.04,
+    "expectancy_r": 0.073
+   },
+   "low": {
+    "trades": 709,
+    "win_rate_pct": 45.1,
+    "expectancy_pct": -0.15,
+    "expectancy_r": 0.025
+   }
+  }
+ ],
+ "data_coverage": {
+  "with_point_in_time_short_interest_pct": 100.0,
+  "with_point_in_time_shares_outstanding_pct": 0.0
+ },
+ "caveats": [
+  "Survivorship bias: symbols that were delisted, went bankrupt or changed ticker mostly have no Yahoo history, so they are missing (472 of 2425 selected). Real results were likely worse.",
+  "FINRA short interest/DTC are lagged 9 business days after settlement; original release vintages are unavailable, so subsequent revisions and exact holiday release lags can bias results. No current short metrics are applied to history.",
+  "Odds tiers are a proxy, NOT the full live squeeze score: historical float/SI-density and flow are excluded. Borrow uses FINRA DTC; liquidity uses the same report short shares/volume; momentum uses trailing prices and published short-position changes. Today uses exactly that proxy too.",
+  "Max DD is a synthetic realized-trade sequence risking 1% per trade, NOT a mark-to-market investable portfolio; overlapping positions, halts and liquidity constraints are not modelled. Wilson intervals assume independent trades, whereas names/signals are correlated.",
+  "Exploratory in-sample research, no independent out-of-sample validation; small positive averages are not evidence of a reliable edge. Paper trading only until validated.",
+  "Past results do not predict future ones. Not financial advice."
+ ],
+ "runtime_sec": 282.0
+}
