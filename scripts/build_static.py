@@ -37,6 +37,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TARGET = os.path.join(ROOT, "static", "index.html")
 ODDS = os.path.join(ROOT, "backtests", "playbook_odds.json")
 OOS = os.path.join(ROOT, "backtests", "playbook_oos.json")
+SCORECARD = os.path.join(ROOT, "backtests", "strategy_scorecard.json")
 SI_CACHE = os.path.join(ROOT, "data", "cache", "playbook", "finra_si")
 MARKER = re.compile(
     r'(<script id="embedded-data" type="application/json">)(.*?)(</script>)',
@@ -138,6 +139,7 @@ def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -
     tickers = [str(r["ticker"]).upper() for r in rows]
     si_map, si_date = latest_finra_si(tickers)
     calls = []
+    bars_by: dict = {}
     for row in rows:
         t = str(row["ticker"]).upper()
         # Match the dividend/split-adjusted backtest bars. The latest close is
@@ -147,6 +149,7 @@ def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -
             bars = yf.Ticker(t).history(period="2y", interval="1d", auto_adjust=True).reset_index()
         except Exception:
             bars = None  # never silently replace prices with synthetic data
+        bars_by[t] = bars
         calls.append(pb.todays_call(t, bars, row, odds, si=si_map.get(t)))
         calls[-1]["short_data"] = f"FINRA {si_date}" if t in si_map else "scan (Yahoo)"
     calls = pb.rank_calls(calls)
@@ -159,7 +162,23 @@ def build_playbook(service: MarketDataService, rows: list[dict], prices: dict) -
         with open(OOS, encoding="utf-8") as fh:
             raw = json.load(fh)
         oos = {k: v for k, v in raw.items() if k != "results"}  # drop the 108-candidate grid
-    return {"calls": calls, "odds": summary, "oos": oos, "si_settlement_date": si_date, "account_risk_pct": 0.25,
+    strategies = None
+    if os.path.exists(SCORECARD):
+        with open(SCORECARD, encoding="utf-8") as fh:
+            card = json.load(fh)
+        strategies = {k: v for k, v in card.items()}
+        strategies["families"] = [{k: v for k, v in f.items() if k != "all_variants"} for f in card.get("families", [])]
+        strategies["signals"] = []
+        if card.get("passing"):
+            try:
+                sys.path.insert(0, os.path.join(ROOT, "scripts"))
+                import strategy_search  # noqa: PLC0415
+
+                strategies["signals"] = strategy_search.todays_signals(card, bars_by)
+            except Exception as exc:  # noqa: BLE001 - no signals beats invented ones
+                print("strategy signals failed:", exc)
+                strategies["signals_error"] = str(exc)
+    return {"calls": calls, "odds": summary, "oos": oos, "strategies": strategies, "si_settlement_date": si_date, "account_risk_pct": 0.25,
             "min_edge_pct": pb.MIN_EDGE_PCT, "min_trades": pb.MIN_TRADES}
 
 
